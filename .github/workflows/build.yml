@@ -276,10 +276,11 @@ jobs:
           echo "node-linker=hoisted" > .npmrc
           pnpm install
           # 复制图标文件
-          cp ../../web/public/favicon-app.svg icon.svg || true
+          mkdir -p images
+          cp ../../web/public/favicon-app.svg images/icon.svg || true
           # 生成图标 PNG（如果 imagemagick 可用）
           if command -v convert &> /dev/null; then
-            convert -background white -resize 128x128 icon.svg icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+            convert -background white -resize 128x128 images/icon.svg images/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
           else
             echo "Warning: ImageMagick not available, icon.png not generated"
           fi
