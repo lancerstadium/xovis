@@ -16,11 +16,13 @@
     "appId": "com.xovis.app",
     "productName": "xovis",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "npmRebuild": false,
     "nodeGypRebuild": false,
     "beforeBuild": null,
+    "icon": "build/icon.png",
     "files": [
       "dist-electron/**/*",
       "../../web/dist/**/*",
@@ -35,7 +37,28 @@
       ]
     },
     "mac": {
-      "target": ["dmg"]
+      "target": ["dmg"],
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 400
+      }
     },
     "linux": {
       "target": ["AppImage"]

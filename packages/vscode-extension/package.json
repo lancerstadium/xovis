@@ -16,6 +16,7 @@
     "onCustomEditor:xovis.graph"
   ],
   "main": "./out/extension.js",
+  "icon": "icon.png",
   "contributes": {
     "commands": [
       {
@@ -59,7 +60,8 @@
     "vscode:prepublish": "pnpm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package --no-dependencies"
+    "package": "vsce package --no-dependencies",
+    "postinstall": "node -e \"import('fs').then(fs => fs.default.copyFileSync('../../web/public/favicon-app.svg', 'icon.svg')).catch(() => {})\""
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

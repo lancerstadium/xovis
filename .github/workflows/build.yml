@@ -275,11 +275,25 @@ jobs:
           # 使用 hoisted 模式以改善与 vsce 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
+          # 复制图标文件
+          cp ../../web/public/favicon-app.svg icon.svg || true
+          # 生成图标 PNG（如果 imagemagick 可用）
+          if command -v convert &> /dev/null; then
+            convert -background white -resize 128x128 icon.svg icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          else
+            echo "Warning: ImageMagick not available, icon.png not generated"
+          fi
           pnpm run compile
           # 检查编译是否成功
           if [ ! -f "out/extension.js" ]; then
             echo "Error: Extension compilation failed"
             exit 1
+          fi
+          # 检查 @xovis/core 是否被正确包含
+          if ! grep -q "@xovis/core" out/extension.js 2>/dev/null && [ -d "node_modules/@xovis/core" ]; then
+            echo "Warning: @xovis/core may not be bundled correctly"
+            echo "Copying @xovis/core to out directory..."
+            cp -r node_modules/@xovis/core out/ 2>/dev/null || true
           fi
           # 确保 vsce 已安装
           if ! command -v vsce &> /dev/null && [ ! -f "node_modules/.bin/vsce" ]; then
