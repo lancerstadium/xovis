@@ -104,6 +104,13 @@ jobs:
           # 使用 hoisted 模式以改善与 electron-builder 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
+          # 生成图标 PNG（如果 imagemagick 可用）
+          mkdir -p build
+          if command -v convert &> /dev/null; then
+            convert -background white -resize 512x512 ../../web/public/favicon-app.svg build/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          else
+            echo "Warning: ImageMagick not available, electron-builder will use default icon"
+          fi
           pnpm run build:win
 
       - name: Upload Windows artifacts
@@ -165,6 +172,13 @@ jobs:
           # 使用 hoisted 模式以改善与 electron-builder 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
+          # 生成图标 PNG（如果 imagemagick 可用）
+          mkdir -p build
+          if command -v convert &> /dev/null; then
+            convert -background white -resize 512x512 ../../web/public/favicon-app.svg build/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          else
+            echo "Warning: ImageMagick not available, electron-builder will use default icon"
+          fi
           pnpm run build:mac
 
       - name: Upload macOS artifacts
@@ -231,6 +245,13 @@ jobs:
           # 使用 hoisted 模式以改善与 electron-builder 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
+          # 生成图标 PNG（如果 imagemagick 可用）
+          mkdir -p build
+          if command -v convert &> /dev/null; then
+            convert -background white -resize 512x512 ../../web/public/favicon-app.svg build/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          else
+            echo "Warning: ImageMagick not available, electron-builder will use default icon"
+          fi
           pnpm run build:linux
 
       - name: Upload Linux artifacts
