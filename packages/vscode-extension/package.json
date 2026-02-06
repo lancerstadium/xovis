@@ -59,7 +59,7 @@
     "vscode:prepublish": "pnpm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package"
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
@@ -69,5 +69,8 @@
   },
   "dependencies": {
     "@xovis/core": "workspace:*"
-  }
+  },
+  "bundledDependencies": [
+    "@xovis/core"
+  ]
 }

@@ -272,6 +272,8 @@ jobs:
       - name: Build VSCode Extension
         run: |
           cd packages/vscode-extension
+          # 使用 hoisted 模式以改善与 vsce 的兼容性
+          echo "node-linker=hoisted" > .npmrc
           pnpm install
           pnpm run compile
           # 检查编译是否成功
