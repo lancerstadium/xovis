@@ -44,6 +44,8 @@ jobs:
         run: pnpm build:core
 
       - name: Build web
+        env:
+          VITE_BASE_PATH: /xovis/
         run: pnpm build:web
 
       - name: Setup Pages
