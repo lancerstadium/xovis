@@ -60,7 +60,7 @@
     "vscode:prepublish": "pnpm run compile",
     "compile": "node esbuild.config.mjs",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package --no-dependencies --allow-missing-repository",
+    "package": "NODE_OPTIONS=--no-deprecation vsce package --no-dependencies --allow-missing-repository",
     "postinstall": "node scripts/postinstall.mjs"
   },
   "devDependencies": {

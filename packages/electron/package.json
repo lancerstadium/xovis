@@ -5,6 +5,7 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "electron .",
+    "prebuild": "node ../../scripts/generate-electron-icon.mjs",
     "build": "tsc && electron-builder",
     "build:win": "pnpm build -- --win",
     "build:mac": "pnpm build -- --mac",

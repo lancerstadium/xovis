@@ -78,7 +78,7 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     });
   }
 
-  private getHtmlForWebview(webview: vscode.Webview, document: vscode.TextDocument): string {
+  private getHtmlForWebview(webview: vscode.Webview, _document: vscode.TextDocument): string {
     const iframeUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.extensionUri, 'media', 'index.html')
     );

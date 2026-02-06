@@ -131,6 +131,7 @@ packages/electron/*.rpm
 
 # VSCode Extension
 packages/vscode-extension/out/
+packages/vscode-extension/media/
 packages/vscode-extension/*.vsix
 
 # Build artifacts
