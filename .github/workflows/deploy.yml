@@ -47,9 +47,11 @@ jobs:
         working-directory: packages/web
         env:
           VITE_BASE_PATH: /xovis/
+          GITHUB_REPOSITORY: lancerstadium/xovis
         run: |
           echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
-          pnpm build
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          VITE_BASE_PATH=/xovis/ pnpm build
           echo "Checking built index.html:"
           head -15 dist/index.html
 
