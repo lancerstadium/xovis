@@ -1,0 +1,44 @@
+{
+  "name": "xovis",
+  "version": "0.1.0",
+  "description": "JSON 计算图可视化（dagre + SVG）",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @xovis/web dev",
+    "build": "pnpm -r build",
+    "build:core": "pnpm --filter @xovis/core build",
+    "build:web": "pnpm --filter @xovis/web build",
+    "build:electron": "pnpm build:web && pnpm --filter @xovis/electron build",
+    "build:electron:win": "pnpm build:web && pnpm --filter @xovis/electron build:win",
+    "build:electron:mac": "pnpm build:web && pnpm --filter @xovis/electron build:mac",
+    "build:electron:linux": "pnpm build:web && pnpm --filter @xovis/electron build:linux",
+    "build:vscode": "pnpm --filter xovis build",
+    "package:vscode": "cd packages/vscode-extension && pnpm run package",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "keywords": [
+    "neural-network",
+    "computation-graph",
+    "visualization",
+    "json"
+  ],
+  "author": "lancerstadium",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

@@ -1,0 +1,379 @@
+name: Build and Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: 'Platforms to build (comma-separated: win,mac,linux,vscode). Leave empty for all.'
+        required: false
+        default: 'win,mac,linux,vscode'
+      release:
+        description: 'Create GitHub Release'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: pnpm build:core
+
+      - name: Build web
+        run: pnpm build:web
+
+      - name: Upload web artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: packages/web/dist
+          retention-days: 7
+
+  build-electron-win:
+    needs: build-web
+    runs-on: windows-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platforms == '' || contains(github.event.inputs.platforms, 'win')))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Download web artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: packages/web/dist
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: pnpm build:core
+
+      - name: Verify web dist exists
+        shell: bash
+        run: |
+          if [ ! -d "packages/web/dist" ]; then
+            echo "Error: packages/web/dist does not exist"
+            exit 1
+          fi
+          ls -la packages/web/dist/
+      
+      - name: Build Electron (Windows)
+        run: |
+          cd packages/electron
+          pnpm install
+          pnpm run build:win
+
+      - name: Upload Windows artifacts
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-windows
+          path: packages/electron/release/*.exe
+          retention-days: 30
+          if-no-files-found: ignore
+
+  build-electron-mac:
+    needs: build-web
+    runs-on: macos-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platforms == '' || contains(github.event.inputs.platforms, 'mac')))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Download web artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: packages/web/dist
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: pnpm build:core
+
+      - name: Verify web dist exists
+        shell: bash
+        run: |
+          if [ ! -d "packages/web/dist" ]; then
+            echo "Error: packages/web/dist does not exist"
+            exit 1
+          fi
+          ls -la packages/web/dist/
+      
+      - name: Build Electron (macOS)
+        run: |
+          cd packages/electron
+          pnpm install
+          pnpm run build:mac
+
+      - name: Upload macOS artifacts
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-macos
+          path: packages/electron/release/*.dmg
+          retention-days: 30
+          if-no-files-found: ignore
+
+  build-electron-linux:
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platforms == '' || contains(github.event.inputs.platforms, 'linux')))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Download web artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: packages/web/dist
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: pnpm build:core
+
+      - name: Install dependencies for Electron
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
+
+      - name: Verify web dist exists
+        shell: bash
+        run: |
+          if [ ! -d "packages/web/dist" ]; then
+            echo "Error: packages/web/dist does not exist"
+            exit 1
+          fi
+          ls -la packages/web/dist/
+      
+      - name: Build Electron (Linux)
+        run: |
+          cd packages/electron
+          pnpm install
+          pnpm run build:linux
+
+      - name: Upload Linux artifacts
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-linux
+          path: packages/electron/release/*.AppImage
+          retention-days: 30
+          if-no-files-found: ignore
+
+  build-vscode:
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platforms == '' || contains(github.event.inputs.platforms, 'vscode')))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: pnpm build:core
+
+      - name: Build VSCode Extension
+        run: |
+          cd packages/vscode-extension
+          pnpm install
+          pnpm run compile
+          # 检查编译是否成功
+          if [ ! -f "out/extension.js" ]; then
+            echo "Error: Extension compilation failed"
+            exit 1
+          fi
+          # 确保 vsce 已安装
+          if ! command -v vsce &> /dev/null && [ ! -f "node_modules/.bin/vsce" ]; then
+            echo "Installing @vscode/vsce..."
+            pnpm add -D @vscode/vsce
+          fi
+          pnpm run package
+
+      - name: Upload VSCode Extension artifacts
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension
+          path: packages/vscode-extension/*.vsix
+          retention-days: 30
+          if-no-files-found: ignore
+
+  create-release:
+    needs: [build-electron-win, build-electron-mac, build-electron-linux, build-vscode]
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.release == 'true' || github.event.inputs.release == true))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Windows artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: electron-windows
+          path: ./artifacts/electron-windows
+
+      - name: Download macOS artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: electron-macos
+          path: ./artifacts/electron-macos
+
+      - name: Download Linux artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: electron-linux
+          path: ./artifacts/electron-linux
+
+      - name: Download VSCode Extension artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: vscode-extension
+          path: ./artifacts/vscode-extension
+
+      - name: Get tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          else
+            TAG_NAME="v$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+          fi
+          echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "Tag: ${TAG_NAME}"
+
+      - name: List artifacts
+        run: |
+          echo "Available artifacts:"
+          find ./artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.vsix" \) || true
+          
+      - name: Check if any artifacts exist
+        id: check-artifacts
+        run: |
+          ARTIFACT_COUNT=$(find ./artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.vsix" \) 2>/dev/null | wc -l || echo "0")
+          echo "artifact_count=${ARTIFACT_COUNT}" >> $GITHUB_OUTPUT
+          if [ "${ARTIFACT_COUNT}" -eq 0 ]; then
+            echo "⚠️ No artifacts found, skipping release creation"
+            exit 1
+          else
+            echo "✅ Found ${ARTIFACT_COUNT} artifact(s)"
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            ## xovis ${{ steps.tag.outputs.tag }}
+
+            ### Downloads
+
+            - **Windows**: Download `.exe` from artifacts
+            - **macOS**: Download `.dmg` from artifacts
+            - **Linux**: Download `.AppImage` from artifacts
+            - **VSCode Extension**: Download `.vsix` from artifacts
+
+            ### Installation
+
+            - **Windows/macOS/Linux**: Run the installer
+            - **VSCode Extension**: Install via "Extensions: Install from VSIX..." in VSCode
+          files: |
+            artifacts/electron-windows/**/*.exe
+            artifacts/electron-macos/**/*.dmg
+            artifacts/electron-linux/**/*.AppImage
+            artifacts/vscode-extension/**/*.vsix
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

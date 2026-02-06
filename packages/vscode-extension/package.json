@@ -1,0 +1,73 @@
+{
+  "name": "xovis",
+  "displayName": "xovis",
+  "description": "JSON 计算图可视化工具",
+  "version": "0.1.0",
+  "publisher": "xovis",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:xovis.open",
+    "onCustomEditor:xovis.graph"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "xovis.open",
+        "title": "打开 xovis 可视化",
+        "category": "xovis"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "xovis.graph",
+        "displayName": "xovis 计算图",
+        "selector": [
+          {
+            "filenamePattern": "*.graph.json"
+          },
+          {
+            "filenamePattern": "*.computation-graph.json"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "xovis.open",
+          "when": "true"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "xovis.open",
+          "when": "resourceExtname == .json",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.3.2",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {
+    "@xovis/core": "workspace:*"
+  }
+}

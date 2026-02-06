@@ -1,0 +1,134 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Testing
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+.temp/
+.tmp/
+
+# PDF
+*.pdf
+
+# OS files
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# pnpm
+.pnpm-store/
+.pnpm-debug.log*
+
+# Vite
+.vite/
+vite.config.*.timestamp-*
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+
+# Package manager lock files (optional - uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local development
+.local/
+local/
+
+# Platform-specific builds
+packages/electron/release/
+packages/electron/dist-electron/
+packages/web/dist/
+packages/core/dist/
+packages/vscode-extension/out/
+packages/vscode-extension/*.vsix
+
+# Capacitor
+packages/web/android/
+packages/web/ios/
+packages/web/.capacitor/
+
+# Mobile
+packages/mobile/android/app/build/
+packages/mobile/android/app/.gradle/
+packages/mobile/android/.gradle/
+packages/mobile/android/.idea/
+packages/mobile/android/local.properties
+packages/mobile/ios/Pods/
+packages/mobile/ios/build/
+packages/mobile/ios/*.xcworkspace
+packages/mobile/ios/*.xcuserdata
+
+# Electron
+packages/electron/dist-electron/
+packages/electron/release/
+packages/electron/*.dmg
+packages/electron/*.exe
+packages/electron/*.AppImage
+packages/electron/*.deb
+packages/electron/*.rpm
+
+# VSCode Extension
+packages/vscode-extension/out/
+packages/vscode-extension/*.vsix
+
+# Build artifacts
+*.map
+*.min.js
+*.min.css
+
+# Misc
+*.bak

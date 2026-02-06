@@ -1,0 +1,158 @@
+import { useRef, useState, useEffect } from 'react';
+import { useGraphStore, useSettingsStore } from '../stores';
+import { getLocale } from '../locale';
+import { loadFile } from '../utils/loadFile';
+
+const EXAMPLES = [
+  { value: 'example-graph.json', path: '/examples/models/example-graph.json' },
+  { value: 'example-complete.json', path: '/examples/models/example-complete.json' },
+] as const;
+
+const ICON_SVG = {
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+export function Loader() {
+  const comboRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [examplesOpen, setExamplesOpen] = useState(false);
+  const { setGraph } = useGraphStore();
+  const { lang, set, viewMode } = useSettingsStore();
+  const t = getLocale(lang);
+
+  const load = (text: string, fileName?: string) => {
+    const result = loadFile(text, fileName);
+    if (result.success) {
+      setGraph(result.graph);
+      setError(null);
+      // 如果是CSV文件，自动切换到图表视图
+      if (result.source === 'csv' && viewMode === 'graph') {
+        set({ viewMode: 'bar' });
+      }
+    } else {
+      setError(result.error);
+      setGraph(null);
+    }
+  };
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    setError(null);
+    try {
+      load(await file.text(), file.name);
+    } catch {
+      setError(t.loadError);
+    } finally {
+      setLoading(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  const onExample = async (path: string) => {
+    if (!path) return;
+    setExamplesOpen(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error(res.statusText);
+      load(await res.text(), path);
+    } catch {
+      setError(t.loadError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openFileDialog = () => {
+    setExamplesOpen(false);
+    if (loading) return;
+    if (inputRef.current) {
+      inputRef.current.value = '';
+      inputRef.current.click();
+    }
+  };
+
+  useEffect(() => {
+    if (!examplesOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (comboRef.current?.contains(e.target as Node)) return;
+      setExamplesOpen(false);
+    };
+    const t = setTimeout(() => document.addEventListener('click', onDocClick), 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('click', onDocClick);
+    };
+  }, [examplesOpen]);
+
+  return (
+    <div ref={comboRef} className="loader-combo">
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".json,application/json,.csv,text/csv"
+        onChange={onFile}
+        style={{ display: 'none' }}
+        aria-label={t.loadSelectFile}
+      />
+      <div className="loader-examples-wrap" style={{ position: 'relative' }}>
+        <button
+          type="button"
+          className="btn icon-btn"
+          onClick={() => setExamplesOpen((v) => !v)}
+          disabled={loading}
+          title={t.loadExample}
+          aria-label={t.loadExample}
+          aria-expanded={examplesOpen}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            {...ICON_SVG}
+            aria-hidden="true"
+          >
+            <polyline points="6 15 12 9 18 15" />
+          </svg>
+        </button>
+        {examplesOpen && (
+          <div className="loader-dropdown float-dropdown" role="menu">
+            <div className="panel-glass">
+              <div className="panel-menu">
+                <button
+                  type="button"
+                  className="panel-menu-item"
+                  role="menuitem"
+                  onClick={openFileDialog}
+                >
+                  {t.loadImportFile}
+                </button>
+                {EXAMPLES.map(({ value, path }) => (
+                  <button
+                    key={path}
+                    type="button"
+                    className="panel-menu-item"
+                    role="menuitem"
+                    onClick={() => onExample(path)}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      {error && <span className="loader-error">{error}</span>}
+    </div>
+  );
+}

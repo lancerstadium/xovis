@@ -1,0 +1,70 @@
+/* 学术风预设初值，由 store 覆盖；浮窗高度=视口减上/下按钮行与间距，App.tsx 同步写入 */
+:root {
+  --float-trigger-row: 44px;
+  --float-trigger-row-bottom: 44px;
+  --float-panel-gap: 12px;
+  --float-panel-max-height: calc(
+    100vh - var(--float-trigger-row) - var(--float-panel-gap) - var(--float-trigger-row-bottom)
+  );
+  --toolbar-btn-opacity: 0.92;
+  --bg: #f0f0f0;
+  --bg-target: #ffffff;
+  --bg-sidebar: #f5f5f5;
+  --border: #d8d8d8;
+  --text: #1a1a1a;
+  --text2: #666666;
+  --accent: #2563eb;
+  --focus-ring: 0 0 0 2px color-mix(in srgb, var(--accent) 42%, transparent);
+  --toolbar-bg: #64748b;
+  --toolbar-hover: #334155;
+  --toolbar-text: #ffffff;
+  --node-fill: #ffffff;
+  --node-stroke: #94a3b8;
+  --node-text: #1e293b;
+  --node-attr-fill: #f8fafc;
+  --tensor-fill: #f8fafc;
+  --tensor-stroke: #94a3b8;
+  --edge-stroke: #94a3b8;
+}
+[data-theme='dark'] {
+  --bg: #18181b;
+  --bg-target: #27272a;
+  --bg-sidebar: #1f1f23;
+  --border: #3f3f46;
+  --text: #fafafa;
+  --text2: #a1a1aa;
+  --accent: #3b82f6;
+  --toolbar-bg: #71717a;
+  --toolbar-hover: #e4e4e7;
+  --toolbar-text: #1a1a1a;
+  --node-fill: #27272a;
+  --node-stroke: #52525b;
+  --node-text: #fafafa;
+  --node-attr-fill: #2a2a2e;
+  --tensor-fill: #2d2d32;
+  --tensor-stroke: #52525b;
+  --edge-stroke: #52525b;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, 'Droid Sans', sans-serif, 'PingFang SC';
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}

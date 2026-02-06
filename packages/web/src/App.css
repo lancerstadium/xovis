@@ -1,0 +1,1085 @@
+/* 主面板统一：全屏计算图，无顶栏，操作悬浮 */
+.app {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+}
+/* 图标按钮统一：所有图标按钮 28×28，顶栏/图内/详情关闭一致 */
+.btn.icon-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn.icon-btn svg {
+  display: block;
+}
+
+/* 左下角工具栏：与其它 floating-trigger 一致 */
+.loader-combo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.loader-error {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.loader-examples-wrap {
+  position: relative;
+}
+/* 浮窗共用：高度约束；内容区滚动单处定义，详情与设置复用 */
+.float-panel,
+.float-dropdown {
+  max-height: var(--float-panel-max-height);
+  min-height: 0;
+}
+/* 导入下拉：仅定位，外观 100% 复用 panel-glass + panel-menu */
+.loader-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 140px;
+  max-width: min(280px, 90vw);
+  z-index: 100;
+}
+.toolbar-bl .loader-dropdown {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+/* 浮窗内紧凑菜单：与 panel-content 同源，供下拉等复用 */
+.panel-menu {
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--text);
+}
+.panel-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 11px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.panel-menu-item:hover {
+  background: var(--toolbar-hover);
+  color: var(--text);
+}
+/* 按钮统一：预设驱动，字色统一为 --toolbar-text */
+.btn,
+.view-trigger,
+.btn-select {
+  color: var(--toolbar-text);
+  font-size: 12px;
+}
+.btn,
+.view-trigger {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--toolbar-bg);
+  background: var(--toolbar-bg);
+  cursor: pointer;
+}
+.btn:hover:not(:disabled),
+.view-trigger:hover {
+  background: var(--toolbar-hover);
+  border-color: var(--toolbar-hover);
+  color: var(--toolbar-text);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn *,
+.view-trigger * {
+  color: inherit;
+}
+/* 与 .btn 统一：下拉框随预设变色 */
+.btn-select {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--toolbar-bg);
+  background: var(--toolbar-bg);
+  cursor: pointer;
+  min-height: 26px;
+}
+.btn-select:hover {
+  background: var(--toolbar-hover);
+  border-color: var(--toolbar-hover);
+  color: var(--toolbar-text);
+}
+.btn-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 主区域：全屏，计算图铺满，无顶栏无侧栏 */
+.main {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* 计算图：铺满全屏；target 不接指针事件，仅子节点接，避免挡住浮层点击 */
+.target {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  outline: none;
+  background: var(--bg-target);
+  pointer-events: none;
+  z-index: 0;
+}
+.target-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.target > * {
+  pointer-events: auto;
+}
+
+/* 浮层入口：左上/右上/左下/右下统一；按钮统一透明度，静默时悬停显示 */
+.floating-trigger {
+  position: absolute;
+  z-index: 24;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  pointer-events: auto;
+}
+/* 浮层内所有按钮（含“本身即按钮”的右上角详情）：统一透明度与静默规则 */
+.floating-trigger .btn,
+.floating-trigger .icon-btn,
+.floating-trigger.btn,
+.floating-trigger.icon-btn {
+  opacity: var(--toolbar-btn-opacity, 0.92);
+  transition: opacity 0.18s ease;
+}
+[data-silent='true'] .floating-trigger .btn,
+[data-silent='true'] .floating-trigger .icon-btn,
+[data-silent='true'] .floating-trigger.btn,
+[data-silent='true'] .floating-trigger.icon-btn {
+  opacity: 0;
+}
+[data-silent='true'] .floating-trigger:hover .btn,
+[data-silent='true'] .floating-trigger:hover .icon-btn,
+[data-silent='true'] .floating-trigger.btn:hover,
+[data-silent='true'] .floating-trigger.icon-btn:hover,
+[data-silent='true'] .floating-trigger .btn:focus-visible,
+[data-silent='true'] .floating-trigger .icon-btn:focus-visible,
+[data-silent='true'] .floating-trigger.btn:focus-visible,
+[data-silent='true'] .floating-trigger.icon-btn:focus-visible {
+  opacity: 1;
+}
+.floating-trigger-tl {
+  top: 10px;
+  left: 10px;
+}
+.floating-trigger-tr {
+  top: 10px;
+  right: 10px;
+}
+.toolbar-bl {
+  bottom: 10px;
+  left: 10px;
+  top: auto;
+}
+.toolbar-right {
+  bottom: 10px;
+  right: 10px;
+  left: auto;
+  top: auto;
+}
+.toolbar-bc {
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
+}
+/* 数据面板：唯一居中的浮窗，底部横幅、上/左/右可调，左右对称保持居中 */
+.data-panel-wrap {
+  position: absolute;
+  left: var(--float-panel-gap);
+  right: var(--float-panel-gap);
+  bottom: var(--float-trigger-row-bottom);
+  max-height: 50vh;
+  min-height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 18;
+  pointer-events: none;
+}
+.data-panel-resizable {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  pointer-events: auto;
+}
+.data-panel-resizable-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+.data-panel-resizable .data-panel-inner {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.data-panel-splitter-top {
+  border-radius: 12px 12px 0 0;
+}
+.data-panel-splitter-left {
+  border-radius: 12px 0 0 0;
+}
+.data-panel-splitter-right {
+  border-radius: 0 12px 0 0;
+}
+.data-panel-wrap .view-dropdown {
+  pointer-events: auto;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.data-table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.data-table-export-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.data-table-export-btn:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+}
+.data-table-wrap {
+  overflow-x: auto;
+  padding: 0 4px;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  color: var(--text);
+}
+.data-table-th,
+.data-table-td {
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  white-space: nowrap;
+}
+/* 表头保持表格单元，内层 flex 保证名字在左、选框在右且与列方向一致 */
+.data-table-th {
+  font-weight: 600;
+  color: var(--text2);
+  user-select: none;
+}
+.data-table-th-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.data-table-th-label {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.data-table-th-label:hover {
+  color: var(--accent);
+}
+/* 表头复用 panel-check：选框在列名右侧 */
+.data-table-th-check.panel-check {
+  flex-shrink: 0;
+  margin: 0;
+  min-height: auto;
+}
+.data-table-th-check .panel-check-label {
+  display: none;
+}
+.data-table-th-check .panel-check-box {
+  width: 10px;
+  height: 10px;
+}
+.data-table-td {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 视图面板：互斥视图用分段控件，图表配置用紧凑行 */
+.data-view-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.segment-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: color-mix(in srgb, var(--border) 28%, transparent);
+  border-radius: 8px;
+  padding: 2px;
+}
+.segment-item {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text2);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.segment-item:hover {
+  color: var(--text);
+}
+/* 选中视图：整块矩形主题色覆盖在视图名上 */
+.segment-item.active {
+  color: var(--text);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+/* 数据面板·图表配置：分区与标题层级 */
+.chart-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+.chart-panel-section {
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 32%, transparent);
+}
+.chart-panel-section:last-child {
+  border-bottom: 0;
+}
+.chart-panel-section-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+.chart-panel-section-title-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.chart-panel-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chart-panel-subsection .panel-row,
+.chart-panel-subsection .panel-control-row,
+.chart-panel-subsection .panel-check-list {
+  min-height: 26px;
+}
+.chart-panel-subsection .panel-row-value .view-input {
+  min-height: 22px;
+  box-sizing: border-box;
+}
+
+/* 数据映射：说明 + X 一列 + Y 多列 + 添加按钮 */
+.chart-mapping-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chart-mapping-intro {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text2);
+}
+.chart-mapping-y-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chart-mapping-y-block-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+}
+.chart-mapping-y-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chart-add-y-hint {
+  margin: 2px 0 0;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text2);
+  opacity: 0.85;
+}
+.chart-mapping-row {
+  min-height: 26px;
+}
+.chart-mapping-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-mapping-value .chart-config-select {
+  flex: 1;
+  min-width: 0;
+}
+.chart-mapping-remove {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--border) 40%, transparent);
+  color: var(--text2);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.chart-mapping-remove:hover {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--text);
+}
+/* Y轴配置行：展开/收起样式 */
+.chart-style-expand-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--border) 40%, transparent);
+  color: var(--text2);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.chart-style-expand-btn:hover {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--text);
+}
+.chart-add-mapping-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--accent) 48%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.chart-add-mapping-btn:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+}
+.chart-add-mapping-icon {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+.chart-config-hint {
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text2);
+}
+.chart-config-select,
+.chart-config-select.view-input {
+  min-width: 80px;
+  max-width: 160px;
+}
+
+/* 图表视图：空态 / 容器 / 标签统一主题色与字号 */
+.chart-empty,
+.chart-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chart-empty {
+  color: var(--text2);
+}
+.chart-empty-text {
+  font-size: 12px;
+}
+.chart-wrap {
+  width: 100%;
+  overflow: auto;
+}
+.chart-svg {
+  display: block;
+}
+.chart-content {
+  font-family: inherit;
+}
+.chart-title,
+.chart-axis-title {
+  fill: var(--text);
+}
+.chart-axis-label,
+.chart-pie-label,
+.chart-legend-label {
+  fill: var(--text);
+}
+.chart-pie-label {
+  font-size: inherit;
+}
+
+/* 浮窗通用：可调宽高 */
+.detail-card-wrap {
+  position: absolute;
+  top: var(--float-trigger-row);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-height: var(--float-panel-max-height);
+  min-height: 0;
+  z-index: 18;
+  pointer-events: none;
+}
+/* 右上角详情：强制靠右，左缘与底边可调（仅数据栏居中） */
+.detail-card-wrap-right {
+  left: auto !important;
+  margin-left: 0;
+  right: var(--float-panel-gap);
+}
+.float-panel-wrap {
+  max-width: min(90vw, 100%);
+}
+.detail-card-wrap > * {
+  pointer-events: auto;
+}
+.detail-card-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+/* 浮窗拖拽条：左右/上下共用样式，减少冗余 */
+.float-panel-splitter {
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.15s;
+}
+.float-panel-splitter:hover {
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+.float-panel-splitter-v {
+  width: 6px;
+  min-width: 6px;
+  cursor: col-resize;
+  border-radius: 12px 0 0 12px;
+}
+.float-panel-splitter-h {
+  height: 6px;
+  min-height: 6px;
+  cursor: row-resize;
+  border-radius: 0 0 12px 12px;
+}
+
+/* 左右浮窗唯一外观：透明度、背景色、圆角、毛玻璃完全共用，观感无区别 */
+.panel-glass {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.04),
+    0 12px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: saturate(1.12) blur(22px);
+  -webkit-backdrop-filter: saturate(1.12) blur(22px);
+  background: transparent;
+}
+.panel-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-sidebar) 88%, black 12%);
+  opacity: 0.52;
+  pointer-events: none;
+  z-index: 0;
+}
+.panel-glass > * {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+/* 浮窗内文字与浮窗背景区分：浅色主题加深、深色主题提亮 */
+[data-theme='light'] .panel-glass {
+  --text: color-mix(in srgb, var(--text) 72%, black 28%);
+  --text2: color-mix(in srgb, var(--text2) 72%, black 28%);
+}
+[data-theme='dark'] .panel-glass {
+  --text: color-mix(in srgb, var(--text) 78%, white 22%);
+  --text2: color-mix(in srgb, var(--text2) 78%, white 22%);
+}
+
+/* 左右浮窗共用：内容区、区块、小标题、行（字体与排布统一） */
+.panel-content {
+  padding: 10px 14px 14px;
+  font-size: 11px;
+  color: var(--text);
+  overflow-y: auto;
+}
+.panel-section {
+  margin-top: 12px;
+  padding-top: 10px;
+}
+.panel-section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+.panel-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+.panel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  min-height: 26px;
+  font-size: 11px;
+}
+.panel-row:last-child {
+  margin-bottom: 0;
+}
+.panel-row-label {
+  flex: 0 0 80px;
+  font-size: 10px;
+  color: var(--text2);
+  text-align: right;
+  line-height: 1.35;
+}
+.panel-row-value {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1.35;
+}
+/* 浮窗内“值”块/输入区：左右共用，与浮窗背景区分 */
+.panel-row-value-box {
+  padding: 4px 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--bg-target) 92%, var(--border) 8%);
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  color: var(--text);
+  overflow: auto;
+}
+.panel-row-value-box pre {
+  margin: 0;
+  font-size: 10px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* 详情浮窗：与设置浮窗同结构，flex 列 + 可滚动内容区 */
+.sidebar {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  overflow: hidden;
+  background: transparent;
+}
+/* 左右浮窗可滚动内容区：详情/设置/数据 共用 */
+.sidebar-content,
+.view-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: transparent;
+}
+.detail-empty-hint {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text2);
+  opacity: 0.6;
+}
+
+/* 设置浮窗：外层可拖宽/拖高（右下可调），内层内容区 + 右侧/底边拉伸条 */
+.view-dropdown-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding: 0;
+  z-index: 10;
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.view-dropdown-row {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+.view-dropdown-wrap .view-dropdown {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.view-dropdown-splitter {
+  flex: 0 0 6px;
+  width: 6px;
+  min-width: 6px;
+  background: transparent;
+  cursor: col-resize;
+  transition: background 0.15s;
+}
+.view-dropdown-splitter-h {
+  flex: 0 0 6px;
+  width: auto;
+  height: 6px;
+  min-height: 6px;
+  cursor: row-resize;
+  border-radius: 0 0 12px 12px;
+}
+.view-dropdown-splitter:hover,
+.view-dropdown-splitter-h:hover {
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+.view-tabs {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+}
+.view-tab {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+.view-tab:hover {
+  color: var(--text);
+}
+.view-tab.active {
+  color: var(--text);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: -1px;
+}
+.view-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: transparent;
+}
+/* 浮窗内控件：与 panel-row-value-box 同源，左右观感一致 */
+.view-input,
+.panel-row-value > select,
+.panel-row-value > input[type='text'],
+.panel-row-value > input[type='number'] {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  background: color-mix(in srgb, var(--bg-target) 92%, var(--border) 8%);
+  color: var(--text);
+}
+/* 浮窗内焦点：input/select/button 统一主题环，去除浏览器默认蓝/白轮廓 */
+.panel-glass input:focus-visible,
+.panel-glass select:focus-visible,
+.panel-glass button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.panel-row-value {
+  display: flex;
+  gap: 6px;
+}
+.view-row-color .panel-row-value {
+  align-items: center;
+}
+.view-swatch {
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  border-radius: 3px;
+  cursor: pointer;
+  background: transparent;
+}
+.view-hex {
+  flex: 1;
+  font-family: monospace;
+  font-size: 10px;
+}
+.view-font-raw {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+.view-font-raw select.view-input {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.view-font-raw .view-font-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* 双栏控件区：网格 + 控件行抽象，复选框/开关/选项行共用；留出焦点环空间防裁切 */
+.panel-check-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 26px;
+  gap: 2px 6px;
+  padding: 2px 0;
+}
+.panel-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  gap: 2px;
+  overflow: visible;
+  line-height: 26px;
+}
+.panel-check {
+  cursor: pointer;
+  color: var(--text);
+  user-select: none;
+}
+.panel-control-row .panel-check-label,
+.panel-control-row .panel-option-label {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text2);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 右侧控制区：统一 24px 宽以容纳开关，选框 10px 右对齐，防深浅/静默开关被裁切 */
+.panel-check-box-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 24px;
+  width: 24px;
+  height: 12px;
+  position: relative;
+}
+.panel-option-value {
+  flex: 1;
+  min-width: 56px;
+  max-width: 48%;
+  display: flex;
+  align-items: center;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  overflow: visible;
+}
+/* 双栏内输入/下拉：与 .view-input 同源（border/background/圆角），字体字号区紧凑尺寸 */
+.panel-option-value .view-input,
+.panel-option-value input,
+.panel-option-value select {
+  font-size: 10px;
+  line-height: 1;
+  height: 22px;
+  min-height: 0;
+  max-height: 22px;
+  padding: 1px 4px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  background: color-mix(in srgb, var(--bg-target) 92%, var(--border) 8%);
+  color: var(--text);
+}
+.panel-option-value .view-font-raw {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: 22px;
+  height: 22px;
+  align-items: center;
+  overflow: visible;
+}
+.panel-check-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.panel-check-input:focus,
+.panel-check-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.panel-check-input:focus-visible + .panel-check-box {
+  box-shadow: var(--focus-ring);
+}
+.panel-check-box {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  background: color-mix(in srgb, var(--bg-target) 92%, var(--border) 8%);
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s;
+}
+.panel-check:hover .panel-check-box {
+  border-color: var(--accent);
+}
+.panel-check-input:checked + .panel-check-box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.panel-switch-track {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--border) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.15s;
+  flex-shrink: 0;
+  appearance: none;
+  font: inherit;
+  padding: 0;
+  outline: none;
+}
+.panel-switch-track:hover {
+  background: color-mix(in srgb, var(--border) 80%, transparent);
+}
+.panel-switch-track[aria-checked='true'] {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+  border-color: var(--accent);
+}
+.panel-switch-thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text2);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+.panel-switch-track[aria-checked='true'] .panel-switch-thumb {
+  transform: translateX(13px);
+  background: var(--accent);
+}

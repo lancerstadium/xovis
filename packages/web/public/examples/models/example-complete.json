@@ -1,0 +1,103 @@
+{
+  "graph": {
+    "id": "example_model_graph",
+    "name": "example_model",
+    "tensors": [
+      { "id": "tensor_0", "name": "input", "shape": [1, 3, 224, 224], "dtype": "float32" },
+      { "id": "tensor_1", "name": "weight", "shape": [64, 3, 3, 3], "dtype": "float32" },
+      { "id": "tensor_2", "name": "activation", "shape": [1, 64, 224, 224], "dtype": "float32" },
+      { "id": "tensor_3", "name": "activation", "shape": [1, 64, 224, 224], "dtype": "float32" },
+      { "id": "tensor_4", "name": "activation", "shape": [1, 64, 112, 112], "dtype": "float32" },
+      { "id": "tensor_5", "name": "weight", "shape": [128, 64, 3, 3], "dtype": "float32" },
+      { "id": "tensor_6", "name": "activation", "shape": [1, 128, 112, 112], "dtype": "float32" },
+      { "id": "tensor_7", "name": "output", "shape": [1, 128, 112, 112], "dtype": "float32" }
+    ],
+    "nodes": [
+      {
+        "id": "conv1",
+        "name": "Conv",
+        "inputs": [0, 1],
+        "outputs": [2],
+        "attributes": { "kernel_shape": [3, 3], "strides": [1, 1], "pads": [1, 1] },
+        "metadata": {
+          "performance": {
+            "time": { "cpu": 12.5, "gpu": 10.2 },
+            "usage": { "cpu": 85.2, "gpu": 92.1 }
+          },
+          "level": 0,
+          "tags": ["conv", "front"],
+          "description": "First conv layer"
+        }
+      },
+      {
+        "id": "relu1",
+        "name": "Relu",
+        "inputs": [2],
+        "outputs": [3],
+        "attributes": {},
+        "metadata": {
+          "performance": {
+            "time": { "cpu": 2.3, "gpu": 1.8 },
+            "usage": { "cpu": 45.1, "gpu": 38.5 }
+          },
+          "parent_id": "conv1",
+          "tags": ["activation"]
+        }
+      },
+      {
+        "id": "pool1",
+        "name": "MaxPool",
+        "inputs": [3],
+        "outputs": [4],
+        "attributes": { "kernel_shape": [2, 2], "strides": [2, 2] },
+        "metadata": {
+          "performance": {
+            "time": { "cpu": 5.7, "gpu": 4.5 },
+            "usage": { "cpu": 62.3, "gpu": 71.2 }
+          },
+          "children_ids": ["conv2"],
+          "description": "MaxPool down sample"
+        }
+      },
+      {
+        "id": "conv2",
+        "name": "Conv",
+        "inputs": [4, 5],
+        "outputs": [6],
+        "attributes": { "kernel_shape": [3, 3], "strides": [1, 1], "pads": [1, 1] },
+        "metadata": {
+          "performance": {
+            "time": { "cpu": 15.2, "gpu": 12.8 },
+            "usage": { "cpu": 88.5, "gpu": 94.3 }
+          },
+          "level": 1,
+          "tags": ["conv"],
+          "custom_metric": 0.95
+        }
+      },
+      {
+        "id": "relu2",
+        "name": "Relu",
+        "inputs": [6],
+        "outputs": [7],
+        "attributes": {},
+        "metadata": {
+          "performance": {
+            "time": { "cpu": 1.8, "gpu": 1.5 },
+            "usage": { "cpu": 42.3, "gpu": 35.1 }
+          },
+          "tags": ["activation", "output"],
+          "description": "Final Relu"
+        }
+      }
+    ],
+    "inputs": [0],
+    "outputs": [7],
+    "metadata": {
+      "author": "xoc",
+      "framework": "onnx",
+      "version": "1.0",
+      "description": "Example complete graph with metadata"
+    }
+  }
+}
