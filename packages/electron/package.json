@@ -18,6 +18,9 @@
     "directories": {
       "output": "release"
     },
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "beforeBuild": null,
     "files": [
       "dist-electron/**/*",
       "../../web/dist/**/*",

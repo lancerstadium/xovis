@@ -97,8 +97,12 @@ jobs:
           ls -la packages/web/dist/
       
       - name: Build Electron (Windows)
+        env:
+          USE_SYSTEM_FPM: 1
         run: |
           cd packages/electron
+          # 使用 hoisted 模式以改善与 electron-builder 的兼容性
+          echo "node-linker=hoisted" > .npmrc
           pnpm install
           pnpm run build:win
 
@@ -154,8 +158,12 @@ jobs:
           ls -la packages/web/dist/
       
       - name: Build Electron (macOS)
+        env:
+          USE_SYSTEM_FPM: 1
         run: |
           cd packages/electron
+          # 使用 hoisted 模式以改善与 electron-builder 的兼容性
+          echo "node-linker=hoisted" > .npmrc
           pnpm install
           pnpm run build:mac
 
@@ -216,8 +224,12 @@ jobs:
           ls -la packages/web/dist/
       
       - name: Build Electron (Linux)
+        env:
+          USE_SYSTEM_FPM: 1
         run: |
           cd packages/electron
+          # 使用 hoisted 模式以改善与 electron-builder 的兼容性
+          echo "node-linker=hoisted" > .npmrc
           pnpm install
           pnpm run build:linux
 
