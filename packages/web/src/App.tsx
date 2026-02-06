@@ -109,7 +109,7 @@ export default function App() {
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link) {
       const basePath = import.meta.env.BASE_URL || '/';
-      link.href = mode === 'dark' ? `${basePath}favicon-dark.svg` : `${basePath}favicon.svg`;
+      link.href = `${basePath}${mode === 'light' ? 'favicon.svg' : 'favicon-dark.svg'}`;
     }
   }, [theme, s.silentMode]);
 

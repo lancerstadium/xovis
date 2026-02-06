@@ -11,6 +11,7 @@
     "Visualization",
     "Other"
   ],
+  "icon": "images/icon.png",
   "activationEvents": [
     "onCommand:xovis.open",
     "onCustomEditor:xovis.graph"
@@ -60,7 +61,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package --no-dependencies",
-    "postinstall": "node -e \"import('fs').then(fs => fs.default.copyFileSync('../../web/public/favicon-app.svg', 'icon.svg')).catch(() => {})\""
+    "postinstall": "node -e \"require('fs').mkdirSync('images',{recursive:true});require('fs').copyFileSync('../web/public/favicon-app.svg','images/icon.svg')\""
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
