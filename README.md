@@ -24,6 +24,11 @@ JSON computation graph visualization tool with dagre layout and multi-format exp
 
 Visit the [online version](https://lancerstadium.github.io/xovis/) to use directly without installation.
 
+> **Note**: If this is the first deployment, you need to enable Pages in GitHub repository settings:
+> 1. Go to https://github.com/lancerstadium/xovis/settings/pages
+> 2. Under "Source", select **"GitHub Actions"**
+> 3. Save the settings, then pushing to the `main` branch will automatically trigger deployment
+
 ### Local Development
 
 ```bash
