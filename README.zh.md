@@ -24,6 +24,11 @@ JSON 计算图可视化工具，支持 dagre 布局和多种格式导出。
 
 访问 [在线版本](https://lancerstadium.github.io/xovis/) 直接使用，无需安装。
 
+> **注意**: 如果这是首次部署，需要在 GitHub 仓库设置中启用 Pages：
+> 1. 访问 https://github.com/lancerstadium/xovis/settings/pages
+> 2. 在 "Source" 下选择 **"GitHub Actions"**
+> 3. 保存设置后，推送到 `main` 分支会自动触发部署
+
 ### 本地运行
 
 ```bash
