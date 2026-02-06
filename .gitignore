@@ -11,6 +11,7 @@ out/
 
 # Icons (keep source icons, ignore generated)
 packages/electron/build/icon.svg
+packages/electron/web/
 packages/vscode-extension/icon.svg
 # But keep PNG icons for builds
 !packages/electron/build/icon.png

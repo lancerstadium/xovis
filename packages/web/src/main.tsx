@@ -47,3 +47,19 @@ async function bootstrap() {
   }
 }
 bootstrap();
+
+// VSCode 扩展 webview：监听来自父窗口的文档更新
+if (typeof window !== 'undefined' && window.self !== window.top) {
+  window.addEventListener('message', async (e) => {
+    if (e.data?.type === 'update' && typeof e.data.text === 'string') {
+      const { useGraphStore } = await import('./stores');
+      const { loadFile } = await import('./utils/loadFile');
+      const result = loadFile(e.data.text);
+      if (result.success) {
+        useGraphStore.getState().setGraph(result.graph);
+      } else {
+        useGraphStore.getState().setGraph(null);
+      }
+    }
+  });
+}

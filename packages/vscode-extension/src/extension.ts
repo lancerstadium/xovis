@@ -79,11 +79,8 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   private getHtmlForWebview(webview: vscode.Webview, document: vscode.TextDocument): string {
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.extensionUri, 'media', 'main.js')
-    );
-    const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.extensionUri, 'media', 'main.css')
+    const iframeUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.extensionUri, 'media', 'index.html')
     );
 
     return `<!DOCTYPE html>
@@ -91,25 +88,32 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="${styleUri}" rel="stylesheet">
     <title>xovis 可视化</title>
+    <style>html,body{margin:0;height:100%;}iframe{width:100%;height:100%;border:none;}</style>
 </head>
 <body>
-    <div id="root"></div>
+    <iframe id="app" src="${iframeUri}"></iframe>
     <script>
         const vscode = acquireVsCodeApi();
-        window.addEventListener('message', event => {
-            const message = event.data;
-            switch (message.type) {
-                case 'update':
-                    // 这里可以调用 xovis 的解析和渲染逻辑
-                    console.log('Graph data updated', message.text);
-                    break;
+        const iframe = document.getElementById('app');
+        let pendingText = null;
+        function forwardToApp(text) {
+            if (iframe.contentWindow) {
+                try { iframe.contentWindow.postMessage({ type: 'update', text }, '*'); } catch (_) {}
+                pendingText = null;
+            } else {
+                pendingText = text;
             }
+        }
+        window.addEventListener('message', event => {
+            const m = event.data;
+            if (m.type === 'update' && typeof m.text === 'string') forwardToApp(m.text);
         });
-        vscode.postMessage({ type: 'ready' });
+        iframe.addEventListener('load', () => {
+            if (pendingText) forwardToApp(pendingText);
+            vscode.postMessage({ type: 'ready' });  // 触发 extension 发送当前文档
+        });
     </script>
-    <script src="${scriptUri}"></script>
 </body>
 </html>`;
   }

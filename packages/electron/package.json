@@ -25,7 +25,8 @@
     "icon": "build/icon.png",
     "files": [
       "dist-electron/**/*",
-      "../../web/dist/**/*",
+      "web/dist/**/*",
+      "build/**/*",
       "package.json"
     ],
     "win": {

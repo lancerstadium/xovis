@@ -95,6 +95,15 @@ jobs:
             exit 1
           fi
           ls -la packages/web/dist/
+
+      - name: Install ImageMagick (Windows)
+        uses: mfinelli/setup-imagemagick@v6
+
+      - name: Prepare Electron build (Windows)
+        shell: bash
+        run: |
+          mkdir -p packages/electron/web/dist
+          cp -r packages/web/dist/* packages/electron/web/dist/
       
       - name: Build Electron (Windows)
         env:
@@ -102,16 +111,10 @@ jobs:
         shell: bash
         run: |
           cd packages/electron
-          # 使用 hoisted 模式以改善与 electron-builder 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
-          # 生成图标 PNG（如果 imagemagick 可用）
           mkdir -p build
-          if command -v convert &> /dev/null; then
-            convert -background white -resize 512x512 ../../web/public/favicon-app.svg build/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
-          else
-            echo "Warning: ImageMagick not available, electron-builder will use default icon"
-          fi
+          magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png
           pnpm run build:win
 
       - name: Upload Windows artifacts
@@ -164,22 +167,24 @@ jobs:
             exit 1
           fi
           ls -la packages/web/dist/
+
+      - name: Install ImageMagick (macOS)
+        run: brew install imagemagick
+
+      - name: Prepare Electron build (macOS)
+        run: |
+          mkdir -p packages/electron/web/dist
+          cp -r packages/web/dist/* packages/electron/web/dist/
       
       - name: Build Electron (macOS)
         env:
           USE_SYSTEM_FPM: 1
         run: |
           cd packages/electron
-          # 使用 hoisted 模式以改善与 electron-builder 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
-          # 生成图标 PNG（如果 imagemagick 可用）
           mkdir -p build
-          if command -v convert &> /dev/null; then
-            convert -background white -resize 512x512 ../../web/public/favicon-app.svg build/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
-          else
-            echo "Warning: ImageMagick not available, electron-builder will use default icon"
-          fi
+          convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png
           pnpm run build:mac
 
       - name: Upload macOS artifacts
@@ -227,7 +232,7 @@ jobs:
       - name: Install dependencies for Electron
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
+          sudo apt-get install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 imagemagick
 
       - name: Verify web dist exists
         shell: bash
@@ -237,22 +242,21 @@ jobs:
             exit 1
           fi
           ls -la packages/web/dist/
+
+      - name: Prepare Electron build (Linux)
+        run: |
+          mkdir -p packages/electron/web/dist
+          cp -r packages/web/dist/* packages/electron/web/dist/
       
       - name: Build Electron (Linux)
         env:
           USE_SYSTEM_FPM: 1
         run: |
           cd packages/electron
-          # 使用 hoisted 模式以改善与 electron-builder 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
-          # 生成图标 PNG（如果 imagemagick 可用）
           mkdir -p build
-          if command -v convert &> /dev/null; then
-            convert -background white -resize 512x512 ../../web/public/favicon-app.svg build/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
-          else
-            echo "Warning: ImageMagick not available, electron-builder will use default icon"
-          fi
+          convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png
           pnpm run build:linux
 
       - name: Upload Linux artifacts
@@ -294,8 +298,14 @@ jobs:
       - name: Build core
         run: pnpm build:core
 
+      - name: Build web for extension embed
+        working-directory: packages/web
+        run: pnpm run build:embed
+
       - name: Build VSCode Extension
         run: |
+          mkdir -p packages/vscode-extension/media
+          cp -r packages/web/dist/* packages/vscode-extension/media/
           cd packages/vscode-extension
           # 使用 hoisted 模式以改善与 vsce 的兼容性
           echo "node-linker=hoisted" > .npmrc

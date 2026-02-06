@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:pages": "tsc && VITE_BASE_PATH=/xovis/ vite build",
+    "build:embed": "tsc && VITE_BASE_PATH=./ vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx"
   },

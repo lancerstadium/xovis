@@ -29,10 +29,8 @@ function createWindow() {
     let indexPath: string;
     
     if (isPackaged) {
-      // 打包后：web/dist 在 resources/app/web/dist 或 app.asar/web/dist
-      // electron-builder 会将 ../../web/dist 复制到打包后的应用中
-      const resourcesPath = (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath;
-      indexPath = join(resourcesPath || app.getAppPath(), 'web', 'dist', 'index.html');
+      // 打包后：web/dist 在 app 根目录下，getAppPath 返回 app.asar 或 app 目录
+      indexPath = join(app.getAppPath(), 'web', 'dist', 'index.html');
     } else {
       // 开发构建：使用相对路径
       indexPath = join(__dirname, '../../web/dist/index.html');
