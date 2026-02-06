@@ -29,8 +29,12 @@ console.log(`VSCode icon: ${vscodeIconPath}`);
 console.log('');
 console.log('To generate PNG icons, you can:');
 console.log('1. Use online tools: https://cloudconvert.com/svg-to-png');
-console.log('2. Use ImageMagick: convert -background white -resize 512x512 favicon-app.svg icon.png');
-console.log('3. Use sharp (Node.js): npm install sharp && node -e "require(\'sharp\').default(\'favicon-app.svg\').resize(512,512).png().toFile(\'icon.png\')"');
+console.log(
+  '2. Use ImageMagick: convert -background white -resize 512x512 favicon-app.svg icon.png'
+);
+console.log(
+  "3. Use sharp (Node.js): npm install sharp && node -e \"require('sharp').default('favicon-app.svg').resize(512,512).png().toFile('icon.png')\""
+);
 console.log('');
 console.log('For now, copying SVG as placeholder...');
 

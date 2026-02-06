@@ -93,7 +93,10 @@ function deg2rad(deg: number): number {
 function linearFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
   if (pts.length < 2) return pts;
   const n = pts.length;
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
   for (const pt of pts) {
     sumX += pt.x;
     sumY += pt.y;
@@ -102,8 +105,8 @@ function linearFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: 
   }
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
   const intercept = (sumY - slope * sumX) / n;
-  const minX = Math.min(...pts.map(p => p.x));
-  const maxX = Math.max(...pts.map(p => p.x));
+  const minX = Math.min(...pts.map((p) => p.x));
+  const maxX = Math.max(...pts.map((p) => p.x));
   const step = (maxX - minX) / Math.max(50, pts.length * 2);
   const fittedPts: Array<{ x: number; y: number }> = [];
   for (let x = minX; x <= maxX; x += step) {
@@ -116,12 +119,15 @@ function linearFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: 
 function exponentialFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
   if (pts.length < 2) return pts;
   // 过滤掉非正数y值，因为指数函数要求y>0
-  const validPts = pts.filter(p => p.y > 0);
+  const validPts = pts.filter((p) => p.y > 0);
   if (validPts.length < 2) return pts;
   // 使用对数线性化：ln(y) = ln(a) + bx
-  const logPts = validPts.map(p => ({ x: p.x, y: Math.log(p.y) }));
+  const logPts = validPts.map((p) => ({ x: p.x, y: Math.log(p.y) }));
   const n = logPts.length;
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
   for (const pt of logPts) {
     sumX += pt.x;
     sumY += pt.y;
@@ -131,8 +137,8 @@ function exponentialFit(pts: Array<{ x: number; y: number }>): Array<{ x: number
   const b = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
   const lnA = (sumY - b * sumX) / n;
   const a = Math.exp(lnA);
-  const minX = Math.min(...pts.map(p => p.x));
-  const maxX = Math.max(...pts.map(p => p.x));
+  const minX = Math.min(...pts.map((p) => p.x));
+  const maxX = Math.max(...pts.map((p) => p.x));
   const step = (maxX - minX) / Math.max(50, pts.length * 2);
   const fittedPts: Array<{ x: number; y: number }> = [];
   for (let x = minX; x <= maxX; x += step) {
@@ -145,10 +151,13 @@ function exponentialFit(pts: Array<{ x: number; y: number }>): Array<{ x: number
 function logarithmicFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
   if (pts.length < 2) return pts;
   // 过滤掉非正数x值
-  const validPts = pts.filter(p => p.x > 0);
+  const validPts = pts.filter((p) => p.x > 0);
   if (validPts.length < 2) return pts;
   const n = validPts.length;
-  let sumLnX = 0, sumY = 0, sumLnXY = 0, sumLnX2 = 0;
+  let sumLnX = 0,
+    sumY = 0,
+    sumLnXY = 0,
+    sumLnX2 = 0;
   for (const pt of validPts) {
     const lnX = Math.log(pt.x);
     sumLnX += lnX;
@@ -158,8 +167,8 @@ function logarithmicFit(pts: Array<{ x: number; y: number }>): Array<{ x: number
   }
   const b = (n * sumLnXY - sumLnX * sumY) / (n * sumLnX2 - sumLnX * sumLnX);
   const a = (sumY - b * sumLnX) / n;
-  const minX = Math.max(0.001, Math.min(...pts.map(p => p.x)));
-  const maxX = Math.max(...pts.map(p => p.x));
+  const minX = Math.max(0.001, Math.min(...pts.map((p) => p.x)));
+  const maxX = Math.max(...pts.map((p) => p.x));
   const step = (maxX - minX) / Math.max(50, pts.length * 2);
   const fittedPts: Array<{ x: number; y: number }> = [];
   for (let x = minX; x <= maxX; x += step) {
@@ -172,12 +181,15 @@ function logarithmicFit(pts: Array<{ x: number; y: number }>): Array<{ x: number
 function powerFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
   if (pts.length < 2) return pts;
   // 过滤掉非正数x和y值
-  const validPts = pts.filter(p => p.x > 0 && p.y > 0);
+  const validPts = pts.filter((p) => p.x > 0 && p.y > 0);
   if (validPts.length < 2) return pts;
   // 使用对数线性化：ln(y) = ln(a) + b * ln(x)
-  const logPts = validPts.map(p => ({ x: Math.log(p.x), y: Math.log(p.y) }));
+  const logPts = validPts.map((p) => ({ x: Math.log(p.x), y: Math.log(p.y) }));
   const n = logPts.length;
-  let sumLnX = 0, sumLnY = 0, sumLnXLnY = 0, sumLnX2 = 0;
+  let sumLnX = 0,
+    sumLnY = 0,
+    sumLnXLnY = 0,
+    sumLnX2 = 0;
   for (const pt of logPts) {
     sumLnX += pt.x;
     sumLnY += pt.y;
@@ -187,8 +199,8 @@ function powerFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: n
   const b = (n * sumLnXLnY - sumLnX * sumLnY) / (n * sumLnX2 - sumLnX * sumLnX);
   const lnA = (sumLnY - b * sumLnX) / n;
   const a = Math.exp(lnA);
-  const minX = Math.max(0.001, Math.min(...pts.map(p => p.x)));
-  const maxX = Math.max(...pts.map(p => p.x));
+  const minX = Math.max(0.001, Math.min(...pts.map((p) => p.x)));
+  const maxX = Math.max(...pts.map((p) => p.x));
   const step = (maxX - minX) / Math.max(50, pts.length * 2);
   const fittedPts: Array<{ x: number; y: number }> = [];
   for (let x = minX; x <= maxX; x += step) {
@@ -198,12 +210,15 @@ function powerFit(pts: Array<{ x: number; y: number }>): Array<{ x: number; y: n
 }
 
 /** 移动平均拟合：使用滑动窗口计算平均值 */
-function movingAverageFit(pts: Array<{ x: number; y: number }>, windowSize: number): Array<{ x: number; y: number }> {
+function movingAverageFit(
+  pts: Array<{ x: number; y: number }>,
+  windowSize: number
+): Array<{ x: number; y: number }> {
   if (pts.length < 2) return pts;
   const window = Math.max(2, Math.min(windowSize, pts.length));
   const fittedPts: Array<{ x: number; y: number }> = [];
   const halfWindow = Math.floor(window / 2);
-  
+
   for (let i = 0; i < pts.length; i++) {
     const start = Math.max(0, i - halfWindow);
     const end = Math.min(pts.length, i + halfWindow + 1);
@@ -218,7 +233,10 @@ function movingAverageFit(pts: Array<{ x: number; y: number }>, windowSize: numb
 }
 
 /** 多项式拟合：使用最小二乘法进行多项式回归 */
-function polynomialFit(pts: Array<{ x: number; y: number }>, degree: number): Array<{ x: number; y: number }> {
+function polynomialFit(
+  pts: Array<{ x: number; y: number }>,
+  degree: number
+): Array<{ x: number; y: number }> {
   if (pts.length < degree + 1) return pts;
   // 构建范德蒙矩阵并求解
   const X: number[][] = [];
@@ -233,18 +251,18 @@ function polynomialFit(pts: Array<{ x: number; y: number }>, degree: number): Ar
   }
   // 简化的最小二乘求解（使用正规方程）
   // X^T * X * coeffs = X^T * Y
-  const XT = X[0].map((_, i) => X.map(row => row[i]));
-  const XTX: number[][] = XT.map(row => 
+  const XT = X[0].map((_, i) => X.map((row) => row[i]));
+  const XTX: number[][] = XT.map((row) =>
     X[0].map((_, j) => row.reduce((sum, val, k) => sum + val * X[k][j], 0))
   );
-  const XTY: number[] = XT.map(row => row.reduce((sum, val, i) => sum + val * Y[i], 0));
-  
+  const XTY: number[] = XT.map((row) => row.reduce((sum, val, i) => sum + val * Y[i], 0));
+
   // 高斯消元法求解线性方程组
   const coeffs = gaussElimination(XTX, XTY);
-  
+
   // 生成拟合曲线的点
-  const minX = Math.min(...pts.map(p => p.x));
-  const maxX = Math.max(...pts.map(p => p.x));
+  const minX = Math.min(...pts.map((p) => p.x));
+  const maxX = Math.max(...pts.map((p) => p.x));
   const step = (maxX - minX) / Math.max(50, pts.length * 2);
   const fittedPts: Array<{ x: number; y: number }> = [];
   for (let x = minX; x <= maxX; x += step) {
@@ -261,7 +279,7 @@ function polynomialFit(pts: Array<{ x: number; y: number }>, degree: number): Ar
 function gaussElimination(A: number[][], b: number[]): number[] {
   const n = A.length;
   const augmented = A.map((row, i) => [...row, b[i]]);
-  
+
   // 前向消元
   for (let i = 0; i < n; i++) {
     // 找到主元
@@ -272,7 +290,7 @@ function gaussElimination(A: number[][], b: number[]): number[] {
       }
     }
     [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
-    
+
     // 消元
     for (let k = i + 1; k < n; k++) {
       const factor = augmented[k][i] / augmented[i][i];
@@ -281,7 +299,7 @@ function gaussElimination(A: number[][], b: number[]): number[] {
       }
     }
   }
-  
+
   // 回代
   const x = new Array(n).fill(0);
   for (let i = n - 1; i >= 0; i--) {
@@ -297,7 +315,13 @@ function gaussElimination(A: number[][], b: number[]): number[] {
 /** 生成拟合折线路径 */
 function generateFitLinePath(
   pts: Array<{ x: number; y: number }>,
-  fitType: 'linear' | 'polynomial' | 'exponential' | 'logarithmic' | 'power' | 'movingAverage' = 'linear',
+  fitType:
+    | 'linear'
+    | 'polynomial'
+    | 'exponential'
+    | 'logarithmic'
+    | 'power'
+    | 'movingAverage' = 'linear',
   fitDegree: number = 2
 ): string {
   if (pts.length < 2) return '';
@@ -382,7 +406,9 @@ function getLineFit(config?: ChartYColumnConfig, defaultFit: boolean = false): b
 }
 
 /** 获取折线图拟合类型 */
-function getLineFitType(config?: ChartYColumnConfig): 'linear' | 'polynomial' | 'exponential' | 'logarithmic' | 'power' | 'movingAverage' {
+function getLineFitType(
+  config?: ChartYColumnConfig
+): 'linear' | 'polynomial' | 'exponential' | 'logarithmic' | 'power' | 'movingAverage' {
   return config?.lineFitType ?? 'linear';
 }
 
@@ -392,7 +418,10 @@ function getLineFitDegree(config?: ChartYColumnConfig, defaultDegree: number = 2
 }
 
 /** 获取折线图显示标记点设置 */
-function getLineShowPoints(config?: ChartYColumnConfig, defaultShowPoints: boolean = true): boolean {
+function getLineShowPoints(
+  config?: ChartYColumnConfig,
+  defaultShowPoints: boolean = true
+): boolean {
   return config?.lineShowPoints ?? defaultShowPoints;
 }
 
@@ -422,9 +451,7 @@ function getDataLabelStyle(config?: ChartYColumnConfig): React.CSSProperties {
 /** 格式化数据标签 */
 function formatDataLabel(v: number, decimals?: number): string {
   const dec = decimals ?? 2;
-  return dec <= 0
-    ? String(Math.round(v))
-    : v.toFixed(Math.min(6, dec));
+  return dec <= 0 ? String(Math.round(v)) : v.toFixed(Math.min(6, dec));
 }
 
 /** 计算垂直方向的数据标签偏移（用于垂直柱状图、未交换XY的折线图/散点图） */
@@ -438,7 +465,7 @@ function calculateVerticalDataLabelOffset(
 ): number {
   const estimatedLabelHeight = labelFontSize + 4;
   const spacing = 4;
-  
+
   if (position === 'top') {
     // 上方（数据点的北）
     return -markerSize / 2 - spacing;
@@ -473,7 +500,7 @@ function calculateHorizontalDataLabelOffset(
 ): { offsetX: number; offsetY: number; textAnchor: 'start' | 'end' | 'middle' } {
   const estimatedLabelWidth = labelFontSize * 3;
   const spacing = 4;
-  
+
   if (position === 'top') {
     // 上方（右方，数据点的北）
     return { offsetX: markerSize / 2 + spacing, offsetY: 0, textAnchor: 'start' };
@@ -509,7 +536,7 @@ function calculateBarVerticalDataLabelOffset(
 ): number {
   const estimatedLabelHeight = labelFontSize + 4;
   const spacing = 4;
-  
+
   if (position === 'top') {
     // 上方（数据点的北）
     return -spacing;
@@ -545,7 +572,7 @@ function calculateBarHorizontalDataLabelOffset(
 ): number {
   const estimatedLabelHeight = labelFontSize + 4;
   const spacing = 4;
-  
+
   if (position === 'top') {
     // 上方（右方，数据点的北）
     return barWidth + spacing;
@@ -743,19 +770,20 @@ function renderLegendSymbol(
       const markerEdgeColor = getScatterMarkerEdgeColor(color, config);
       const markerEdgeWidth = getScatterMarkerEdgeWidth(config, 1);
       const markerOpacity = getScatterMarkerOpacity(config);
-      const marker = renderMarker(x, y, markerStyle, markerSize, markerFillColor, markerEdgeColor, markerEdgeWidth, markerOpacity);
+      const marker = renderMarker(
+        x,
+        y,
+        markerStyle,
+        markerSize,
+        markerFillColor,
+        markerEdgeColor,
+        markerEdgeWidth,
+        markerOpacity
+      );
       return marker || <circle cx={x} cy={y} r={halfSize} fill={color} />;
     }
     default:
-      return (
-        <rect
-          x={x - halfSize}
-          y={y - halfSize}
-          width={size}
-          height={size}
-          fill={color}
-        />
-      );
+      return <rect x={x - halfSize} y={y - halfSize} width={size} height={size} fill={color} />;
   }
 }
 
@@ -811,7 +839,14 @@ function getScatterMarkerConfig(
     edgeColor,
     edgeWidth,
     opacity,
-    configKey: JSON.stringify({ style, size, fill: fillColor, edge: edgeColor, edgeWidth, opacity }),
+    configKey: JSON.stringify({
+      style,
+      size,
+      fill: fillColor,
+      edge: edgeColor,
+      edgeWidth,
+      opacity,
+    }),
   };
 }
 
@@ -1077,7 +1112,10 @@ export const ChartView = forwardRef<
 
   useImperativeHandle(ref, () => ({ getSvgElement: () => svgRef.current, resetView }), [resetView]);
 
-  const ops = useMemo(() => graph?.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode) ?? [], [graph]);
+  const ops = useMemo(
+    () => graph?.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode) ?? [],
+    [graph]
+  );
 
   // 使用序列化来深度比较 chartYKeys，确保配置变化时能正确更新
   // chartYKeysKey 变化时，chartData 会重新计算，buildChartData 会创建新的配置对象引用
@@ -1088,7 +1126,6 @@ export const ChartView = forwardRef<
     return buildChartData(rows, chartXKey, chartYKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, chartXKey, chartYKeysKey]);
-
 
   const padding = chartPadding;
   const w = Math.max(320, chartWidth);
@@ -1197,7 +1234,15 @@ export const ChartView = forwardRef<
   const axisLabelW = chartShowAxisLabels ? 28 : 0;
 
   // 先计算一个临时的 innerW 用于计算图例高度（使用 legendWidth 的初始值）
-  const tempInnerW = Math.max(0, w - padding * 2 - axisLabelW - yTitleW - (isLegendOutside && isLegendOnLeft ? legendWidth : 0) - (isLegendOutside && isLegendOnRight ? legendWidth : 0));
+  const tempInnerW = Math.max(
+    0,
+    w -
+      padding * 2 -
+      axisLabelW -
+      yTitleW -
+      (isLegendOutside && isLegendOnLeft ? legendWidth : 0) -
+      (isLegendOutside && isLegendOnRight ? legendWidth : 0)
+  );
   // 计算图例列数（先计算可用宽度，用于计算自动列数）
   const availableLegendWForCalc =
     isLegendOnTop || isLegendOnBottom
@@ -1218,7 +1263,10 @@ export const ChartView = forwardRef<
       : [80];
   const maxLegendItemContentW = Math.max(...legendItemContentWidths, 80);
   const maxLegendItemW = maxLegendItemContentW + legendItemSpacing;
-  const autoItemsPerRowForHeight = Math.max(1, Math.floor(availableLegendWForCalc / maxLegendItemW));
+  const autoItemsPerRowForHeight = Math.max(
+    1,
+    Math.floor(availableLegendWForCalc / maxLegendItemW)
+  );
   const effectiveItemsPerRowForHeight =
     chartLegendMaxColumns > 0
       ? Math.min(chartLegendMaxColumns, autoItemsPerRowForHeight)
@@ -1990,7 +2038,10 @@ export const ChartView = forwardRef<
                         : Math.min(barW_swapped, maxBarW);
                   const x0 = xScale(val);
                   // 确保柱子不会超出绘图区域
-                  const clampedX0 = Math.max(plotLeft, Math.min(x0, plotLeft + innerW - effectiveBarW));
+                  const clampedX0 = Math.max(
+                    plotLeft,
+                    Math.min(x0, plotLeft + innerW - effectiveBarW)
+                  );
                   const y0 = yScale(i) - effectiveBarW / 2;
                   const barH = effectiveBarW;
                   return (
@@ -2013,7 +2064,9 @@ export const ChartView = forwardRef<
                           const edgeStyle = getBarEdgeStyle(chartData.yConfig);
                           if (edgeStyle === 'none') return undefined;
                           const edgeWidth = getBarEdgeWidth(chartData.yConfig);
-                          return edgeWidth > 0 ? seriesColor(0, palette, chartData.yConfig) : undefined;
+                          return edgeWidth > 0
+                            ? seriesColor(0, palette, chartData.yConfig)
+                            : undefined;
                         })()}
                         strokeWidth={(() => {
                           const edgeStyle = getBarEdgeStyle(chartData.yConfig);
@@ -2032,7 +2085,10 @@ export const ChartView = forwardRef<
                         const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                         const labelDecimals = getDataLabelDecimals(chartData.yConfig, 2);
                         const labelStyle = getDataLabelStyle(chartData.yConfig);
-                        const position = (chartData.yConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                        const position = (chartData.yConfig?.dataLabelPosition || 'auto') as
+                          | 'top'
+                          | 'bottom'
+                          | 'auto';
                         const offsetX = calculateBarHorizontalDataLabelOffset(
                           position,
                           clampedX0,
@@ -2047,7 +2103,13 @@ export const ChartView = forwardRef<
                             className="chart-axis-label"
                             x={clampedX0 + offsetX + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
                             y={y0 + barH / 2 + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
-                            textAnchor={position === 'auto' && offsetX === effectiveBarW / 2 ? 'middle' : offsetX > effectiveBarW / 2 ? 'start' : 'end'}
+                            textAnchor={
+                              position === 'auto' && offsetX === effectiveBarW / 2
+                                ? 'middle'
+                                : offsetX > effectiveBarW / 2
+                                  ? 'start'
+                                  : 'end'
+                            }
                             dominantBaseline="middle"
                             style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                           >
@@ -2116,7 +2178,10 @@ export const ChartView = forwardRef<
                         const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                         const labelDecimals = getDataLabelDecimals(chartData.yConfig, 2);
                         const labelStyle = getDataLabelStyle(chartData.yConfig);
-                        const position = (chartData.yConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                        const position = (chartData.yConfig?.dataLabelPosition || 'auto') as
+                          | 'top'
+                          | 'bottom'
+                          | 'auto';
                         const offsetY = calculateBarVerticalDataLabelOffset(
                           position,
                           y0,
@@ -2132,7 +2197,11 @@ export const ChartView = forwardRef<
                             x={x0 + barW / 2 + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
                             y={y0 + offsetY + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
                             textAnchor="middle"
-                            dominantBaseline={position === 'auto' && offsetY === effectiveBarH / 2 ? 'middle' : 'auto'}
+                            dominantBaseline={
+                              position === 'auto' && offsetY === effectiveBarH / 2
+                                ? 'middle'
+                                : 'auto'
+                            }
                             style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                           >
                             {formatDataLabel(val, labelDecimals)}
@@ -2178,37 +2247,42 @@ export const ChartView = forwardRef<
                 if (!showPoints) return null;
                 const config = getLineMarkerConfig(yConfig, seriesColor(0, palette, yConfig));
                 if (!config) return null;
-                  return chartSwapXY
-                    ? yVals.map((val, i) => {
-                        const marker = renderMarker(
-                          xScale(val),
-                          yScale(i),
-                          config.style,
-                          config.size,
-                          config.fillColor,
-                          config.edgeColor,
-                          1,
-                          1,
-                          `${i}-${config.configKey}`
-                        );
-                        return (
-                          <g
-                            key={`marker-${i}-${config.configKey}`}
-                            className="chart-line-point-group"
-                            data-rowindex={i}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            {marker}
-                            {(() => {
-                              const showLabels = getShowDataLabels(yConfig, false);
-                              if (!showLabels) return null;
-                              const dataLabelFontSize = getDataLabelFontSize(yConfig, 0) || labelFontSize;
-                              const labelDecimals = getDataLabelDecimals(yConfig, 2);
-                              const labelStyle = getDataLabelStyle(yConfig);
-                              const position = (yConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
-                              const pointX = xScale(val);
-                              const pointY = yScale(i);
-                              const { offsetX, offsetY, textAnchor } = calculateHorizontalDataLabelOffset(
+                return chartSwapXY
+                  ? yVals.map((val, i) => {
+                      const marker = renderMarker(
+                        xScale(val),
+                        yScale(i),
+                        config.style,
+                        config.size,
+                        config.fillColor,
+                        config.edgeColor,
+                        1,
+                        1,
+                        `${i}-${config.configKey}`
+                      );
+                      return (
+                        <g
+                          key={`marker-${i}-${config.configKey}`}
+                          className="chart-line-point-group"
+                          data-rowindex={i}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {marker}
+                          {(() => {
+                            const showLabels = getShowDataLabels(yConfig, false);
+                            if (!showLabels) return null;
+                            const dataLabelFontSize =
+                              getDataLabelFontSize(yConfig, 0) || labelFontSize;
+                            const labelDecimals = getDataLabelDecimals(yConfig, 2);
+                            const labelStyle = getDataLabelStyle(yConfig);
+                            const position = (yConfig?.dataLabelPosition || 'auto') as
+                              | 'top'
+                              | 'bottom'
+                              | 'auto';
+                            const pointX = xScale(val);
+                            const pointY = yScale(i);
+                            const { offsetX, offsetY, textAnchor } =
+                              calculateHorizontalDataLabelOffset(
                                 position,
                                 pointX,
                                 config.size,
@@ -2216,65 +2290,71 @@ export const ChartView = forwardRef<
                                 plotLeft,
                                 plotRight
                               );
-                              return (
-                                <text
-                                  className="chart-axis-label"
-                                  x={pointX + offsetX + (yConfig?.dataLabelOffsetX ?? 0)}
-                                  y={pointY + offsetY + (yConfig?.dataLabelOffsetY ?? 0)}
-                                  textAnchor={textAnchor}
-                                  dominantBaseline="middle"
-                                  style={{ fontSize: dataLabelFontSize, ...labelStyle }}
-                                >
-                                  {formatDataLabel(val, labelDecimals)}
-                                </text>
-                              );
-                            })()}
-                          </g>
-                        );
-                      })
-                    : xVals.map((_, i) => {
-                        const marker = renderMarker(
-                          xScale(i),
-                          yScale(yVals[i] ?? 0),
-                          config.style,
-                          config.size,
-                          config.fillColor,
-                          config.edgeColor,
-                          1,
-                          1,
-                          `${i}-${config.configKey}`
-                        );
-                        return (
-                          <g
-                            key={`marker-${i}-${config.configKey}`}
-                            className="chart-line-point-group"
-                            data-rowindex={i}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            {marker}
-                            {(() => {
-                              const showLabels = getShowDataLabels(yConfig, false);
-                              if (!showLabels) return null;
-                              const dataLabelFontSize = getDataLabelFontSize(yConfig, 0) || labelFontSize;
-                              const labelDecimals = getDataLabelDecimals(yConfig, 2);
-                              const labelStyle = getDataLabelStyle(yConfig);
-                              return (
-                                <text
-                                  className="chart-axis-label"
-                                  x={xScale(i) + (yConfig?.dataLabelOffsetX ?? 0)}
-                                  y={yScale(yVals[i] ?? 0) - config.size / 2 - 4 + (yConfig?.dataLabelOffsetY ?? 0)}
-                                  textAnchor="middle"
-                                  dominantBaseline="auto"
-                                  style={{ fontSize: dataLabelFontSize, ...labelStyle }}
-                                >
-                                  {formatDataLabel(yVals[i] ?? 0, labelDecimals)}
-                                </text>
-                              );
-                            })()}
-                          </g>
-                        );
-                      });
-                })()}
+                            return (
+                              <text
+                                className="chart-axis-label"
+                                x={pointX + offsetX + (yConfig?.dataLabelOffsetX ?? 0)}
+                                y={pointY + offsetY + (yConfig?.dataLabelOffsetY ?? 0)}
+                                textAnchor={textAnchor}
+                                dominantBaseline="middle"
+                                style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                              >
+                                {formatDataLabel(val, labelDecimals)}
+                              </text>
+                            );
+                          })()}
+                        </g>
+                      );
+                    })
+                  : xVals.map((_, i) => {
+                      const marker = renderMarker(
+                        xScale(i),
+                        yScale(yVals[i] ?? 0),
+                        config.style,
+                        config.size,
+                        config.fillColor,
+                        config.edgeColor,
+                        1,
+                        1,
+                        `${i}-${config.configKey}`
+                      );
+                      return (
+                        <g
+                          key={`marker-${i}-${config.configKey}`}
+                          className="chart-line-point-group"
+                          data-rowindex={i}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {marker}
+                          {(() => {
+                            const showLabels = getShowDataLabels(yConfig, false);
+                            if (!showLabels) return null;
+                            const dataLabelFontSize =
+                              getDataLabelFontSize(yConfig, 0) || labelFontSize;
+                            const labelDecimals = getDataLabelDecimals(yConfig, 2);
+                            const labelStyle = getDataLabelStyle(yConfig);
+                            return (
+                              <text
+                                className="chart-axis-label"
+                                x={xScale(i) + (yConfig?.dataLabelOffsetX ?? 0)}
+                                y={
+                                  yScale(yVals[i] ?? 0) -
+                                  config.size / 2 -
+                                  4 +
+                                  (yConfig?.dataLabelOffsetY ?? 0)
+                                }
+                                textAnchor="middle"
+                                dominantBaseline="auto"
+                                style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                              >
+                                {formatDataLabel(yVals[i] ?? 0, labelDecimals)}
+                              </text>
+                            );
+                          })()}
+                        </g>
+                      );
+                    });
+              })()}
             </>
           )}
 
@@ -2307,20 +2387,25 @@ export const ChartView = forwardRef<
                         {(() => {
                           const showLabels = getShowDataLabels(yConfig, false);
                           if (!showLabels) return null;
-                          const dataLabelFontSize = getDataLabelFontSize(yConfig, 0) || labelFontSize;
+                          const dataLabelFontSize =
+                            getDataLabelFontSize(yConfig, 0) || labelFontSize;
                           const labelDecimals = getDataLabelDecimals(yConfig, 2);
                           const labelStyle = getDataLabelStyle(yConfig);
-                          const position = (yConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                          const position = (yConfig?.dataLabelPosition || 'auto') as
+                            | 'top'
+                            | 'bottom'
+                            | 'auto';
                           const pointX = xScale(val);
                           const pointY = yScale(i);
-                          const { offsetX, offsetY, textAnchor } = calculateHorizontalDataLabelOffset(
-                            position,
-                            pointX,
-                            config.size,
-                            dataLabelFontSize,
-                            plotLeft,
-                            plotRight
-                          );
+                          const { offsetX, offsetY, textAnchor } =
+                            calculateHorizontalDataLabelOffset(
+                              position,
+                              pointX,
+                              config.size,
+                              dataLabelFontSize,
+                              plotLeft,
+                              plotRight
+                            );
                           // 散点图显示Y值（i是Y轴索引，对应Y值）
                           const displayValue = i;
                           return (
@@ -2359,25 +2444,31 @@ export const ChartView = forwardRef<
                         style={{ cursor: 'pointer' }}
                       >
                         {marker}
-                            {(() => {
-                              const showLabels = getShowDataLabels(yConfig, false);
-                              if (!showLabels) return null;
-                              const dataLabelFontSize = getDataLabelFontSize(yConfig, 0) || labelFontSize;
-                              const labelDecimals = getDataLabelDecimals(yConfig, 2);
-                              const labelStyle = getDataLabelStyle(yConfig);
-                              return (
-                                <text
-                                  className="chart-axis-label"
-                                  x={xScale(i) + (yConfig?.dataLabelOffsetX ?? 0)}
-                                  y={yScale(yVals[i] ?? 0) - config.size / 2 - 4 + (yConfig?.dataLabelOffsetY ?? 0)}
-                                  textAnchor="middle"
-                                  dominantBaseline="auto"
-                                  style={{ fontSize: dataLabelFontSize, ...labelStyle }}
-                                >
-                                  {formatDataLabel(yVals[i] ?? 0, labelDecimals)}
-                                </text>
-                              );
-                            })()}
+                        {(() => {
+                          const showLabels = getShowDataLabels(yConfig, false);
+                          if (!showLabels) return null;
+                          const dataLabelFontSize =
+                            getDataLabelFontSize(yConfig, 0) || labelFontSize;
+                          const labelDecimals = getDataLabelDecimals(yConfig, 2);
+                          const labelStyle = getDataLabelStyle(yConfig);
+                          return (
+                            <text
+                              className="chart-axis-label"
+                              x={xScale(i) + (yConfig?.dataLabelOffsetX ?? 0)}
+                              y={
+                                yScale(yVals[i] ?? 0) -
+                                config.size / 2 -
+                                4 +
+                                (yConfig?.dataLabelOffsetY ?? 0)
+                              }
+                              textAnchor="middle"
+                              dominantBaseline="auto"
+                              style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                            >
+                              {formatDataLabel(yVals[i] ?? 0, labelDecimals)}
+                            </text>
+                          );
+                        })()}
                       </g>
                     );
                   });
@@ -2387,7 +2478,10 @@ export const ChartView = forwardRef<
             yVals.length > 0 &&
             (() => {
               // 按 x 值去重并累加 y 值
-              const xValueMap = new Map<string, { value: number; label: string; firstIndex: number }>();
+              const xValueMap = new Map<
+                string,
+                { value: number; label: string; firstIndex: number }
+              >();
               xVals.forEach((xVal, i) => {
                 const yVal = yVals[i] ?? 0;
                 if (xValueMap.has(xVal)) {
@@ -2448,11 +2542,7 @@ export const ChartView = forwardRef<
                           }
                           fillOpacity={pieSliceOpacity(idx)}
                           stroke={
-                            edgeStyle === 'none'
-                              ? undefined
-                              : edgeWidth > 0
-                                ? color
-                                : undefined
+                            edgeStyle === 'none' ? undefined : edgeWidth > 0 ? color : undefined
                           }
                           strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
                           strokeDasharray={getStrokeDasharray(edgeStyle)}
@@ -2524,7 +2614,7 @@ export const ChartView = forwardRef<
           return visibleSeriesIndices.map((origIdx) => row[origIdx] ?? 0);
         });
       })();
-  
+
   // 辅助函数：根据系列名称获取原始索引
   const getOriginalSeriesIndex = (seriesName: string): number => {
     return seriesNameToIndex.get(seriesName) ?? 0;
@@ -2551,14 +2641,16 @@ export const ChartView = forwardRef<
   const totalBarGap = effectiveN > 1 ? (effectiveN - 1) * Math.max(0, chartBarGap) : 0;
   const groupW = effectiveN > 0 ? Math.max(0, (availableW - totalBarGap) / effectiveN) : availableW;
   // 计算每个系列柱子的最大可用宽度（考虑组内间距）
-  const maxBarWPerSeries = effectiveSeriesCount > 0
-    ? Math.max(0, (groupW - chartBarGap * Math.max(0, effectiveSeriesCount - 1)) / effectiveSeriesCount)
-    : groupW;
+  const maxBarWPerSeries =
+    effectiveSeriesCount > 0
+      ? Math.max(
+          0,
+          (groupW - chartBarGap * Math.max(0, effectiveSeriesCount - 1)) / effectiveSeriesCount
+        )
+      : groupW;
   // 如果设置了固定宽度，使用固定宽度（但不超过最大可用宽度）；否则自适应计算
   const computedBarW =
-    chartBarWidth > 0
-      ? Math.min(chartBarWidth, maxBarWPerSeries)
-      : maxBarWPerSeries;
+    chartBarWidth > 0 ? Math.min(chartBarWidth, maxBarWPerSeries) : maxBarWPerSeries;
   // 如果设置了最小宽度，确保不超过最大可用宽度
   const barW =
     effectiveSeriesCount > 0
@@ -2617,9 +2709,7 @@ export const ChartView = forwardRef<
   const autoItemsPerRow = Math.max(1, Math.floor(availableLegendW / maxLegendItemW));
   // 如果配置了最大列数，则使用配置值（0表示自动）
   const itemsPerRow =
-    chartLegendMaxColumns > 0
-      ? Math.min(chartLegendMaxColumns, autoItemsPerRow)
-      : autoItemsPerRow;
+    chartLegendMaxColumns > 0 ? Math.min(chartLegendMaxColumns, autoItemsPerRow) : autoItemsPerRow;
   const legendCols = itemsPerRow;
   // 计算实际图例行数
   const actualLegendRows = Math.ceil(allSeriesCount / Math.max(1, legendCols));
@@ -2633,22 +2723,22 @@ export const ChartView = forwardRef<
       : isLegendOnRight
         ? plotRight - 12 - totalLegendW + effectiveOffsetX
         : plotLeft + innerW / 2 - totalLegendW / 2 + effectiveOffsetX
-    : (isLegendOnLeft
-        ? padding + 8 + effectiveOffsetX
-        : isLegendOnRight
-          ? w - padding - totalLegendW - 8 + effectiveOffsetX
-          : w / 2 - totalLegendW / 2 + effectiveOffsetX);
+    : isLegendOnLeft
+      ? padding + 8 + effectiveOffsetX
+      : isLegendOnRight
+        ? w - padding - totalLegendW - 8 + effectiveOffsetX
+        : w / 2 - totalLegendW / 2 + effectiveOffsetX;
   const legendY = chartLegendInside
     ? isLegendOnTop
       ? plotTop + 12 + effectiveOffsetY
       : isLegendOnBottom
         ? plotBottom - 12 - actualLegendRows * legendItemH + effectiveOffsetY
         : plotTop + innerH / 2 - (actualLegendRows * legendItemH) / 2 + effectiveOffsetY
-    : (isLegendOnTop
-        ? padding + titleH + LEGEND_GAP + effectiveOffsetY
-        : isLegendOnBottom
-          ? h - padding - legendHeight + LEGEND_GAP + effectiveOffsetY
-          : plotTop + innerH / 2 - (actualLegendRows * legendItemH) / 2 + effectiveOffsetY);
+    : isLegendOnTop
+      ? padding + titleH + LEGEND_GAP + effectiveOffsetY
+      : isLegendOnBottom
+        ? h - padding - legendHeight + LEGEND_GAP + effectiveOffsetY
+        : plotTop + innerH / 2 - (actualLegendRows * legendItemH) / 2 + effectiveOffsetY;
 
   return chartWrap(
     <svg
@@ -2878,7 +2968,10 @@ export const ChartView = forwardRef<
                             : Math.min(barW_swapped, maxBarW);
                       const x0 = xScale(val);
                       // 确保柱子不会超出绘图区域
-                      const clampedX0 = Math.max(plotLeft, Math.min(x0, plotLeft + innerW - effectiveBarW));
+                      const clampedX0 = Math.max(
+                        plotLeft,
+                        Math.min(x0, plotLeft + innerW - effectiveBarW)
+                      );
                       const y0 = yScale(i) - effectiveBarW / 2;
                       const barH = effectiveBarW;
                       return (
@@ -2909,7 +3002,9 @@ export const ChartView = forwardRef<
                               const edgeStyle = getBarEdgeStyle(seriesConfig);
                               if (edgeStyle === 'none') return undefined;
                               const edgeWidth = getBarEdgeWidth(seriesConfig);
-                              return edgeWidth > 0 ? seriesColor(si, palette, seriesConfig) : undefined;
+                              return edgeWidth > 0
+                                ? seriesColor(si, palette, seriesConfig)
+                                : undefined;
                             })()}
                             strokeWidth={(() => {
                               const edgeStyle = getBarEdgeStyle(seriesConfig);
@@ -2928,7 +3023,10 @@ export const ChartView = forwardRef<
                             const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                             const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
                             const labelStyle = getDataLabelStyle(seriesConfig);
-                            const position = (seriesConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                            const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                              | 'top'
+                              | 'bottom'
+                              | 'auto';
                             const offsetX = calculateBarHorizontalDataLabelOffset(
                               position,
                               clampedX0,
@@ -2944,10 +3042,16 @@ export const ChartView = forwardRef<
                             return (
                               <text
                                 className="chart-axis-label"
-                                x={clampedX0 + effectiveBarW / 2 + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                x={
+                                  clampedX0 +
+                                  effectiveBarW / 2 +
+                                  (seriesConfig?.dataLabelOffsetX ?? 0)
+                                }
                                 y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor="middle"
-                                dominantBaseline={position === 'auto' && offsetY === -barH / 2 ? 'middle' : 'auto'}
+                                dominantBaseline={
+                                  position === 'auto' && offsetY === -barH / 2 ? 'middle' : 'auto'
+                                }
                                 style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
@@ -2965,11 +3069,13 @@ export const ChartView = forwardRef<
                 const tickX = xScale(i);
                 const groupLeft = tickX - groupW / 2;
                 // 计算组内所有柱子的总宽度（包括间距）
-                const totalBarsWidth = effectiveSeriesCount * barW + Math.max(0, effectiveSeriesCount - 1) * chartBarGap;
+                const totalBarsWidth =
+                  effectiveSeriesCount * barW + Math.max(0, effectiveSeriesCount - 1) * chartBarGap;
                 // 如果总宽度超过组宽度，需要调整起始位置或缩放
-                const actualGroupLeft = totalBarsWidth <= groupW 
-                  ? groupLeft + (groupW - totalBarsWidth) / 2 // 居中
-                  : groupLeft; // 左对齐，但会溢出（应该避免）
+                const actualGroupLeft =
+                  totalBarsWidth <= groupW
+                    ? groupLeft + (groupW - totalBarsWidth) / 2 // 居中
+                    : groupLeft; // 左对齐，但会溢出（应该避免）
                 return (
                   <g key={i} className="chart-bar-group">
                     {effectiveSeriesNames.map((seriesName, si) => {
@@ -2980,7 +3086,10 @@ export const ChartView = forwardRef<
                         chartBarMinHeight > 0 ? Math.max(barH, chartBarMinHeight) : barH;
                       const x0 = actualGroupLeft + si * (barW + chartBarGap);
                       // 确保柱子不会超出组边界
-                      const clampedX0 = Math.max(groupLeft, Math.min(x0, groupLeft + groupW - barW));
+                      const clampedX0 = Math.max(
+                        groupLeft,
+                        Math.min(x0, groupLeft + groupW - barW)
+                      );
                       const y0 = plotBottom - effectiveBarH;
                       const seriesConfig = seriesConfigs[origIdx];
                       return (
@@ -3003,7 +3112,8 @@ export const ChartView = forwardRef<
                               const color = seriesColor(origIdx, palette, seriesConfig);
                               if (fillStyle === 'gradient') return `url(#chartBarGrad-${origIdx})`;
                               if (fillStyle === 'hatched') return `url(#chartBarHatch-${origIdx})`;
-                              if (fillStyle === 'pattern') return `url(#chartBarPattern-${origIdx})`;
+                              if (fillStyle === 'pattern')
+                                return `url(#chartBarPattern-${origIdx})`;
                               return color;
                             })()}
                             fillOpacity={getBarOpacity(seriesConfig)}
@@ -3011,7 +3121,9 @@ export const ChartView = forwardRef<
                               const edgeStyle = getBarEdgeStyle(seriesConfig);
                               if (edgeStyle === 'none') return undefined;
                               const edgeWidth = getBarEdgeWidth(seriesConfig);
-                              return edgeWidth > 0 ? seriesColor(origIdx, palette, seriesConfig) : undefined;
+                              return edgeWidth > 0
+                                ? seriesColor(origIdx, palette, seriesConfig)
+                                : undefined;
                             })()}
                             strokeWidth={(() => {
                               const edgeStyle = getBarEdgeStyle(seriesConfig);
@@ -3030,7 +3142,10 @@ export const ChartView = forwardRef<
                             const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                             const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
                             const labelStyle = getDataLabelStyle(seriesConfig);
-                            const position = (seriesConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                            const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                              | 'top'
+                              | 'bottom'
+                              | 'auto';
                             const offsetY = calculateBarVerticalDataLabelOffset(
                               position,
                               y0,
@@ -3046,7 +3161,11 @@ export const ChartView = forwardRef<
                                 x={clampedX0 + barW / 2 + (seriesConfig?.dataLabelOffsetX ?? 0)}
                                 y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor="middle"
-                                dominantBaseline={position === 'auto' && offsetY === -effectiveBarH / 2 ? 'middle' : 'auto'}
+                                dominantBaseline={
+                                  position === 'auto' && offsetY === -effectiveBarH / 2
+                                    ? 'middle'
+                                    : 'auto'
+                                }
                                 style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
@@ -3101,40 +3220,52 @@ export const ChartView = forwardRef<
                     )}
                     {(() => {
                       const showPoints = getLineShowPoints(seriesConfig, true);
-                      const config = showPoints ? getLineMarkerConfig(seriesConfig, seriesColor(origIdx, palette, seriesConfig)) : null;
+                      const config = showPoints
+                        ? getLineMarkerConfig(
+                            seriesConfig,
+                            seriesColor(origIdx, palette, seriesConfig)
+                          )
+                        : null;
                       const markerSize = config?.size ?? 4; // 默认标记大小，用于数据标签位置计算
                       return effectiveData.map((seriesData, idx) => {
-                          const marker = showPoints && config ? renderMarker(
-                            xScale(seriesData[si] ?? 0),
-                            yScale(idx),
-                            config.style,
-                            config.size,
-                            config.fillColor,
-                            config.edgeColor,
-                            1,
-                            1,
-                            `${idx}-${si}-${config.configKey}`
-                          ) : null;
-                          return (
-                            <g
-                              key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
-                              data-xindex={idx}
-                              data-seriesindex={origIdx}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              {marker}
-                              {(() => {
-                                const showLabels = getShowDataLabels(seriesConfig, false);
-                                if (!showLabels) return null;
-                                const fontSize = getDataLabelFontSize(seriesConfig, 0);
-                                const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                                const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
-                                const labelStyle = getDataLabelStyle(seriesConfig);
-                                const position = (seriesConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
-                                // 交换XY后，X轴显示Y值，Y轴显示索引，数据标签显示Y值
-                                const pointX = xScale(seriesData[si] ?? 0);
-                                const pointY = yScale(idx);
-                                const { offsetX, offsetY, textAnchor } = calculateHorizontalDataLabelOffset(
+                        const marker =
+                          showPoints && config
+                            ? renderMarker(
+                                xScale(seriesData[si] ?? 0),
+                                yScale(idx),
+                                config.style,
+                                config.size,
+                                config.fillColor,
+                                config.edgeColor,
+                                1,
+                                1,
+                                `${idx}-${si}-${config.configKey}`
+                              )
+                            : null;
+                        return (
+                          <g
+                            key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
+                            data-xindex={idx}
+                            data-seriesindex={origIdx}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {marker}
+                            {(() => {
+                              const showLabels = getShowDataLabels(seriesConfig, false);
+                              if (!showLabels) return null;
+                              const fontSize = getDataLabelFontSize(seriesConfig, 0);
+                              const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
+                              const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
+                              const labelStyle = getDataLabelStyle(seriesConfig);
+                              const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                | 'top'
+                                | 'bottom'
+                                | 'auto';
+                              // 交换XY后，X轴显示Y值，Y轴显示索引，数据标签显示Y值
+                              const pointX = xScale(seriesData[si] ?? 0);
+                              const pointY = yScale(idx);
+                              const { offsetX, offsetY, textAnchor } =
+                                calculateHorizontalDataLabelOffset(
                                   position,
                                   pointX,
                                   markerSize,
@@ -3142,23 +3273,23 @@ export const ChartView = forwardRef<
                                   plotLeft,
                                   plotRight
                                 );
-                                return (
-                                  <text
-                                    className="chart-axis-label"
-                                    x={pointX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                                    y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
-                                    textAnchor={textAnchor}
-                                    dominantBaseline="middle"
-                                    style={{ fontSize: dataLabelFontSize, ...labelStyle }}
-                                  >
-                                    {formatDataLabel(seriesData[si] ?? 0, labelDecimals)}
-                                  </text>
-                                );
-                              })()}
-                            </g>
-                          );
-                        });
-                      })()}
+                              return (
+                                <text
+                                  className="chart-axis-label"
+                                  x={pointX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                  y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                  textAnchor={textAnchor}
+                                  dominantBaseline="middle"
+                                  style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                                >
+                                  {formatDataLabel(seriesData[si] ?? 0, labelDecimals)}
+                                </text>
+                              );
+                            })()}
+                          </g>
+                        );
+                      });
+                    })()}
                   </g>
                 );
               })
@@ -3201,20 +3332,28 @@ export const ChartView = forwardRef<
                     )}
                     {(() => {
                       const showPoints = getLineShowPoints(seriesConfig, true);
-                      const config = showPoints ? getLineMarkerConfig(seriesConfig, seriesColor(origIdx, palette, seriesConfig)) : null;
+                      const config = showPoints
+                        ? getLineMarkerConfig(
+                            seriesConfig,
+                            seriesColor(origIdx, palette, seriesConfig)
+                          )
+                        : null;
                       const markerSize = config?.size ?? 4; // 默认标记大小，用于数据标签位置计算
                       return effectiveXLabels.map((_, idx) => {
-                        const marker = showPoints && config ? renderMarker(
-                          xScale(idx),
-                          yScale(effectiveData[idx]?.[si] ?? 0),
-                          config.style,
-                          config.size,
-                          config.fillColor,
-                          config.edgeColor,
-                          1,
-                          1,
-                          `${idx}-${si}-${config.configKey}`
-                        ) : null;
+                        const marker =
+                          showPoints && config
+                            ? renderMarker(
+                                xScale(idx),
+                                yScale(effectiveData[idx]?.[si] ?? 0),
+                                config.style,
+                                config.size,
+                                config.fillColor,
+                                config.edgeColor,
+                                1,
+                                1,
+                                `${idx}-${si}-${config.configKey}`
+                              )
+                            : null;
                         return (
                           <g
                             key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
@@ -3230,7 +3369,10 @@ export const ChartView = forwardRef<
                               const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                               const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
                               const labelStyle = getDataLabelStyle(seriesConfig);
-                              const position = (seriesConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                              const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                | 'top'
+                                | 'bottom'
+                                | 'auto';
                               const pointX = xScale(idx);
                               const pointY = yScale(effectiveData[idx]?.[si] ?? 0);
                               const offsetY = calculateVerticalDataLabelOffset(
@@ -3271,7 +3413,10 @@ export const ChartView = forwardRef<
                   if (chartSeriesVisibility[seriesName] === false) return null;
                   const seriesConfig = seriesConfigs[si];
                   return seriesData.map((val, idx) => {
-                    const config = getScatterMarkerConfig(seriesConfig, seriesColor(si, palette, seriesConfig));
+                    const config = getScatterMarkerConfig(
+                      seriesConfig,
+                      seriesColor(si, palette, seriesConfig)
+                    );
                     const marker = renderMarker(
                       xScale(val),
                       yScale(idx),
@@ -3298,17 +3443,21 @@ export const ChartView = forwardRef<
                           const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                           const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
                           const labelStyle = getDataLabelStyle(seriesConfig);
-                          const position = (seriesConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                          const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                            | 'top'
+                            | 'bottom'
+                            | 'auto';
                           const pointX = xScale(val);
                           const pointY = yScale(idx);
-                          const { offsetX, offsetY, textAnchor } = calculateHorizontalDataLabelOffset(
-                            position,
-                            pointX,
-                            config.size,
-                            dataLabelFontSize,
-                            plotLeft,
-                            plotRight
-                          );
+                          const { offsetX, offsetY, textAnchor } =
+                            calculateHorizontalDataLabelOffset(
+                              position,
+                              pointX,
+                              config.size,
+                              dataLabelFontSize,
+                              plotLeft,
+                              plotRight
+                            );
                           // 散点图显示Y值（idx是Y轴索引，对应Y值）
                           const displayValue = idx;
                           return (
@@ -3336,7 +3485,10 @@ export const ChartView = forwardRef<
                     const origIdx = getOriginalSeriesIndex(name);
                     const val = effectiveData[xi]?.[si] ?? 0;
                     const seriesConfig = seriesConfigs[origIdx];
-                    const config = getScatterMarkerConfig(seriesConfig, seriesColor(origIdx, palette, seriesConfig));
+                    const config = getScatterMarkerConfig(
+                      seriesConfig,
+                      seriesColor(origIdx, palette, seriesConfig)
+                    );
                     const marker = renderMarker(
                       xScale(xi),
                       yScale(val),
@@ -3363,7 +3515,10 @@ export const ChartView = forwardRef<
                           const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
                           const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
                           const labelStyle = getDataLabelStyle(seriesConfig);
-                          const position = (seriesConfig?.dataLabelPosition || 'auto') as 'top' | 'bottom' | 'auto';
+                          const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                            | 'top'
+                            | 'bottom'
+                            | 'auto';
                           const pointX = xScale(xi);
                           const pointY = yScale(val);
                           const offsetY = calculateVerticalDataLabelOffset(
@@ -3400,11 +3555,14 @@ export const ChartView = forwardRef<
             const visibleSeries = chartData.seriesNames
               .map((name, si) => ({ name, si }))
               .filter(({ name }) => chartSeriesVisibility[name] !== false);
-            
+
             // 如果只选中一个系列，显示该系列在不同 x 值下的分布（按 x 去重）
             if (visibleSeries.length === 1) {
               const { si } = visibleSeries[0];
-              const xValueMap = new Map<string, { value: number; label: string; firstIndex: number }>();
+              const xValueMap = new Map<
+                string,
+                { value: number; label: string; firstIndex: number }
+              >();
               xLabels.forEach((xLabel, xi) => {
                 const yVal = data[xi]?.[si] ?? 0;
                 if (yVal > 0) {
@@ -3511,11 +3669,7 @@ export const ChartView = forwardRef<
                           }
                           fillOpacity={pieSliceOpacity(si)}
                           stroke={
-                            edgeStyle === 'none'
-                              ? undefined
-                              : edgeWidth > 0
-                                ? edgeColor
-                                : undefined
+                            edgeStyle === 'none' ? undefined : edgeWidth > 0 ? edgeColor : undefined
                           }
                           strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
                           strokeDasharray={getStrokeDasharray(edgeStyle)}
@@ -3626,11 +3780,7 @@ export const ChartView = forwardRef<
                           }
                           fillOpacity={pieSliceOpacity(si)}
                           stroke={
-                            edgeStyle === 'none'
-                              ? undefined
-                              : edgeWidth > 0
-                                ? edgeColor
-                                : undefined
+                            edgeStyle === 'none' ? undefined : edgeWidth > 0 ? edgeColor : undefined
                           }
                           strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
                           strokeDasharray={getStrokeDasharray(edgeStyle)}
@@ -3641,7 +3791,9 @@ export const ChartView = forwardRef<
                   {chartPieLabelPosition !== 'none' &&
                     chartShowAxisLabels &&
                     visibleSeriesSums.map(({ si, sum: v }, idx) => {
-                      const prevSum = visibleSeriesSums.slice(0, idx).reduce((a, b) => a + b.sum, 0);
+                      const prevSum = visibleSeriesSums
+                        .slice(0, idx)
+                        .reduce((a, b) => a + b.sum, 0);
                       const midDeg = ((prevSum + v / 2) / total) * 360 + startOffset;
                       const rad = deg2rad(midDeg);
                       const labelRadius =
@@ -3657,10 +3809,7 @@ export const ChartView = forwardRef<
                           textAnchor="middle"
                           dominantBaseline="middle"
                         >
-                          {truncate(
-                            chartData.seriesNames[si],
-                            pieLabelTruncate
-                          )}
+                          {truncate(chartData.seriesNames[si], pieLabelTruncate)}
                         </text>
                       );
                     })}

@@ -14,7 +14,8 @@
   "icon": "images/icon.png",
   "activationEvents": [
     "onCommand:xovis.open",
-    "onCustomEditor:xovis.graph"
+    "onCustomEditor:xovis.graph",
+    "onLanguage:json"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -61,7 +62,9 @@
     "compile": "node esbuild.config.mjs",
     "watch": "tsc -watch -p ./",
     "package": "NODE_OPTIONS=--no-deprecation vsce package --no-dependencies --allow-missing-repository",
-    "postinstall": "node scripts/postinstall.mjs"
+    "postinstall": "node scripts/postinstall.mjs",
+    "prepackage": "node -e \"const fs=require('fs');if(!fs.existsSync('media/index.html')){console.error('Error: media/ missing. Run pnpm run package:vscode from repo root');process.exit(1)}\"",
+    "lint": "eslint src --ext .ts"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
@@ -73,5 +76,25 @@
   },
   "dependencies": {
     "@xovis/core": "workspace:*"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lancerstadium/xovis"
+  },
+  "homepage": "https://github.com/lancerstadium/xovis#readme",
+  "bugs": {
+    "url": "https://github.com/lancerstadium/xovis/issues"
+  },
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "keywords": [
+    "graph",
+    "visualization",
+    "json",
+    "computation-graph",
+    "neural-network",
+    "dagre"
+  ]
 }

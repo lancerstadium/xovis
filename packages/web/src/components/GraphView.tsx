@@ -157,7 +157,7 @@ function useLayout(graph: Graph | null) {
     if (!graph?.nodes?.length) return { nodes: [] as LayoutNode[], edges: [] as LayoutEdge[] };
     const g = new dagre.graphlib.Graph({ compound: true, multigraph: true });
     g.setGraph({ rankdir: rankDir, nodesep: nodeGap, ranksep: rankGap });
-    g.setDefaultEdgeLabel(() => ({}));
+    (g as { setDefaultEdgeLabel: (cb: () => object) => void }).setDefaultEdgeLabel(() => ({}));
     const minHeadH = fs + 10;
 
     // 过滤节点：根据设置决定是否包含权重节点和IO节点
@@ -374,7 +374,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   useEffect(() => {
     const el = emptyLogoRef.current;
     if (!el) return;
-        fetch(`${import.meta.env.BASE_URL || '/'}favicon-raw.svg`)
+    fetch(`${import.meta.env.BASE_URL || '/'}favicon-raw.svg`)
       .then((r) => r.text())
       .then((svg) => {
         const sized = svg.replace(/width="32"\s+height="32"/, 'width="48" height="48"');
@@ -476,7 +476,10 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     });
   }, [graph, s.showWeightNodes, s.showIONodes]);
 
-  const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((n: GraphNode) => n.id)), [visibleNodes]);
+  const visibleNodeIds = useMemo(
+    () => new Set(visibleNodes.map((n: GraphNode) => n.id)),
+    [visibleNodes]
+  );
 
   return (
     <>

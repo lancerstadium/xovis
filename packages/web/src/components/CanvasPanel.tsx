@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, type ReactElement } from 'react';
 import { useSettingsStore, useGraphStore } from '../stores';
 import { GraphView } from './GraphView';
 import { ChartView } from './ChartView';
@@ -10,7 +10,8 @@ export type CanvasPanelHandle = {
   resetView: () => void;
 };
 
-export const CanvasPanel = forwardRef<CanvasPanelHandle, object>(function CanvasPanel(_, ref) {
+export const CanvasPanel = forwardRef<CanvasPanelHandle, object>(
+  function CanvasPanel(_: object, ref): ReactElement {
   const graphViewRef = useRef<GraphViewHandle>(null);
   const chartViewRef = useRef<ChartViewHandle>(null);
   const viewMode = useSettingsStore((s) => s.viewMode);
@@ -35,7 +36,7 @@ export const CanvasPanel = forwardRef<CanvasPanelHandle, object>(function Canvas
 
   /* 无图时显示上传界面；图表视图无映射时也显示计算图，不出现「选择 X/Y 列」界面 */
   if (showGraph) {
-    return <GraphView ref={graphViewRef} />;
+    return <GraphView ref={graphViewRef} /> as ReactElement;
   }
-  return <ChartView ref={chartViewRef} viewMode={viewMode} />;
+  return <ChartView ref={chartViewRef} viewMode={viewMode} /> as ReactElement;
 });

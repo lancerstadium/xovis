@@ -19,4 +19,4 @@ const graph = parseGraph(jsonString);
 
 - **parseGraph(json: string): Graph** — 解析 JSON 字符串为计算图
 - **类型** — Graph, Tensor, GraphNode, GraphEdge, NodePerformance
-- **format*** — formatBytes, formatTime, formatPercent, formatNumber
+- **format\*** — formatBytes, formatTime, formatPercent, formatNumber

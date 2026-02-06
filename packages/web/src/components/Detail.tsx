@@ -67,11 +67,11 @@ function OpNodeDetail({
   const metaEntries = (Object.entries(meta) as [string, unknown][]).filter(
     ([k]) => !INTERNAL_META.has(k)
   );
-  
+
   // 构建 Input 和 Output 数据
   const inputsEntries: [string, unknown][] = [];
   const outputsEntries: [string, unknown][] = [];
-  
+
   if (node.inputs && Array.isArray(node.inputs) && graph.tensors) {
     node.inputs.forEach((tensorIdx: number) => {
       const tensor = graph.tensors[tensorIdx];
@@ -82,7 +82,7 @@ function OpNodeDetail({
       }
     });
   }
-  
+
   if (node.outputs && Array.isArray(node.outputs) && graph.tensors) {
     node.outputs.forEach((tensorIdx: number) => {
       const tensor = graph.tensors[tensorIdx];
@@ -93,7 +93,7 @@ function OpNodeDetail({
       }
     });
   }
-  
+
   return (
     <>
       <Section
@@ -131,8 +131,7 @@ function TensorNodeDetail({
   ];
   if (tensor.shape?.length) entries.push(['shape', tensor.shape]);
   if (tensor.dtype) entries.push(['dtype', tensor.dtype]);
-  const meta =
-    tensor.metadata && typeof tensor.metadata === 'object' ? tensor.metadata : {};
+  const meta = tensor.metadata && typeof tensor.metadata === 'object' ? tensor.metadata : {};
   const metaEntries = (Object.entries(meta) as [string, unknown][]).filter(
     ([k]) => !INTERNAL_META.has(k)
   );
@@ -173,12 +172,7 @@ export function Detail() {
 
   if (isTensor && graph) {
     return (
-      <TensorNodeDetail
-        node={node}
-        tensor={graph.tensors[ti]}
-        typeLabel={t.detailNode}
-        t={t}
-      />
+      <TensorNodeDetail node={node} tensor={graph.tensors[ti]} typeLabel={t.detailNode} t={t} />
     );
   }
   return graph ? <OpNodeDetail node={node} graph={graph} typeLabel={t.detailNode} t={t} /> : null;

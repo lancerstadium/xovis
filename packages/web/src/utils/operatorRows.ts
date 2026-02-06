@@ -11,7 +11,7 @@ const INTERNAL_META_KEYS = new Set(['isTensorNode', 'tensorIndex', 'isCsvData', 
 export function getOperatorRows(graph: { nodes: GraphNode[] }): Record<string, unknown>[] {
   const ops = graph.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode);
   const allKeys = new Set<string>(['index', 'id', 'name']);
-  
+
   // 收集所有可能的键：从 metadata 和 attributes
   ops.forEach((n: GraphNode) => {
     // 从 metadata 收集键，过滤掉内部字段
@@ -23,12 +23,12 @@ export function getOperatorRows(graph: { nodes: GraphNode[] }): Record<string, u
       Object.keys(n.attributes).forEach((k) => allKeys.add(k));
     }
   });
-  
+
   const keys = Array.from(allKeys);
   return ops.map((n, i) => {
     const row: Record<string, unknown> = { index: i + 1, id: n.id, name: n.name };
     const flatMetadata = flattenMetadata(n.metadata);
-    
+
     keys.forEach((k) => {
       if (k === 'index' || k === 'id' || k === 'name') return;
       // 跳过内部元数据字段

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "electron .",
     "prebuild": "node ../../scripts/generate-electron-icon.mjs",
-    "build": "tsc && electron-builder",
+    "build": "tsc && (mkdir -p web/dist && cp -r ../web/dist/* web/dist/) && electron-builder",
     "build:win": "pnpm build -- --win",
     "build:mac": "pnpm build -- --mac",
     "build:linux": "pnpm build -- --linux",
@@ -34,15 +34,20 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "category": "public.app-category.developer-tools",
       "hardenedRuntime": false,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "identity": null
     },
     "dmg": {
       "contents": [
@@ -63,7 +68,9 @@
       }
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     },
     "nsis": {
       "oneClick": false,

@@ -25,6 +25,7 @@ JSON computation graph visualization tool with dagre layout and multi-format exp
 Visit the [online version](https://lancerstadium.github.io/xovis/) to use directly without installation.
 
 > **Note**: If this is the first deployment, you need to enable Pages in GitHub repository settings:
+>
 > 1. Go to https://github.com/lancerstadium/xovis/settings/pages
 > 2. Under "Source", select **"GitHub Actions"**
 > 3. Save the settings, then pushing to the `main` branch will automatically trigger deployment
@@ -47,13 +48,15 @@ After opening in your browser, select a JSON file or load from the "Examples" dr
 
 ## Downloads
 
-| Platform | Build Status | Download Link | Description |
-|----------|-------------|---------------|-------------|
-| 🌐 **Web** | ![Deploy to GitHub Pages](https://github.com/lancerstadium/xovis/actions/workflows/deploy.yml/badge.svg) | [Online Access](https://lancerstadium.github.io/xovis/) | Use directly in browser, no installation required |
-| 🪟 **Windows** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.exe` installer |
-| 🍎 **macOS** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.dmg` disk image |
-| 🐧 **Linux** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.AppImage` executable |
-| 📦 **VSCode Extension** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.vsix` extension package |
+| Platform                | Build Status                                                                                             | Download Link                                                            | Description                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------- |
+| 🌐 **Web**              | ![Deploy to GitHub Pages](https://github.com/lancerstadium/xovis/actions/workflows/deploy.yml/badge.svg) | [Online Access](https://lancerstadium.github.io/xovis/)                  | Use directly in browser, no installation required |
+| 🪟 **Windows**          | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.exe` installer                                  |
+| 🍎 **macOS**            | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.dmg` disk image                                 |
+| 🐧 **Linux**            | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.AppImage` executable                            |
+| 📦 **VSCode Extension** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [Latest Release](https://github.com/lancerstadium/xovis/releases/latest) | `.vsix` extension package                         |
+
+> **macOS "app is damaged" note**: The app is unsigned (no Apple Developer ID). If you see "app is damaged", drag the app to Applications first, then run in Terminal: `xattr -cr /Applications/xovis.app`, or right-click the app → **Open** (first launch only).
 
 ## Development
 

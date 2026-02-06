@@ -15,9 +15,10 @@ export function csvToGraph(csv: ParsedCsv): Graph {
   // 将每一行转换为一个节点
   const nodes = rows.map((row, index) => {
     // 优先使用CSV中的id列（如果存在），否则使用生成的id
-    const csvId = row.id !== undefined && row.id !== null && row.id !== '' 
-      ? String(row.id) 
-      : `csv-row-${index}`;
+    const csvId =
+      row.id !== undefined && row.id !== null && row.id !== ''
+        ? String(row.id)
+        : `csv-row-${index}`;
     const nodeName = String(row[headers[0]] ?? `Row${index + 1}`);
 
     // 将行数据转换为 attributes（排除id列，因为id已经是节点的id属性）

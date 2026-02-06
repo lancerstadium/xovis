@@ -31,5 +31,7 @@ export default defineConfig({
     commonjsOptions: {
       ignoreTryCatch: false,
     },
+    // embed/Electron 场景下避免 crossorigin 导致 file:// 或 webview 加载失败
+    modulePreload: basePath === './' ? false : true,
   },
 });

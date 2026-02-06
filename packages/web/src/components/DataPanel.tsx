@@ -21,7 +21,7 @@ function getStyleLabels(lang: Lang) {
               ? t.styleHatched
               : s.value === 'pattern'
                 ? t.stylePattern
-                : (s as typeof BAR_FILL_STYLES[number]).label,
+                : (s as (typeof BAR_FILL_STYLES)[number]).label,
     })),
     edgeStyles: EDGE_STYLES.map((s) => ({
       value: s.value,
@@ -34,7 +34,7 @@ function getStyleLabels(lang: Lang) {
               ? t.styleDotted
               : s.value === 'none'
                 ? t.styleNoneBorder
-                : (s as typeof EDGE_STYLES[number]).label,
+                : (s as (typeof EDGE_STYLES)[number]).label,
     })),
     lineStyles: LINE_STYLES.map((s) => ({
       value: s.value,
@@ -49,7 +49,7 @@ function getStyleLabels(lang: Lang) {
                 ? t.styleDashdot
                 : s.value === 'double-dash'
                   ? t.styleDoubleDash
-                  : (s as typeof LINE_STYLES[number]).label,
+                  : (s as (typeof LINE_STYLES)[number]).label,
     })),
     markerStyles: MARKER_STYLES.map((s) => ({
       value: s.value,
@@ -72,7 +72,7 @@ function getStyleLabels(lang: Lang) {
                         ? t.styleX
                         : s.value === 'triangle'
                           ? t.styleTriangle
-                          : (s as typeof MARKER_STYLES[number]).label,
+                          : (s as (typeof MARKER_STYLES)[number]).label,
     })),
   };
 }
@@ -247,7 +247,11 @@ function YColumnConfigRow({
   return (
     <>
       <div className="panel-row chart-mapping-row">
-        <span className="panel-row-label">{isSingle ? t.dataPanelYAxis : t.dataPanelYAxisWithIndex.replace('{index}', String(index + 1))}</span>
+        <span className="panel-row-label">
+          {isSingle
+            ? t.dataPanelYAxis
+            : t.dataPanelYAxisWithIndex.replace('{index}', String(index + 1))}
+        </span>
         <div className="panel-row-value chart-mapping-value">
           <select
             className="view-input chart-config-select"
@@ -455,9 +459,15 @@ function YColumnConfigRow({
                         className="view-input"
                         value={config.lineFitType || 'linear'}
                         onChange={(e) =>
-                          onChange({ 
-                            ...config, 
-                            lineFitType: e.target.value as 'linear' | 'polynomial' | 'exponential' | 'logarithmic' | 'power' | 'movingAverage' 
+                          onChange({
+                            ...config,
+                            lineFitType: e.target.value as
+                              | 'linear'
+                              | 'polynomial'
+                              | 'exponential'
+                              | 'logarithmic'
+                              | 'power'
+                              | 'movingAverage',
                           })
                         }
                       >
@@ -588,11 +598,13 @@ function YColumnConfigRow({
                       })
                     }
                   >
-                    {styleLabels.markerStyles.filter((s) => s.value !== 'none').map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ))}
+                    {styleLabels.markerStyles
+                      .filter((s) => s.value !== 'none')
+                      .map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -680,11 +692,13 @@ function YColumnConfigRow({
                       })
                     }
                   >
-                    {styleLabels.barFillStyles.filter((s) => s.value !== 'pattern').map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ))}
+                    {styleLabels.barFillStyles
+                      .filter((s) => s.value !== 'pattern')
+                      .map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -725,7 +739,9 @@ function YColumnConfigRow({
             </>
           )}
           {/* 数据标签配置（所有图表类型通用） */}
-          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+          <div
+            style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}
+          >
             <div className="panel-control-row">
               <span className="panel-option-label">{t.dataPanelShowDataLabels}</span>
               <div className="panel-option-value">
@@ -881,13 +897,13 @@ function MappingEditor({
             const isVisible = seriesName ? chartSeriesVisibility[seriesName] !== false : true;
             return (
               <YColumnConfigRow
-              key={i}
+                key={i}
                 config={config}
-              columns={columns}
+                columns={columns}
                 onChange={(newConfig) => setYAt(i, newConfig)}
-              onRemove={!isSingleY ? () => removeYAt(i) : undefined}
+                onRemove={!isSingleY ? () => removeYAt(i) : undefined}
                 t={t}
-              removeLabel={t.chartRemove}
+                removeLabel={t.chartRemove}
                 isSingle={isSingleY}
                 index={i}
                 chartType={chartType}

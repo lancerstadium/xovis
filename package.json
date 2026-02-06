@@ -14,9 +14,10 @@
     "build:electron:mac": "pnpm build:web && pnpm --filter @xovis/electron build:mac",
     "build:electron:linux": "pnpm build:web && pnpm --filter @xovis/electron build:linux",
     "build:vscode": "pnpm --filter xovis build",
-    "package:vscode": "cd packages/vscode-extension && pnpm run package",
+    "package:vscode": "pnpm run lint && pnpm build:core && pnpm --filter @xovis/web run build:embed && rm -rf packages/vscode-extension/media && mkdir -p packages/vscode-extension/media && cp -r packages/web/dist/* packages/vscode-extension/media/ && cd packages/vscode-extension && pnpm run package",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "pnpm -r clean && rm -rf node_modules"
+    "clean": "pnpm -r clean && rm -rf node_modules",
+    "lint": "eslint packages --ext .ts,.tsx --ignore-pattern '**/dist/**' --ignore-pattern '**/out/**'"
   },
   "keywords": [
     "neural-network",

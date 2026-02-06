@@ -25,6 +25,7 @@ JSON 计算图可视化工具，支持 dagre 布局和多种格式导出。
 访问 [在线版本](https://lancerstadium.github.io/xovis/) 直接使用，无需安装。
 
 > **注意**: 如果这是首次部署，需要在 GitHub 仓库设置中启用 Pages：
+>
 > 1. 访问 https://github.com/lancerstadium/xovis/settings/pages
 > 2. 在 "Source" 下选择 **"GitHub Actions"**
 > 3. 保存设置后，推送到 `main` 分支会自动触发部署
@@ -47,13 +48,15 @@ pnpm dev
 
 ## 下载安装
 
-| 平台 | 构建状态 | 下载链接 | 说明 |
-|------|---------|----------|------|
-| 🌐 **Web** | ![Deploy to GitHub Pages](https://github.com/lancerstadium/xovis/actions/workflows/deploy.yml/badge.svg) | [在线访问](https://lancerstadium.github.io/xovis/) | 无需安装，浏览器直接使用 |
-| 🪟 **Windows** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.exe` 安装包 |
-| 🍎 **macOS** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.dmg` 磁盘镜像 |
-| 🐧 **Linux** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.AppImage` 可执行文件 |
-| 📦 **VSCode Extension** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg) | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.vsix` 扩展包 |
+| 平台                    | 构建状态                                                                                                 | 下载链接                                                           | 说明                     |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------ |
+| 🌐 **Web**              | ![Deploy to GitHub Pages](https://github.com/lancerstadium/xovis/actions/workflows/deploy.yml/badge.svg) | [在线访问](https://lancerstadium.github.io/xovis/)                 | 无需安装，浏览器直接使用 |
+| 🪟 **Windows**          | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.exe` 安装包            |
+| 🍎 **macOS**            | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.dmg` 磁盘镜像          |
+| 🐧 **Linux**            | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.AppImage` 可执行文件   |
+| 📦 **VSCode Extension** | ![Build and Package](https://github.com/lancerstadium/xovis/actions/workflows/build.yml/badge.svg)       | [最新版本](https://github.com/lancerstadium/xovis/releases/latest) | `.vsix` 扩展包           |
+
+> **macOS「应用已损坏」说明**：应用未做代码签名。若提示「已损坏」，先将应用拖到「应用程序」文件夹，再在终端执行：`xattr -cr /Applications/xovis.app`，或右键应用选择「打开」首次启动即可。
 
 ## 开发
 

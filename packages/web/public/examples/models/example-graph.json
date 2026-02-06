@@ -12,11 +12,29 @@
     { "id": "tensor_7", "name": "output", "shape": [1, 128, 112, 112], "dtype": "float32" }
   ],
   "nodes": [
-    {"id": "conv1", "name": "Conv", "inputs": [0, 1], "outputs": [2], "attributes": {"kernel_shape": [3, 3], "strides": [1, 1], "pads": [1, 1]}},
-    {"id": "relu1", "name": "Relu", "inputs": [2], "outputs": [3], "attributes": {}},
-    {"id": "pool1", "name": "MaxPool", "inputs": [3], "outputs": [4], "attributes": {"kernel_shape": [2, 2], "strides": [2, 2]}},
-    {"id": "conv2", "name": "Conv", "inputs": [4, 5], "outputs": [6], "attributes": {"kernel_shape": [3, 3], "strides": [1, 1], "pads": [1, 1]}},
-    {"id": "relu2", "name": "Relu", "inputs": [6], "outputs": [7], "attributes": {}}
+    {
+      "id": "conv1",
+      "name": "Conv",
+      "inputs": [0, 1],
+      "outputs": [2],
+      "attributes": { "kernel_shape": [3, 3], "strides": [1, 1], "pads": [1, 1] }
+    },
+    { "id": "relu1", "name": "Relu", "inputs": [2], "outputs": [3], "attributes": {} },
+    {
+      "id": "pool1",
+      "name": "MaxPool",
+      "inputs": [3],
+      "outputs": [4],
+      "attributes": { "kernel_shape": [2, 2], "strides": [2, 2] }
+    },
+    {
+      "id": "conv2",
+      "name": "Conv",
+      "inputs": [4, 5],
+      "outputs": [6],
+      "attributes": { "kernel_shape": [3, 3], "strides": [1, 1], "pads": [1, 1] }
+    },
+    { "id": "relu2", "name": "Relu", "inputs": [6], "outputs": [7], "attributes": {} }
   ],
   "inputs": [0],
   "outputs": [7],

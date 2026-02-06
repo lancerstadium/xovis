@@ -1,34 +1,9 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "checkJs": false,
-    "jsx": "react-jsx",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "baseUrl": ".",
-    "paths": {
-      "@xovis/core": ["./packages/core/src"],
-      "@xovis/core/*": ["./packages/core/src/*"]
-    }
-  },
-  "include": ["packages/**/*"],
-  "exclude": ["node_modules", "dist", "**/dist/**", "**/media/**", "**/*.test.ts", "**/*.test.tsx", "packages/web/capacitor.config.ts"]
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/web" },
+    { "path": "./packages/electron" },
+    { "path": "./packages/vscode-extension" }
+  ]
 }

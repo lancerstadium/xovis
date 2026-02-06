@@ -626,13 +626,13 @@ function ExportSvgButton({
             element.setAttribute('opacity', String(Math.max(0, Math.min(1, opacityVal))));
           }
         }
-        
+
         // 处理fillOpacity：如果fill是纯色（不是渐变/pattern），且fillOpacity=1，移除它
         // 如果用户设置了fillOpacity < 1，保留它
         const fillOpacity = element.getAttribute('fillOpacity');
         if (fillOpacity) {
           const fillOpacityVal = parseFloat(fillOpacity);
-          
+
           if (fillOpacityVal === 1) {
             // 对于纯色填充，移除fillOpacity=1（避免svg2pdf.js处理问题）
             // 对于渐变/pattern，也移除fillOpacity=1（避免问题）
@@ -642,7 +642,7 @@ function ExportSvgButton({
             element.setAttribute('fillOpacity', String(Math.max(0, Math.min(1, fillOpacityVal))));
           }
         }
-        
+
         // 处理strokeOpacity：如果strokeOpacity=1，移除它；如果用户设置了< 1，保留它
         const strokeOpacity = element.getAttribute('strokeOpacity');
         if (strokeOpacity) {
@@ -651,10 +651,13 @@ function ExportSvgButton({
             element.removeAttribute('strokeOpacity');
           } else if (!isNaN(strokeOpacityVal) && strokeOpacityVal < 1 && strokeOpacityVal > 0) {
             // 用户明确设置了透明度，保留它
-            element.setAttribute('strokeOpacity', String(Math.max(0, Math.min(1, strokeOpacityVal))));
+            element.setAttribute(
+              'strokeOpacity',
+              String(Math.max(0, Math.min(1, strokeOpacityVal)))
+            );
           }
         }
-        
+
         // 处理渐变stop中的stopOpacity
         // 如果stopOpacity=1，移除它；如果用户设置了< 1，保留它
         if (element.tagName.toLowerCase() === 'stop') {

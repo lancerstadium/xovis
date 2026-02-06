@@ -4,9 +4,7 @@ import { parseGraph } from '@xovis/core';
 export function activate(context: vscode.ExtensionContext) {
   // 注册自定义编辑器提供者
   const provider = new GraphEditorProvider(context.extensionUri);
-  context.subscriptions.push(
-    vscode.window.registerCustomEditorProvider('xovis.graph', provider)
-  );
+  context.subscriptions.push(vscode.window.registerCustomEditorProvider('xovis.graph', provider));
 
   // 注册命令
   const openCommand = vscode.commands.registerCommand('xovis.open', async () => {
@@ -25,11 +23,13 @@ export function activate(context: vscode.ExtensionContext) {
     try {
       const text = document.getText();
       parseGraph(text); // 验证 JSON 格式
-      
+
       // 打开自定义编辑器
       await vscode.commands.executeCommand('vscode.openWith', document.uri, 'xovis.graph');
     } catch (error) {
-      vscode.window.showErrorMessage(`解析失败: ${error instanceof Error ? error.message : String(error)}`);
+      vscode.window.showErrorMessage(
+        `解析失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   });
 
@@ -46,6 +46,7 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
   ): Promise<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
+      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
     };
 
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);

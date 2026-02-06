@@ -2,10 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { err: Error | null }
-> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err: Error | null }> {
   state = { err: null as Error | null };
   static getDerivedStateFromError(err: Error) {
     return { err };

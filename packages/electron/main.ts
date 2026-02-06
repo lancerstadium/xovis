@@ -27,7 +27,7 @@ function createWindow() {
     // 在打包后，路径相对于 app.asar 或 app 目录
     const isPackaged = app.isPackaged;
     let indexPath: string;
-    
+
     if (isPackaged) {
       // 打包后：web/dist 在 app 根目录下，getAppPath 返回 app.asar 或 app 目录
       indexPath = join(app.getAppPath(), 'web', 'dist', 'index.html');
@@ -35,14 +35,16 @@ function createWindow() {
       // 开发构建：使用相对路径
       indexPath = join(__dirname, '../../web/dist/index.html');
     }
-    
+
     mainWindow.loadFile(indexPath).catch((err: Error) => {
       console.error('Failed to load index.html:', err);
       // 尝试备用路径
       const fallbackPath = join(__dirname, '../../web/dist/index.html');
       mainWindow.loadFile(fallbackPath).catch((fallbackErr: Error) => {
         console.error('Failed to load fallback path:', fallbackErr);
-        mainWindow.loadURL('data:text/html,<h1>Failed to load application</h1><p>Please rebuild the web application.</p>');
+        mainWindow.loadURL(
+          'data:text/html,<h1>Failed to load application</h1><p>Please rebuild the web application.</p>'
+        );
       });
     });
   }

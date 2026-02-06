@@ -26,11 +26,7 @@ export function parseCsv(
     autoDetectNumbers?: boolean;
   } = {}
 ): ParsedCsv {
-  const {
-    delimiter = ',',
-    hasHeaders = true,
-    autoDetectNumbers = true,
-  } = options;
+  const { delimiter = ',', hasHeaders = true, autoDetectNumbers = true } = options;
 
   const lines = csvText
     .split(/\r?\n/)

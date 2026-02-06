@@ -8,3 +8,5 @@ tsconfig.json
 **/*.map
 **/*.ts
 !out/**/*.js
+esbuild.config.mjs
+scripts/postinstall.mjs
