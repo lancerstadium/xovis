@@ -44,14 +44,13 @@ jobs:
         run: pnpm build:core
 
       - name: Build web
-        env:
-          VITE_BASE_PATH: /xovis/
         run: |
-          echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
           export VITE_BASE_PATH=/xovis/
-          pnpm --filter @xovis/web build
+          echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
+          cd packages/web
+          pnpm build
           echo "Checking built index.html:"
-          head -15 packages/web/dist/index.html
+          head -15 dist/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
