@@ -3,9 +3,12 @@ import { useGraphStore, useSettingsStore } from '../stores';
 import { getLocale } from '../locale';
 import { loadFile } from '../utils/loadFile';
 
+// 使用 BASE_URL 确保在 GitHub Pages 部署时路径正确
+const BASE_URL = import.meta.env.BASE_URL || '/';
+
 const EXAMPLES = [
-  { value: 'example-graph.json', path: '/examples/models/example-graph.json' },
-  { value: 'example-complete.json', path: '/examples/models/example-complete.json' },
+  { value: 'example-graph.json', path: `${BASE_URL}examples/models/example-graph.json` },
+  { value: 'example-complete.json', path: `${BASE_URL}examples/models/example-complete.json` },
 ] as const;
 
 const ICON_SVG = {
