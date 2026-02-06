@@ -45,9 +45,14 @@ jobs:
 
       - name: Build web
         working-directory: packages/web
+        env:
+          GITHUB_ACTIONS: 'true'
+          VITE_BASE_PATH: '/xovis/'
         run: |
           echo "Building for GitHub Pages with base path /xovis/"
-          pnpm run build:pages
+          echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
+          echo "VITE_BASE_PATH=$VITE_BASE_PATH"
+          pnpm run build
           echo "Checking built index.html:"
           head -15 dist/index.html
           echo "Verifying asset paths:"
