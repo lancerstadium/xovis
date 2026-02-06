@@ -60,12 +60,6 @@ jobs:
           echo "Full index.html content:"
           cat dist/index.html
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-        continue-on-error: true
-        with:
-          enablement: false
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
