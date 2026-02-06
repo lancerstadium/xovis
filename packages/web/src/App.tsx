@@ -107,7 +107,10 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', mode);
     document.documentElement.setAttribute('data-silent', s.silentMode ? 'true' : 'false');
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (link) link.href = mode === 'dark' ? '/favicon-dark.svg' : '/favicon.svg';
+    if (link) {
+      const basePath = import.meta.env.BASE_URL || '/';
+      link.href = mode === 'dark' ? `${basePath}favicon-dark.svg` : `${basePath}favicon.svg`;
+    }
   }, [theme, s.silentMode]);
 
   useEffect(() => {
