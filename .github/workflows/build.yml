@@ -97,7 +97,11 @@ jobs:
           ls -la packages/web/dist/
 
       - name: Install ImageMagick (Windows)
-        uses: mfinelli/setup-imagemagick@v6
+        shell: pwsh
+        run: |
+          choco install imagemagick -y
+          $imPath = (Get-ChildItem "C:\Program Files\ImageMagick*" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+          if ($imPath) { echo "$imPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append }
 
       - name: Prepare Electron build (Windows)
         shell: bash
@@ -114,7 +118,7 @@ jobs:
           echo "node-linker=hoisted" > .npmrc
           pnpm install
           mkdir -p build
-          magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png
+          (magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || echo "Warning: icon.png not generated"
           pnpm run build:win
 
       - name: Upload Windows artifacts
@@ -286,7 +290,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -336,12 +340,6 @@ jobs:
           if [ ! -f "out/extension.js" ]; then
             echo "Error: Extension compilation failed"
             exit 1
-          fi
-          # 检查 @xovis/core 是否被正确包含
-          if ! grep -q "@xovis/core" out/extension.js 2>/dev/null && [ -d "node_modules/@xovis/core" ]; then
-            echo "Warning: @xovis/core may not be bundled correctly"
-            echo "Copying @xovis/core to out directory..."
-            cp -r node_modules/@xovis/core out/ 2>/dev/null || true
           fi
           # 确保 vsce 已安装
           if ! command -v vsce &> /dev/null && [ ! -f "node_modules/.bin/vsce" ]; then

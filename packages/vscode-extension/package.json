@@ -60,7 +60,7 @@
     "vscode:prepublish": "pnpm run compile",
     "compile": "node esbuild.config.mjs",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package --no-dependencies",
+    "package": "vsce package --no-dependencies --allow-missing-repository",
     "postinstall": "node -e \"require('fs').mkdirSync('images',{recursive:true});require('fs').copyFileSync('../web/public/favicon-app.svg','images/icon.svg')\""
   },
   "devDependencies": {
@@ -72,8 +72,5 @@
   },
   "dependencies": {
     "@xovis/core": "workspace:*"
-  },
-  "bundledDependencies": [
-    "@xovis/core"
-  ]
+  }
 }
