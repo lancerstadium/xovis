@@ -48,7 +48,8 @@ jobs:
           VITE_BASE_PATH: /xovis/
         run: |
           echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
-          pnpm build:web
+          export VITE_BASE_PATH=/xovis/
+          pnpm --filter @xovis/web build
           echo "Checking built index.html:"
           head -15 packages/web/dist/index.html
 
