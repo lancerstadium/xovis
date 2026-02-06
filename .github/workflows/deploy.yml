@@ -46,7 +46,11 @@ jobs:
       - name: Build web
         env:
           VITE_BASE_PATH: /xovis/
-        run: pnpm build:web
+        run: |
+          echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
+          pnpm build:web
+          echo "Checking built index.html:"
+          head -15 packages/web/dist/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
