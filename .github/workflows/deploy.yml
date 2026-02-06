@@ -45,15 +45,13 @@ jobs:
 
       - name: Build web
         working-directory: packages/web
-        env:
-          VITE_BASE_PATH: /xovis/
-          GITHUB_REPOSITORY: lancerstadium/xovis
         run: |
-          echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
-          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
-          VITE_BASE_PATH=/xovis/ pnpm build
+          echo "Building for GitHub Pages with base path /xovis/"
+          pnpm run build:pages
           echo "Checking built index.html:"
           head -15 dist/index.html
+          echo "Verifying asset paths:"
+          grep -E '(src|href)=' dist/index.html | head -5
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
