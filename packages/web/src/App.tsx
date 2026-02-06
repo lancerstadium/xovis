@@ -108,7 +108,7 @@ export default function App() {
     document.documentElement.setAttribute('data-silent', s.silentMode ? 'true' : 'false');
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link) {
-      const basePath = (import.meta as any).env?.BASE_URL || '/';
+      const basePath = import.meta.env.BASE_URL || '/';
       link.href = mode === 'dark' ? `${basePath}favicon-dark.svg` : `${basePath}favicon.svg`;
     }
   }, [theme, s.silentMode]);
@@ -724,10 +724,8 @@ function ExportSvgButton({
 
         // 使用svg2pdf.js将SVG转换为矢量PDF
         // 注意：SVG必须包含所有内联样式（我们已经做了）
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pdfWithSvg = pdf as any;
-        if (typeof pdfWithSvg.svg === 'function') {
-          await pdfWithSvg.svg(svg, {
+        if (typeof pdf.svg === 'function') {
+          await pdf.svg(svg, {
             x: 0,
             y: 0,
             width: widthMm,

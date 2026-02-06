@@ -374,7 +374,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   useEffect(() => {
     const el = emptyLogoRef.current;
     if (!el) return;
-        fetch(`${(import.meta as any).env?.BASE_URL || '/'}favicon-raw.svg`)
+        fetch(`${import.meta.env.BASE_URL || '/'}favicon-raw.svg`)
       .then((r) => r.text())
       .then((svg) => {
         const sized = svg.replace(/width="32"\s+height="32"/, 'width="48" height="48"');
