@@ -161,7 +161,7 @@ function useLayout(graph: Graph | null) {
     const minHeadH = fs + 10;
 
     // 过滤节点：根据设置决定是否包含权重节点和IO节点
-    const filteredNodes = graph.nodes.filter((n) => {
+    const filteredNodes = graph.nodes.filter((n: GraphNode) => {
       const isTensor = n.metadata?.isTensorNode === true;
       if (!isTensor) return true; // 算子节点始终显示
       const tensor = graph.tensors ? graph.tensors[n.metadata?.tensorIndex as number] : null;
@@ -175,7 +175,7 @@ function useLayout(graph: Graph | null) {
       return true;
     });
 
-    filteredNodes.forEach((n) => {
+    filteredNodes.forEach((n: GraphNode) => {
       const isTensor = n.metadata?.isTensorNode === true;
       const tensor =
         isTensor && graph.tensors ? graph.tensors[n.metadata?.tensorIndex as number] : null;
@@ -185,7 +185,7 @@ function useLayout(graph: Graph | null) {
       let h = nodeHeight;
       if (hasAttrs) {
         const lines = nodeAttrsLines(n, tensor ?? null);
-        const maxLineChars = lines.length ? Math.max(...lines.map((l) => l.length)) : 0;
+        const maxLineChars = lines.length ? Math.max(...lines.map((l: string) => l.length)) : 0;
         const wAttr = Math.ceil(maxLineChars * charWidthAttr) + paddingAttr;
         w = Math.max(wName, wAttr, nodeWidth);
         const bodyH = lines.length * (attrFontSize + 2) + 12;
@@ -197,8 +197,8 @@ function useLayout(graph: Graph | null) {
     });
 
     // 只添加连接可见节点的边
-    const visibleNodeIds = new Set(filteredNodes.map((n) => n.id));
-    graph.edges?.forEach((e) => {
+    const visibleNodeIds = new Set(filteredNodes.map((n: GraphNode) => n.id));
+    graph.edges?.forEach((e: GraphEdge) => {
       if (visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) {
         g.setEdge(e.source, e.target, {}, e.id);
       }
@@ -374,7 +374,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   useEffect(() => {
     const el = emptyLogoRef.current;
     if (!el) return;
-        fetch(`${import.meta.env.BASE_URL || '/'}favicon-app.svg`)
+        fetch(`${import.meta.env.BASE_URL || '/'}favicon-raw.svg`)
       .then((r) => r.text())
       .then((svg) => {
         const sized = svg.replace(/width="32"\s+height="32"/, 'width="48" height="48"');
@@ -396,12 +396,12 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
 
   const nodeMap = useMemo(() => {
     const m = new Map<string, GraphNode>();
-    graph?.nodes?.forEach((n) => m.set(n.id, n));
+    graph?.nodes?.forEach((n: GraphNode) => m.set(n.id, n));
     return m;
   }, [graph]);
   const edgeMap = useMemo(() => {
     const m = new Map<string, GraphEdge>();
-    graph?.edges?.forEach((e) => m.set(e.id, e));
+    graph?.edges?.forEach((e: GraphEdge) => m.set(e.id, e));
     return m;
   }, [graph]);
 
@@ -429,13 +429,13 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
       minY = Infinity,
       maxX = -Infinity,
       maxY = -Infinity;
-    layoutNodes.forEach((n) => {
+    layoutNodes.forEach((n: LayoutNode) => {
       minX = Math.min(minX, n.x);
       minY = Math.min(minY, n.y);
       maxX = Math.max(maxX, n.x + n.width);
       maxY = Math.max(maxY, n.y + n.height);
     });
-    layoutEdges.forEach((e) => {
+    layoutEdges.forEach((e: LayoutEdge) => {
       e.points.forEach((p) => {
         minX = Math.min(minX, p.x);
         minY = Math.min(minY, p.y);
@@ -446,7 +446,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     const pad = 24;
     const vbW = Math.max(0, maxX - minX) + pad * 2;
     const vbH = Math.max(0, maxY - minY) + pad * 2;
-    return layoutNodes.length || layoutEdges.some((e) => e.points.length)
+    return layoutNodes.length || layoutEdges.some((e: LayoutEdge) => e.points.length)
       ? `${minX - pad} ${minY - pad} ${vbW} ${vbH}`
       : '0 0 400 200';
   }, [layoutNodes, layoutEdges]);
@@ -461,7 +461,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   // 过滤节点：根据设置决定是否渲染权重节点和IO节点
   const visibleNodes = useMemo(() => {
     if (!graph?.nodes) return [];
-    return graph.nodes.filter((n) => {
+    return graph.nodes.filter((n: GraphNode) => {
       const isTensor = n.metadata?.isTensorNode === true;
       if (!isTensor) return true; // 算子节点始终显示
       const tensor = graph.tensors ? graph.tensors[n.metadata?.tensorIndex as number] : null;
@@ -476,7 +476,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     });
   }, [graph, s.showWeightNodes, s.showIONodes]);
 
-  const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((n) => n.id)), [visibleNodes]);
+  const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((n: GraphNode) => n.id)), [visibleNodes]);
 
   return (
     <>
@@ -588,7 +588,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                 </filter>
               </defs>
               <g className="graphContent">
-                {layoutEdges.map((e) => {
+                {layoutEdges.map((e: LayoutEdge) => {
                   const ge = edgeMap.get(e.id);
                   if (!ge) return null;
                   // 只显示连接可见节点的边

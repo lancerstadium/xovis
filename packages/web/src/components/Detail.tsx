@@ -30,7 +30,7 @@ function Section({ title, entries }: { title: string; entries: [string, unknown]
 }
 
 function GraphDetail({ graph, t }: { graph: Graph; t: ReturnType<typeof getLocale> }) {
-  const opCount = graph.nodes.filter((n) => !n.metadata?.isTensorNode).length;
+  const opCount = graph.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode).length;
   const base: [string, unknown][] = [
     [t.detailId, graph.id],
     [t.detailName, graph.name],
@@ -73,7 +73,7 @@ function OpNodeDetail({
   const outputsEntries: [string, unknown][] = [];
   
   if (node.inputs && Array.isArray(node.inputs) && graph.tensors) {
-    node.inputs.forEach((tensorIdx) => {
+    node.inputs.forEach((tensorIdx: number) => {
       const tensor = graph.tensors[tensorIdx];
       if (tensor) {
         const tensorId = tensor.id || `tensor_${tensorIdx}`;
@@ -84,7 +84,7 @@ function OpNodeDetail({
   }
   
   if (node.outputs && Array.isArray(node.outputs) && graph.tensors) {
-    node.outputs.forEach((tensorIdx) => {
+    node.outputs.forEach((tensorIdx: number) => {
       const tensor = graph.tensors[tensorIdx];
       if (tensor) {
         const tensorId = tensor.id || `tensor_${tensorIdx}`;

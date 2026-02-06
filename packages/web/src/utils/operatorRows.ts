@@ -9,11 +9,11 @@ import { flattenMetadata } from './flattenMetadata';
 const INTERNAL_META_KEYS = new Set(['isTensorNode', 'tensorIndex', 'isCsvData', 'rowIndex']);
 
 export function getOperatorRows(graph: { nodes: GraphNode[] }): Record<string, unknown>[] {
-  const ops = graph.nodes.filter((n) => !n.metadata?.isTensorNode);
+  const ops = graph.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode);
   const allKeys = new Set<string>(['index', 'id', 'name']);
   
   // 收集所有可能的键：从 metadata 和 attributes
-  ops.forEach((n) => {
+  ops.forEach((n: GraphNode) => {
     // 从 metadata 收集键，过滤掉内部字段
     Object.keys(flattenMetadata(n.metadata))
       .filter((k) => !INTERNAL_META_KEYS.has(k))

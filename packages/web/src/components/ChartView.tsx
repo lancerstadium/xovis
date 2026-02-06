@@ -10,6 +10,7 @@ import {
 import { useGraphStore, useSettingsStore } from '../stores';
 import type { ChartYColumnConfig } from '../stores/settings';
 import { getLocale } from '../locale';
+import type { GraphNode } from '@xovis/core';
 import { getOperatorRows } from '../utils/operatorRows';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
 
@@ -1076,7 +1077,7 @@ export const ChartView = forwardRef<
 
   useImperativeHandle(ref, () => ({ getSvgElement: () => svgRef.current, resetView }), [resetView]);
 
-  const ops = useMemo(() => graph?.nodes.filter((n) => !n.metadata?.isTensorNode) ?? [], [graph]);
+  const ops = useMemo(() => graph?.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode) ?? [], [graph]);
 
   // 使用序列化来深度比较 chartYKeys，确保配置变化时能正确更新
   // chartYKeysKey 变化时，chartData 会重新计算，buildChartData 会创建新的配置对象引用
