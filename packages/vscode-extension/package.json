@@ -16,7 +16,6 @@
     "onCustomEditor:xovis.graph"
   ],
   "main": "./out/extension.js",
-  "icon": "images/icon.png",
   "contributes": {
     "commands": [
       {

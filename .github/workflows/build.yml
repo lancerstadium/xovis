@@ -99,6 +99,7 @@ jobs:
       - name: Build Electron (Windows)
         env:
           USE_SYSTEM_FPM: 1
+        shell: bash
         run: |
           cd packages/electron
           # 使用 hoisted 模式以改善与 electron-builder 的兼容性
@@ -298,14 +299,25 @@ jobs:
           pnpm install
           # 复制图标文件
           mkdir -p images
-          cp ../../web/public/favicon-app.svg images/icon.svg || true
-          # 生成图标 PNG（如果 imagemagick 可用）
-          if command -v convert &> /dev/null; then
-            convert -background white -resize 128x128 images/icon.svg images/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          if [ -f "../../web/public/favicon-app.svg" ]; then
+            cp ../../web/public/favicon-app.svg images/icon.svg || true
+            # 生成图标 PNG（如果 imagemagick 可用）
+            if command -v convert &> /dev/null; then
+              convert -background white -resize 128x128 images/icon.svg images/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+            else
+              echo "Warning: ImageMagick not available, icon.png not generated"
+            fi
           else
-            echo "Warning: ImageMagick not available, icon.png not generated"
+            echo "Warning: favicon-app.svg not found, skipping icon generation"
           fi
           pnpm run compile
+          # 如果图标存在，添加到 package.json
+          if [ -f "images/icon.png" ]; then
+            echo "Icon found, adding to package.json"
+            node -e "const pkg = require('./package.json'); pkg.icon = 'images/icon.png'; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));"
+          else
+            echo "Warning: icon.png not found, extension will be built without icon"
+          fi
           # 检查编译是否成功
           if [ ! -f "out/extension.js" ]; then
             echo "Error: Extension compilation failed"
