@@ -108,7 +108,7 @@ export default function App() {
     document.documentElement.setAttribute('data-silent', s.silentMode ? 'true' : 'false');
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link) {
-      const basePath = import.meta.env.BASE_URL || '/';
+      const basePath = (import.meta as any).env?.BASE_URL || '/';
       link.href = mode === 'dark' ? `${basePath}favicon-dark.svg` : `${basePath}favicon.svg`;
     }
   }, [theme, s.silentMode]);
