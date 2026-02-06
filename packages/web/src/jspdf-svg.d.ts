@@ -1,5 +1,4 @@
-import { jsPDF } from 'jspdf';
-
+// Type definitions for svg2pdf.js extension
 declare module 'jspdf' {
   interface jsPDF {
     svg(
