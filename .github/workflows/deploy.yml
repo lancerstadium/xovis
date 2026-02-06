@@ -44,10 +44,11 @@ jobs:
         run: pnpm build:core
 
       - name: Build web
+        working-directory: packages/web
+        env:
+          VITE_BASE_PATH: /xovis/
         run: |
-          export VITE_BASE_PATH=/xovis/
           echo "Building with VITE_BASE_PATH=$VITE_BASE_PATH"
-          cd packages/web
           pnpm build
           echo "Checking built index.html:"
           head -15 dist/index.html
