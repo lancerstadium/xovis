@@ -52,11 +52,13 @@ jobs:
           echo "Building for GitHub Pages with base path /xovis/"
           echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
           echo "VITE_BASE_PATH=$VITE_BASE_PATH"
-          pnpm run build
+          pnpm run build:pages
           echo "Checking built index.html:"
           head -15 dist/index.html
           echo "Verifying asset paths:"
           grep -E '(src|href)=' dist/index.html | head -5
+          echo "Full index.html content:"
+          cat dist/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
