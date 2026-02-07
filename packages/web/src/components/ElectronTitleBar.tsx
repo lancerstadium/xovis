@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 
-const TITLE_BAR_HEIGHT = 36;
+const TITLE_BAR_HEIGHT = 24;
 
 export function ElectronTitleBar() {
   const api = window.electronAPI;
@@ -27,7 +27,6 @@ export function ElectronTitleBar() {
     right: 0,
     height: TITLE_BAR_HEIGHT,
     background: 'var(--bg)',
-    borderBottom: '1px solid var(--border)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -9,7 +9,7 @@
 /* Electron 无边框窗口：Win/Linux 一体标题栏按钮 */
 .electron-title-btn {
   width: 46px;
-  height: 36px;
+  height: 24px;
   padding: 0;
   border: none;
   background: transparent;

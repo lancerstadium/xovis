@@ -32,7 +32,7 @@ function createWindow() {
       );
     } else {
       mainWindow!.webContents.insertCSS(
-        'body { padding-top: 36px !important; box-sizing: border-box; }'
+        'body { padding-top: 24px !important; box-sizing: border-box; }'
       );
     }
   });
