@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { CSSProperties } from 'react';
 
 const TITLE_BAR_HEIGHT = 36;
 
@@ -19,28 +20,32 @@ export function ElectronTitleBar() {
 
   const { windowControls } = api;
 
+  const barStyle: CSSProperties & { WebkitAppRegion?: string } = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: TITLE_BAR_HEIGHT,
+    background: 'var(--bg)',
+    borderBottom: '1px solid var(--border)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 12,
+    paddingRight: 0,
+    zIndex: 10000,
+    WebkitAppRegion: 'drag',
+  };
+  const buttonsWrapStyle: CSSProperties & { WebkitAppRegion?: string } = {
+    display: 'flex',
+    height: '100%',
+    WebkitAppRegion: 'no-drag',
+  };
+
   return (
-    <div
-      className="electron-title-bar"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: TITLE_BAR_HEIGHT,
-        background: 'var(--bg)',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingLeft: 12,
-        paddingRight: 0,
-        zIndex: 10000,
-        WebkitAppRegion: 'drag',
-      }}
-    >
+    <div className="electron-title-bar" style={barStyle}>
       <span style={{ fontSize: 12, color: 'var(--text2)', userSelect: 'none' }}>xovis</span>
-      <div style={{ display: 'flex', height: '100%', WebkitAppRegion: 'no-drag' }}>
+      <div style={buttonsWrapStyle}>
         <button
           type="button"
           className="electron-title-btn"
