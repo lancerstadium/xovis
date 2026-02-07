@@ -33,7 +33,7 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
   const updateFavicon = () => {
     editorPanel?.webview.postMessage({
       type: 'theme',
-      favicon: getFaviconForTheme(),
+      favicon: 'favicon-raw.svg',
     });
   };
   const themeSub = vscode.window.onDidChangeActiveColorTheme(updateFavicon);
@@ -115,7 +115,7 @@ function getHtmlForWebview(
   html = html
     .replace(/src="\.\//g, `src="${baseSlash}`)
     .replace(/href="\.\//g, `href="${baseSlash}`);
-  const faviconName = getFaviconForTheme();
+  const faviconName = 'favicon-raw.svg';
   html = html.replace(/favicon\.svg/g, faviconName);
 
   const csp = [
