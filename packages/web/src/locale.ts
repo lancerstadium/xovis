@@ -125,7 +125,10 @@ export const locale: Record<
     settingsChartSeriesKey: string;
     settingsChartWidth: string;
     settingsChartHeight: string;
+    settingsChartSize: string;
     settingsChartBarGap: string;
+    settingsChartBarGapInner: string;
+    settingsChartBarGapOuter: string;
     settingsChartLineWidth: string;
     settingsChartScatterRadius: string;
     settingsChartLabelFontSize: string;
@@ -251,8 +254,9 @@ export const locale: Record<
     dataPanelFillStyle: string;
     dataPanelEdgeStyle: string;
     dataPanelEdgeWidth: string;
-    dataPanelOpacity: string;
-    dataPanelLineStyle: string;
+  dataPanelOpacity: string;
+  dataPanelBarBase: string;
+  dataPanelLineStyle: string;
     dataPanelLineWidth: string;
     dataPanelFit: string;
     dataPanelFitType: string;
@@ -288,6 +292,10 @@ export const locale: Record<
     styleSolid: string;
     styleGradient: string;
     styleHatched: string;
+    styleHatchedH: string;
+    styleHatchedV: string;
+    styleHatchedCross: string;
+    styleStripes: string;
     stylePattern: string;
     styleDashed: string;
     styleDotted: string;
@@ -472,6 +480,7 @@ export const locale: Record<
     settingsChartSeriesKey: '分组列（多系列）',
     settingsChartWidth: '画布宽度',
     settingsChartHeight: '画布高度',
+    settingsChartSize: '画布尺寸',
     settingsChartAxisPaddingLeft: '左边界距离',
     settingsChartAxisPaddingRight: '右边界距离',
     settingsChartAxisPaddingTop: '上边界距离',
@@ -479,6 +488,8 @@ export const locale: Record<
     settingsChartAxisLabelDecimals: '轴刻度小数位',
     settingsChartExportScale: '导出缩放',
     settingsChartBarGap: '柱间距',
+    settingsChartBarGapInner: '组内间距',
+    settingsChartBarGapOuter: '组外间距',
     settingsChartLineWidth: '折线粗细',
     settingsChartScatterRadius: '散点半径',
     settingsChartLabelFontSize: '标签字号',
@@ -599,6 +610,7 @@ export const locale: Record<
     dataPanelEdgeStyle: '边框样式',
     dataPanelEdgeWidth: '边框宽度',
     dataPanelOpacity: '透明度',
+    dataPanelBarBase: '起始数据',
     dataPanelLineStyle: '线型',
     dataPanelLineWidth: '线宽',
     dataPanelFit: '拟合',
@@ -635,7 +647,11 @@ export const locale: Record<
     styleSolid: '实线',
     styleGradient: '渐变',
     styleHatched: '斜线',
-    stylePattern: '图案',
+    styleHatchedH: '横线',
+    styleHatchedV: '竖线',
+    styleHatchedCross: '交叉',
+    styleStripes: '条纹',
+    stylePattern: '圆点',
     styleDashed: '虚线',
     styleDotted: '点线',
     styleDashdot: '点划线',
@@ -818,6 +834,7 @@ export const locale: Record<
     settingsChartSeriesKey: 'Series key',
     settingsChartWidth: 'Canvas width',
     settingsChartHeight: 'Canvas height',
+    settingsChartSize: 'Canvas size',
     settingsChartAxisPaddingLeft: 'Left padding',
     settingsChartAxisPaddingRight: 'Right padding',
     settingsChartAxisPaddingTop: 'Top padding',
@@ -825,6 +842,8 @@ export const locale: Record<
     settingsChartAxisLabelDecimals: 'Axis tick decimals',
     settingsChartExportScale: 'Export scale',
     settingsChartBarGap: 'Bar gap',
+    settingsChartBarGapInner: 'Inner gap',
+    settingsChartBarGapOuter: 'Outer gap',
     settingsChartLineWidth: 'Line width',
     settingsChartScatterRadius: 'Scatter radius',
     settingsChartLabelFontSize: 'Label font size',
@@ -945,6 +964,7 @@ export const locale: Record<
     dataPanelEdgeStyle: 'Edge style',
     dataPanelEdgeWidth: 'Edge width',
     dataPanelOpacity: 'Opacity',
+    dataPanelBarBase: 'Base column',
     dataPanelLineStyle: 'Line style',
     dataPanelLineWidth: 'Line width',
     dataPanelFit: 'Fit',
@@ -981,7 +1001,11 @@ export const locale: Record<
     styleSolid: 'Solid',
     styleGradient: 'Gradient',
     styleHatched: 'Hatched',
-    stylePattern: 'Pattern',
+    styleHatchedH: 'Horizontal',
+    styleHatchedV: 'Vertical',
+    styleHatchedCross: 'Cross',
+    styleStripes: 'Stripes',
+    stylePattern: 'Dots',
     styleDashed: 'Dashed',
     styleDotted: 'Dotted',
     styleDashdot: 'Dash-dot',

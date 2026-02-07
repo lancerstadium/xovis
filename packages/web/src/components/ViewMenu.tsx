@@ -759,6 +759,14 @@ export function ViewMenu({
                       defaultVal={0}
                       onChange={(n) => s.set({ exportPadding: n })}
                     />
+                    <NumRow
+                      label={t.settingsChartExportScale}
+                      value={s.chartExportScale}
+                      min={1}
+                      max={4}
+                      defaultVal={2}
+                      onChange={(n) => s.set({ chartExportScale: n })}
+                    />
                   </div>
                 </Section>
               </div>
@@ -830,29 +838,20 @@ export function ViewMenu({
                   </div>
                 </Section>
                 <Section title={t.settingsSectionChartSize}>
-                  <NumRow
-                    label={t.settingsChartWidth}
-                    value={s.chartWidth}
-                    min={320}
-                    max={1600}
-                    defaultVal={800}
-                    onChange={(n) => s.set({ chartWidth: n })}
-                  />
-                  <NumRow
-                    label={t.settingsChartHeight}
-                    value={s.chartHeight}
-                    min={240}
-                    max={1200}
-                    defaultVal={520}
-                    onChange={(n) => s.set({ chartHeight: n })}
-                  />
-                  <NumRow
-                    label={t.settingsChartExportScale}
-                    value={s.chartExportScale}
-                    min={1}
-                    max={4}
-                    defaultVal={2}
-                    onChange={(n) => s.set({ chartExportScale: n })}
+                  <NumPairRow
+                    label={t.settingsChartSize}
+                    valueA={s.chartWidth}
+                    valueB={s.chartHeight}
+                    minA={320}
+                    maxA={1600}
+                    stepA={50}
+                    defaultA={720}
+                    minB={240}
+                    maxB={1200}
+                    stepB={50}
+                    defaultB={480}
+                    onChangeA={(n) => s.set({ chartWidth: n })}
+                    onChangeB={(n) => s.set({ chartHeight: n })}
                   />
                   <NumRow
                     label={t.settingsChartPadding}
@@ -1262,12 +1261,20 @@ export function ViewMenu({
                 </Section>
                 <Section title={t.settingsSectionChartBar}>
                   <NumRow
-                    label={t.settingsChartBarGap}
-                    value={s.chartBarGap}
+                    label={t.settingsChartBarGapInner}
+                    value={s.chartBarGapInner}
                     min={0}
                     max={24}
-                    defaultVal={4}
-                    onChange={(n) => s.set({ chartBarGap: n })}
+                    defaultVal={0}
+                    onChange={(n) => s.set({ chartBarGapInner: n })}
+                  />
+                  <NumRow
+                    label={t.settingsChartBarGapOuter}
+                    value={s.chartBarGapOuter}
+                    min={0}
+                    max={48}
+                    defaultVal={8}
+                    onChange={(n) => s.set({ chartBarGapOuter: n })}
                   />
                   <NumRow
                     label={t.settingsChartBarCornerRadius}

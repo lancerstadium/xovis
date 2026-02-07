@@ -111,7 +111,8 @@ export default function App() {
     document.documentElement.setAttribute('data-silent', s.silentMode ? 'true' : 'false');
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link) {
-      const basePath = import.meta.env.BASE_URL || '/';
+      const base = import.meta.env.BASE_URL || '/';
+      const basePath = base.endsWith('/') ? base : `${base}/`;
       link.href = `${basePath}${mode === 'light' ? 'favicon.svg' : 'favicon-dark.svg'}`;
     }
   }, [theme, s.silentMode]);

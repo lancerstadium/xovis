@@ -1,7 +1,7 @@
 import { forwardRef, useMemo, useState, useRef, useEffect } from 'react';
 import { useGraphStore, useSettingsStore } from '../stores';
 import type { ChartYColumnConfig } from '../stores/settings';
-import { BAR_FILL_STYLES, EDGE_STYLES, LINE_STYLES, MARKER_STYLES } from '../stores/settings';
+import { FILL_STYLES, EDGE_STYLES, LINE_STYLES, MARKER_STYLES } from '../stores/settings';
 import { getLocale, type Lang } from '../locale';
 import { getOperatorRows, getTableColumns } from '../utils/operatorRows';
 import { NumberInput } from './ViewMenu';
@@ -10,7 +10,7 @@ import { NumberInput } from './ViewMenu';
 function getStyleLabels(lang: Lang) {
   const t = getLocale(lang);
   return {
-    barFillStyles: BAR_FILL_STYLES.map((s) => ({
+    barFillStyles: FILL_STYLES.map((s) => ({
       value: s.value,
       label:
         s.value === 'solid'
@@ -19,9 +19,17 @@ function getStyleLabels(lang: Lang) {
             ? t.styleGradient
             : s.value === 'hatched'
               ? t.styleHatched
-              : s.value === 'pattern'
-                ? t.stylePattern
-                : (s as (typeof BAR_FILL_STYLES)[number]).label,
+              : s.value === 'hatched-h'
+                ? t.styleHatchedH
+                : s.value === 'hatched-v'
+                  ? t.styleHatchedV
+                  : s.value === 'hatched-cross'
+                    ? t.styleHatchedCross
+                    : s.value === 'stripes'
+                      ? t.styleStripes
+                      : s.value === 'pattern'
+                        ? t.stylePattern
+                        : (s as (typeof FILL_STYLES)[number]).label,
     })),
     edgeStyles: EDGE_STYLES.map((s) => ({
       value: s.value,
@@ -94,6 +102,14 @@ const PRIMARY_KEY_COLUMNS = ['index', 'id'];
 
 function formatCell(v: unknown): string {
   if (v === null || v === undefined) return '—';
+  if (Array.isArray(v)) return v.map(String).join(', ');
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
+}
+
+/** 导出时：空值导出为空字符串（表格显示用 formatCell 显示 —） */
+function formatCellForExport(v: unknown): string {
+  if (v === null || v === undefined) return '';
   if (Array.isArray(v)) return v.map(String).join(', ');
   if (typeof v === 'object') return JSON.stringify(v);
   return String(v);
@@ -240,7 +256,7 @@ function YColumnConfigRow({
   t: ReturnType<typeof getLocale>;
 }) {
   const options = columns.filter((c) => c !== 'index');
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const s = useSettingsStore();
   const styleLabels = getStyleLabels(s.lang);
 
@@ -334,6 +350,25 @@ function YColumnConfigRow({
         <div className="chart-panel-subsection" style={{ marginTop: '4px', marginBottom: '4px' }}>
           {chartType === 'bar' && (
             <>
+              <div className="panel-control-row">
+                <span className="panel-option-label">{t.dataPanelBarBase}</span>
+                <div className="panel-option-value">
+                  <select
+                    className="view-input"
+                    value={config.barBaseKey ?? ''}
+                    onChange={(e) =>
+                      onChange({ ...config, barBaseKey: e.target.value || undefined })
+                    }
+                  >
+                    <option value="">—</option>
+                    {options.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <div className="panel-control-row">
                 <span className="panel-option-label">{t.dataPanelFillStyle}</span>
                 <div className="panel-option-value">
@@ -440,16 +475,22 @@ function YColumnConfigRow({
                   />
                 </div>
               </div>
-              <div className="panel-control-row">
-                <span className="panel-option-label">{t.dataPanelFit}</span>
-                <div className="panel-option-value">
+              <label
+                className="panel-check panel-control-row"
+                title={t.dataPanelFit}
+                aria-label={t.dataPanelFit}
+              >
+                <span className="panel-check-label">{t.dataPanelFit}</span>
+                <span className="panel-check-box-wrap">
                   <input
                     type="checkbox"
+                    className="panel-check-input"
                     checked={config.lineFit ?? false}
                     onChange={(e) => onChange({ ...config, lineFit: e.target.checked })}
                   />
-                </div>
-              </div>
+                  <span className="panel-check-box" aria-hidden />
+                </span>
+              </label>
               {config.lineFit && (
                 <>
                   <div className="panel-control-row">
@@ -512,16 +553,22 @@ function YColumnConfigRow({
                   )}
                 </>
               )}
-              <div className="panel-control-row">
-                <span className="panel-option-label">{t.dataPanelShowMarkers}</span>
-                <div className="panel-option-value">
+              <label
+                className="panel-check panel-control-row"
+                title={t.dataPanelShowMarkers}
+                aria-label={t.dataPanelShowMarkers}
+              >
+                <span className="panel-check-label">{t.dataPanelShowMarkers}</span>
+                <span className="panel-check-box-wrap">
                   <input
                     type="checkbox"
+                    className="panel-check-input"
                     checked={config.lineShowPoints ?? true}
                     onChange={(e) => onChange({ ...config, lineShowPoints: e.target.checked })}
                   />
-                </div>
-              </div>
+                  <span className="panel-check-box" aria-hidden />
+                </span>
+              </label>
               <div className="panel-control-row">
                 <span className="panel-option-label">{t.dataPanelMarkerStyle}</span>
                 <div className="panel-option-value">
@@ -692,9 +739,7 @@ function YColumnConfigRow({
                       })
                     }
                   >
-                    {styleLabels.barFillStyles
-                      .filter((s) => s.value !== 'pattern')
-                      .map((s) => (
+                    {styleLabels.barFillStyles.map((s) => (
                         <option key={s.value} value={s.value}>
                           {s.label}
                         </option>
@@ -742,16 +787,22 @@ function YColumnConfigRow({
           <div
             style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}
           >
-            <div className="panel-control-row">
-              <span className="panel-option-label">{t.dataPanelShowDataLabels}</span>
-              <div className="panel-option-value">
+            <label
+              className="panel-check panel-control-row"
+              title={t.dataPanelShowDataLabels}
+              aria-label={t.dataPanelShowDataLabels}
+            >
+              <span className="panel-check-label">{t.dataPanelShowDataLabels}</span>
+              <span className="panel-check-box-wrap">
                 <input
                   type="checkbox"
+                  className="panel-check-input"
                   checked={config.showDataLabels ?? false}
                   onChange={(e) => onChange({ ...config, showDataLabels: e.target.checked })}
                 />
-              </div>
-            </div>
+                <span className="panel-check-box" aria-hidden />
+              </span>
+            </label>
             {config.showDataLabels && (
               <>
                 <div className="panel-control-row">
@@ -825,26 +876,38 @@ function YColumnConfigRow({
                     />
                   </div>
                 </div>
-                <div className="panel-control-row">
-                  <span className="panel-option-label">{t.dataPanelDataLabelBold}</span>
-                  <div className="panel-option-value">
+                <label
+                  className="panel-check panel-control-row"
+                  title={t.dataPanelDataLabelBold}
+                  aria-label={t.dataPanelDataLabelBold}
+                >
+                  <span className="panel-check-label">{t.dataPanelDataLabelBold}</span>
+                  <span className="panel-check-box-wrap">
                     <input
                       type="checkbox"
+                      className="panel-check-input"
                       checked={config.dataLabelBold ?? false}
                       onChange={(e) => onChange({ ...config, dataLabelBold: e.target.checked })}
                     />
-                  </div>
-                </div>
-                <div className="panel-control-row">
-                  <span className="panel-option-label">{t.dataPanelDataLabelItalic}</span>
-                  <div className="panel-option-value">
+                    <span className="panel-check-box" aria-hidden />
+                  </span>
+                </label>
+                <label
+                  className="panel-check panel-control-row"
+                  title={t.dataPanelDataLabelItalic}
+                  aria-label={t.dataPanelDataLabelItalic}
+                >
+                  <span className="panel-check-label">{t.dataPanelDataLabelItalic}</span>
+                  <span className="panel-check-box-wrap">
                     <input
                       type="checkbox"
+                      className="panel-check-input"
                       checked={config.dataLabelItalic ?? false}
                       onChange={(e) => onChange({ ...config, dataLabelItalic: e.target.checked })}
                     />
-                  </div>
-                </div>
+                    <span className="panel-check-box" aria-hidden />
+                  </span>
+                </label>
               </>
             )}
           </div>
@@ -1173,7 +1236,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                             type="button"
                             className="data-table-export-btn"
                             onClick={() =>
-                              downloadTable(selectedColumns, sortedRows, fmt, formatCell)
+                              downloadTable(selectedColumns, sortedRows, fmt, formatCellForExport)
                             }
                             title={`导出选中列为 ${fmt.toUpperCase()}`}
                             aria-label={`导出 ${fmt.toUpperCase()}`}

@@ -9,10 +9,12 @@ export type ChartYColumnConfig = {
   // 通用样式
   styleType?: 'solid' | 'gradient' | 'dashed' | 'dotted' | 'dashdot' | 'double-dash';
   // 柱状图/扇形图样式
-  barFillStyle?: 'solid' | 'gradient' | 'hatched' | 'pattern';
+  barFillStyle?: 'solid' | 'gradient' | 'hatched' | 'hatched-h' | 'hatched-v' | 'hatched-cross' | 'stripes' | 'pattern';
   barEdgeStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
   barEdgeWidth?: number;
   barOpacity?: number;
+  /** 柱状图起始数据列（默认为空，柱子从坐标轴底绘制） */
+  barBaseKey?: string;
   // 折线图样式
   lineStyle?: 'solid' | 'dashed' | 'dotted' | 'dashdot' | 'double-dash';
   lineWidth?: number;
@@ -50,18 +52,25 @@ export type ChartYColumnConfig = {
   scatterMarkerEdgeWidth?: number;
   scatterMarkerOpacity?: number;
   // 扇形图样式
-  pieFillStyle?: 'solid' | 'gradient' | 'hatched';
+  pieFillStyle?: 'solid' | 'gradient' | 'hatched' | 'hatched-h' | 'hatched-v' | 'hatched-cross' | 'stripes' | 'pattern';
   pieEdgeStyle?: 'solid' | 'dashed' | 'none';
   pieEdgeWidth?: number;
 };
 
-/** 柱状图填充样式选项 */
-export const BAR_FILL_STYLES = [
+/** 柱状图/扇形图填充样式选项 */
+export const FILL_STYLES = [
   { value: 'solid', label: '纯色' },
   { value: 'gradient', label: '渐变' },
   { value: 'hatched', label: '斜线' },
-  { value: 'pattern', label: '图案' },
+  { value: 'hatched-h', label: '横线' },
+  { value: 'hatched-v', label: '竖线' },
+  { value: 'hatched-cross', label: '交叉' },
+  { value: 'stripes', label: '条纹' },
+  { value: 'pattern', label: '圆点' },
 ] as const;
+
+/** @deprecated 使用 FILL_STYLES */
+export const BAR_FILL_STYLES = FILL_STYLES;
 
 /** 边框样式选项 */
 export const EDGE_STYLES = [
@@ -1282,8 +1291,10 @@ export interface ViewSettings {
   chartXKey: string;
   /** 图表 Y 轴/数值列（可多列，每列一个系列，包含颜色和样式配置） */
   chartYKeys: ChartYColumnConfig[];
-  /** 图表：柱状图柱间距 */
-  chartBarGap: number;
+  /** 图表：柱状图组内间距（同组柱子之间） */
+  chartBarGapInner: number;
+  /** 图表：柱状图组外间距（不同组之间） */
+  chartBarGapOuter: number;
   /** 图表：柱状图柱子宽度（0表示自适应） */
   chartBarWidth: number;
   /** 图表：折线/描边粗细 */
@@ -1485,7 +1496,8 @@ const defaults: ViewSettings = {
   viewMode: 'graph',
   chartXKey: '',
   chartYKeys: [],
-  chartBarGap: 4,
+  chartBarGapInner: 0,
+  chartBarGapOuter: 8,
   chartBarWidth: 0,
   chartLineWidth: 2,
   chartScatterRadius: 5,
@@ -1508,8 +1520,8 @@ const defaults: ViewSettings = {
   chartTickColor: '',
   chartShowLegend: true,
   chartLegendMaxColumns: 0,
-  chartLegendPosition: 'top',
-  chartLegendInside: false,
+  chartLegendPosition: 'top-right',
+  chartLegendInside: true,
   chartLegendMaxLength: 12,
   chartLegendWidth: 0,
   chartLegendHeight: 0,
@@ -1520,8 +1532,8 @@ const defaults: ViewSettings = {
   chartAxisBoxStyle: 'full',
   chartAxisStrokeStyle: 'solid',
   chartAxisTickStyle: 'outside-half',
-  chartWidth: 800,
-  chartHeight: 520,
+  chartWidth: 720,
+  chartHeight: 480,
   chartAxisPaddingLeft: 20,
   chartAxisPaddingRight: 20,
   chartAxisPaddingTop: 10,
@@ -1574,7 +1586,7 @@ const defaults: ViewSettings = {
   nodeStrokeWidth: 1,
   edgeLabelShowShape: true,
   nodeLabelShowAttrs: false,
-  showWeightNodes: true,
+  showWeightNodes: false,
   showIONodes: true,
   nodeNameBold: false,
   nodeNameItalic: false,
@@ -1649,7 +1661,10 @@ export const useSettingsStore = create<
         }
         delete (out as unknown as Record<string, unknown>).chartYKey;
         delete (out as unknown as Record<string, unknown>).chartSeriesKey;
-        if (out.chartBarGap == null) out.chartBarGap = 4;
+        if (out.chartBarGapInner == null)
+          out.chartBarGapInner = (out as { chartBarGap?: number }).chartBarGap ?? 0;
+        if (out.chartBarGapOuter == null)
+          out.chartBarGapOuter = (out as { chartBarGap?: number }).chartBarGap ?? 8;
         if (out.chartBarWidth == null) out.chartBarWidth = 0;
         if (out.chartLineWidth == null) out.chartLineWidth = 2;
         if (out.chartScatterRadius == null) out.chartScatterRadius = 5;
@@ -1672,8 +1687,8 @@ export const useSettingsStore = create<
         if (out.chartTickColor == null) out.chartTickColor = '';
         if (out.chartShowLegend == null) out.chartShowLegend = true;
         if (out.chartLegendMaxColumns == null) out.chartLegendMaxColumns = 0;
-        if (out.chartLegendPosition == null) out.chartLegendPosition = 'top';
-        if (out.chartLegendInside == null) out.chartLegendInside = false;
+        if (out.chartLegendPosition == null) out.chartLegendPosition = 'top-right';
+        if (out.chartLegendInside == null) out.chartLegendInside = true;
         if (out.chartLegendMaxLength == null) out.chartLegendMaxLength = 12;
         // 迁移旧数据：如果 chartLegendPosition 是 'inside'（旧版本的值），转换为新格式
         if ((out.chartLegendPosition as unknown) === 'inside') {
@@ -1689,8 +1704,8 @@ export const useSettingsStore = create<
         if (out.chartAxisBoxStyle == null) out.chartAxisBoxStyle = 'full';
         if (out.chartAxisStrokeStyle == null) out.chartAxisStrokeStyle = 'solid';
         if (out.chartAxisTickStyle == null) out.chartAxisTickStyle = 'outside-half';
-        if (out.chartWidth == null) out.chartWidth = 800;
-        if (out.chartHeight == null) out.chartHeight = 520;
+        if (out.chartWidth == null) out.chartWidth = 720;
+        if (out.chartHeight == null) out.chartHeight = 480;
         if (out.chartAxisPaddingLeft == null) out.chartAxisPaddingLeft = 20;
         if (out.chartAxisPaddingRight == null) out.chartAxisPaddingRight = 20;
         if (out.chartAxisPaddingTop == null) out.chartAxisPaddingTop = 10;
@@ -1732,7 +1747,7 @@ export const useSettingsStore = create<
         if (out.chartLegendItalic == null) out.chartLegendItalic = false;
         if (out.chartLegendMaxLength == null) out.chartLegendMaxLength = 12;
         if (out.chartSeriesVisibility == null) out.chartSeriesVisibility = {};
-        if (out.showWeightNodes == null) out.showWeightNodes = true;
+        if (out.showWeightNodes == null) out.showWeightNodes = false;
         if (out.showIONodes == null) out.showIONodes = true;
         if (out.exportFormat == null) out.exportFormat = 'svg';
         // 迁移旧的设置到新格式
