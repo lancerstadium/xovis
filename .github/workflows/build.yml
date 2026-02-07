@@ -119,7 +119,12 @@ jobs:
           pnpm install
           mkdir -p build
           (magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || echo "Warning: icon.png not generated"
-          pnpm run build:win
+          for i in 1 2 3; do
+            if pnpm run build:win; then exit 0; fi
+            echo "Attempt $i failed (e.g. 502 from GitHub), retrying in 30s..."
+            [ "$i" != "3" ] && sleep 30
+          done
+          exit 1
 
       - name: Upload Windows artifacts
         continue-on-error: true
