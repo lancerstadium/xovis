@@ -120,11 +120,13 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
         iframe.addEventListener('load', function() {
             forwardToApp(lastText);
             vscode.postMessage({ type: 'ready' });
-            setTimeout(function() {
-                if (lastText != null && iframe.contentWindow) {
-                    try { iframe.contentWindow.postMessage({ type: 'update', text: lastText }, '*'); } catch (_) {}
-                }
-            }, 500);
+            [500, 1200].forEach(function(delay) {
+                setTimeout(function() {
+                    if (lastText != null && iframe.contentWindow) {
+                        try { iframe.contentWindow.postMessage({ type: 'update', text: lastText }, '*'); } catch (_) {}
+                    }
+                }, delay);
+            });
         });
     </script>
 </body>

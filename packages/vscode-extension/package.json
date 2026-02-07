@@ -12,11 +12,6 @@
     "Other"
   ],
   "icon": "images/icon.png",
-  "activationEvents": [
-    "onCommand:xovis.open",
-    "onCustomEditor:xovis.graph",
-    "onLanguage:json"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -36,12 +31,9 @@
           },
           {
             "filenamePattern": "*.computation-graph.json"
-          },
-          {
-            "filenamePattern": "*.json"
           }
         ],
-        "priority": "default"
+        "priority": "option"
       }
     ],
     "menus": {
