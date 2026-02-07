@@ -84,6 +84,11 @@ export function Loader() {
   const openFileDialog = () => {
     setExamplesOpen(false);
     if (loading) return;
+    const vscodeRequestLoad = typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void }).__XOVIS_VSCODE_REQUEST_LOAD;
+    if (vscodeRequestLoad) {
+      vscodeRequestLoad();
+      return;
+    }
     if (inputRef.current) {
       inputRef.current.value = '';
       inputRef.current.click();

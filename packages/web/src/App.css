@@ -76,6 +76,20 @@
 .electron-app .electron-title-bar .electron-title-tab-add {
   height: 100%;
 }
+/* Mac 标题栏与红绿灯对齐、一体化：细分割线 + tab 文字垂直居中 */
+.electron-title-bar-mac {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.electron-title-bar-mac .electron-title-tab {
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+.electron-title-bar-mac .electron-title-tab-add {
+  width: 26px;
+  min-width: 26px;
+  font-size: 16px;
+  font-weight: 300;
+}
 /* 图标按钮统一：所有图标按钮 28×28，顶栏/图内/详情关闭一致 */
 .btn.icon-btn {
   width: 28px;

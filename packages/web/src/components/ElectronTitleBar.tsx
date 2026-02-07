@@ -3,8 +3,10 @@ import type { CSSProperties } from 'react';
 import { useElectronTabsStore } from '../stores';
 
 const TITLE_BAR_HEIGHT_WIN = 18;
-const TITLE_BAR_HEIGHT_MAC = 22;
-const MAC_TRAFFIC_LIGHTS_LEFT = 72;
+/** Mac：28px 与系统红绿灯（约 10pt 高）同高，红绿灯 y=9 时中心=14 与栏中心对齐 */
+const TITLE_BAR_HEIGHT_MAC = 28;
+/** 红绿灯约 14+40=54px 宽，留 8px 间距后 tab 起始 */
+const MAC_TRAFFIC_LIGHTS_LEFT = 62;
 
 export function ElectronTitleBar() {
   const api = window.electronAPI;
@@ -56,7 +58,7 @@ export function ElectronTitleBar() {
   };
 
   return (
-    <div className="electron-title-bar" style={barStyle}>
+    <div className={`electron-title-bar${isMac ? ' electron-title-bar-mac' : ''}`} style={barStyle}>
       <div style={tabsWrapStyle} className="electron-title-bar-tabs">
         {tabs.map((tab) => (
           <TabItem

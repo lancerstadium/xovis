@@ -45,14 +45,29 @@ async function bootstrap() {
 }
 bootstrap();
 
-// VSCode 扩展 webview：监听文档更新（iframe 时来自父窗口，直接 webview 时来自扩展）
+// VSCode 扩展 webview：监听文档更新与扩展发来的加载文件
 function handleVscodeUpdate(e: MessageEvent) {
-  if (e.data?.type === 'update' && typeof e.data.text === 'string') {
+  const d = e.data;
+  if (d?.type === 'update' && typeof d.text === 'string') {
     import('./stores').then(({ useGraphStore }) =>
       import('./utils/loadFile').then(({ loadFile }) => {
-        const result = loadFile(e.data.text);
+        const result = loadFile(d.text);
         if (result.success) useGraphStore.getState().setGraph(result.graph);
         else useGraphStore.getState().setGraph(null);
+      })
+    );
+    return;
+  }
+  if (d?.type === 'loadFile' && typeof d.content === 'string') {
+    import('./stores').then(({ useGraphStore, useSettingsStore }) =>
+      import('./utils/loadFile').then(({ loadFile }) => {
+        const result = loadFile(d.content, d.fileName);
+        if (result.success) {
+          useGraphStore.getState().setGraph(result.graph);
+          if (result.source === 'csv') useSettingsStore.getState().set({ viewMode: 'bar' });
+        } else {
+          useGraphStore.getState().setGraph(null);
+        }
       })
     );
   }
