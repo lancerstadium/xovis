@@ -84,12 +84,19 @@
 .electron-app .electron-title-bar .electron-title-tab-add {
   height: 100%;
 }
-/* Mac 标题栏：与背景同色、无分界线，字体略大且垂直居中 */
+/* Mac 标题栏：与背景同色、无分界线，字体适中且垂直居中 */
 .electron-title-bar-mac .electron-title-tab {
-  font-size: 14px !important;
+  font-size: 12px !important;
   letter-spacing: 0.02em;
   line-height: 1;
   align-items: center;
+  padding-top: 2px;
+  box-sizing: border-box;
+}
+.electron-title-bar-mac .electron-title-tab span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 .electron-title-bar-mac .electron-title-tab-add {
   width: 26px;
