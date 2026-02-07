@@ -121,7 +121,7 @@ export default function App() {
     if (!isElectron || !window.electronAPI) return;
     const root = document.documentElement;
     root.classList.add('electron-app');
-    const titleHeight = window.electronAPI.platform === 'darwin' ? 28 : 18;
+    const titleHeight = window.electronAPI.platform === 'darwin' ? 32 : 18;
     root.style.setProperty('--electron-title-height', `${titleHeight}px`);
     return () => {
       root.classList.remove('electron-app');

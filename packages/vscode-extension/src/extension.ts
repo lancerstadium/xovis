@@ -28,6 +28,7 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
     }
   );
+  editorPanel.iconPath = vscode.Uri.joinPath(extensionUri, 'images', 'favicon-raw.svg');
   editorPanel.webview.html = getHtmlForWebview(editorPanel.webview, extensionUri, null);
 
   const updateFavicon = () => {
@@ -117,6 +118,7 @@ function getHtmlForWebview(
     .replace(/href="\.\//g, `href="${baseSlash}`);
   const faviconName = 'favicon-raw.svg';
   html = html.replace(/favicon\.svg/g, faviconName);
+  html = html.replace(/<link[^>]*rel=["']icon["'][^>]*>/i, `<link rel="icon" type="image/svg+xml" href="${baseSlash}${faviconName}">`);
 
   const csp = [
     `default-src ${webview.cspSource}`,

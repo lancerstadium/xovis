@@ -19,8 +19,8 @@ function createWindow() {
   };
   if (process.platform === 'darwin') {
     opts.titleBarStyle = 'hiddenInset';
-    // 红绿灯约 10pt 高，y=9 时中心在 14，与 28px 标题栏中心对齐
-    opts.trafficLightPosition = { x: 14, y: 9 };
+    // 红绿灯约 10pt 高，y=11 时中心在 16，与 32px 标题栏中心对齐
+    opts.trafficLightPosition = { x: 14, y: 11 };
   } else {
     opts.frame = false;
   }
@@ -29,7 +29,7 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     if (process.platform === 'darwin') {
       mainWindow!.webContents.insertCSS(
-        'html, body { height: 100vh; margin: 0; overflow: hidden; box-sizing: border-box; } body { padding-top: max(env(safe-area-inset-top), 28px) !important; } .app, .main { height: 100% !important; min-height: 0 !important; }'
+        'html, body { height: 100vh; margin: 0; overflow: hidden; box-sizing: border-box; } body { padding-top: max(env(safe-area-inset-top), 32px) !important; } .app, .main { height: 100% !important; min-height: 0 !important; }'
       );
     } else {
       mainWindow!.webContents.insertCSS(

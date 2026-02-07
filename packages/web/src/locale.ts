@@ -45,6 +45,7 @@ export const locale: Record<
     graphEmpty: string;
     graphEmptySub: string;
     loadDropHint: string;
+    tabUntitled: string;
     exportSvg: string;
     exportImage: string;
     viewReset: string;
@@ -388,9 +389,10 @@ export const locale: Record<
     loadLoading: '加载中…',
     loadExample: '示例',
     loadError: '加载失败',
+    loadDropHint: '松开以加载',
+    tabUntitled: '未命名',
     graphEmpty: '上传数据',
     graphEmptySub: '',
-    loadDropHint: '松开以加载',
     exportSvg: '导出 SVG',
     exportImage: '导出',
     viewReset: '还原视图',
@@ -733,9 +735,10 @@ export const locale: Record<
     loadLoading: 'Loading…',
     loadExample: 'Example',
     loadError: 'Load failed',
+    loadDropHint: 'Release to load',
+    tabUntitled: 'Untitled',
     graphEmpty: 'Upload data',
     graphEmptySub: '',
-    loadDropHint: 'Release to load',
     exportSvg: 'Export SVG',
     exportImage: 'Export',
     viewReset: 'Reset view',

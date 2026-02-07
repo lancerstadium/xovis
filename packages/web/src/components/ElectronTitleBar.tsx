@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
-import { useElectronTabsStore } from '../stores';
+import { useElectronTabsStore, useSettingsStore } from '../stores';
+import { getLocale } from '../locale';
 
 const TITLE_BAR_HEIGHT_WIN = 18;
-/** Mac：28px 与系统红绿灯（约 10pt 高）同高，红绿灯 y=9 时中心=14 与栏中心对齐 */
-const TITLE_BAR_HEIGHT_MAC = 28;
+/** Mac：32px 略高以与红绿灯对齐，tab/字体更清晰 */
+const TITLE_BAR_HEIGHT_MAC = 32;
 /** 红绿灯约 14+40=54px 宽，留 8px 间距后 tab 起始 */
 const MAC_TRAFFIC_LIGHTS_LEFT = 62;
 
@@ -12,6 +13,8 @@ export function ElectronTitleBar() {
   const api = window.electronAPI;
   const [maximized, setMaximized] = useState(false);
   const { tabs, activeId, addTab, closeTab, setActive } = useElectronTabsStore();
+  const lang = useSettingsStore((s) => s.lang);
+  const t = getLocale(lang);
 
   useEffect(() => {
     if (!api?.windowControls?.isMaximized) return;
@@ -63,7 +66,7 @@ export function ElectronTitleBar() {
         {tabs.map((tab) => (
           <TabItem
             key={tab.id}
-            tab={tab}
+            tab={{ ...tab, label: tab.label === 'untitled' ? t.tabUntitled : tab.label }}
             isActive={tab.id === activeId}
             onSelect={() => setActive(tab.id)}
             onClose={() => closeTab(tab.id)}
@@ -75,7 +78,7 @@ export function ElectronTitleBar() {
           className="electron-title-tab-add"
           onClick={(e) => {
             e.stopPropagation();
-            addTab();
+            addTab({ label: 'untitled' });
           }}
           aria-label="新标签页"
           title="新标签页"
@@ -172,7 +175,7 @@ function TabItem({
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="electron-title-tab"
+      className={`electron-title-tab${isActive ? ' electron-title-tab-active' : ''}`}
     >
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
       {canClose && (

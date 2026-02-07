@@ -338,7 +338,11 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
       e.preventDefault();
       setDropOver(false);
       const file = e.dataTransfer.files?.[0];
-      if (!file) return;
+      if (!file) {
+        const vscodeRequestLoad = (typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void }).__XOVIS_VSCODE_REQUEST_LOAD);
+        if (vscodeRequestLoad) vscodeRequestLoad();
+        return;
+      }
       if (!isSupportedFile(file)) {
         setDropError(t.loadError);
         return;

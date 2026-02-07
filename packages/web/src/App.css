@@ -5,6 +5,11 @@
   min-height: 100vh;
   background: var(--bg);
 }
+/* Electron：根与主区域背景与菜单栏统一为 --bg */
+.electron-app,
+.electron-app .app {
+  background: var(--bg);
+}
 
 /* Electron 无边框窗口：Win/Linux 一体标题栏按钮 */
 .electron-title-btn {
@@ -26,7 +31,10 @@
   background: #e81123;
   color: #fff;
 }
-/* Electron 标题栏：多 tab 与窗口按钮同一行，禁止换行 */
+/* Electron 标题栏：与主背景一致，多 tab 与窗口按钮同一行 */
+.electron-app .electron-title-bar {
+  background: var(--bg) !important;
+}
 .electron-title-bar {
   flex-shrink: 0;
   flex-wrap: nowrap;
@@ -77,12 +85,13 @@
   height: 100%;
 }
 /* Mac 标题栏与红绿灯对齐、一体化：细分割线 + tab 文字垂直居中 */
-.electron-title-bar-mac {
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-}
 .electron-title-bar-mac .electron-title-tab {
-  font-size: 12px;
-  letter-spacing: 0.01em;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+.electron-title-bar-mac .electron-title-tab.electron-title-tab-active {
+  border-bottom: 2px solid color-mix(in srgb, var(--border) 70%, transparent);
+  margin-bottom: -1px;
 }
 .electron-title-bar-mac .electron-title-tab-add {
   width: 26px;

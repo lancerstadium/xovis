@@ -21,12 +21,12 @@ type ElectronTabsState = {
 let tabSeq = 0;
 
 export const useElectronTabsStore = create<ElectronTabsState>((set, get) => ({
-  tabs: [{ id: '1', label: '未命名', graph: null }],
+  tabs: [{ id: '1', label: 'untitled', graph: null }],
   activeId: '1',
 
   addTab: (tab) => {
     const id = tab?.id ?? `tab-${++tabSeq}`;
-    const label = tab?.label ?? '未命名';
+    const label = tab?.label ?? 'untitled';
     set((s) => {
       const next = [...s.tabs, { id, label, graph: null }];
       return { tabs: next, activeId: id };
@@ -39,7 +39,7 @@ export const useElectronTabsStore = create<ElectronTabsState>((set, get) => ({
       const idx = s.tabs.findIndex((t) => t.id === id);
       if (idx < 0) return s;
       let next = s.tabs.filter((t) => t.id !== id);
-      if (next.length === 0) next = [{ id: `tab-${++tabSeq}`, label: '未命名', graph: null }];
+      if (next.length === 0) next = [{ id: `tab-${++tabSeq}`, label: 'untitled', graph: null }];
       const nextActive = s.activeId === id ? next[Math.max(0, idx - 1)]?.id ?? next[0].id : s.activeId;
       return { tabs: next, activeId: nextActive };
     });

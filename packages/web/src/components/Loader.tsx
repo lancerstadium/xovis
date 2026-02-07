@@ -36,7 +36,7 @@ export function Loader() {
       if (typeof window !== 'undefined' && window.electronAPI) {
         const aid = useElectronTabsStore.getState().activeId;
         if (aid) {
-          const label = fileName ? fileName.replace(/^.*[/\\]/, '') : '未命名';
+          const label = fileName ? fileName.replace(/^.*[/\\]/, '') : t.tabUntitled;
           useElectronTabsStore.getState().setTabLabel(aid, label);
         }
       }
