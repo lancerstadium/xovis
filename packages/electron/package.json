@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "electron .",
     "prebuild": "node ../../scripts/generate-electron-icon.mjs",
-    "build": "tsc && (mkdir -p web/dist && cp -r ../web/dist/* web/dist/) && electron-builder",
+    "build": "tsc && node scripts/copy-web-dist.mjs && electron-builder",
     "build:win": "pnpm build -- --win",
     "build:mac": "pnpm build -- --mac",
     "build:linux": "pnpm build -- --linux",
