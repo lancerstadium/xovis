@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { useElectronTabsStore } from '../stores';
 
-const TITLE_BAR_HEIGHT = 18;
+const TITLE_BAR_HEIGHT_WIN = 18;
+const TITLE_BAR_HEIGHT_MAC = 22;
+const MAC_TRAFFIC_LIGHTS_LEFT = 72;
 
 export function ElectronTitleBar() {
   const api = window.electronAPI;
@@ -17,8 +19,10 @@ export function ElectronTitleBar() {
     return () => clearInterval(interval);
   }, [api]);
 
-  if (!api || (api.platform !== 'win32' && api.platform !== 'linux')) return null;
+  if (!api) return null;
 
+  const isMac = api.platform === 'darwin';
+  const titleBarHeight = isMac ? TITLE_BAR_HEIGHT_MAC : TITLE_BAR_HEIGHT_WIN;
   const { windowControls } = api;
 
   const barStyle: CSSProperties & { WebkitAppRegion?: string } = {
@@ -26,11 +30,11 @@ export function ElectronTitleBar() {
     top: 0,
     left: 0,
     right: 0,
-    height: TITLE_BAR_HEIGHT,
+    height: titleBarHeight,
     background: 'var(--bg)',
     display: 'flex',
     alignItems: 'stretch',
-    paddingLeft: 0,
+    paddingLeft: isMac ? MAC_TRAFFIC_LIGHTS_LEFT : 0,
     paddingRight: 0,
     zIndex: 10000,
     WebkitAppRegion: 'drag',
@@ -77,45 +81,47 @@ export function ElectronTitleBar() {
           +
         </button>
       </div>
-      <div style={buttonsWrapStyle}>
-        <button
-          type="button"
-          className="electron-title-btn"
-          onClick={() => windowControls.minimize()}
-          aria-label="Minimize"
-        >
-          <svg width={10} height={10} viewBox="0 0 12 12" fill="currentColor">
-            <rect x={0} y={5} width={12} height={1} />
-          </svg>
-        </button>
-        <button
-          type="button"
-          className="electron-title-btn"
-          onClick={() => windowControls.toggleMaximize()}
-          aria-label={maximized ? 'Restore' : 'Maximize'}
-        >
-          {maximized ? (
+      {!isMac && (
+        <div style={buttonsWrapStyle}>
+          <button
+            type="button"
+            className="electron-title-btn"
+            onClick={() => windowControls.minimize()}
+            aria-label="Minimize"
+          >
             <svg width={10} height={10} viewBox="0 0 12 12" fill="currentColor">
-              <rect x={2} y={0} width={8} height={8} stroke="currentColor" strokeWidth={1} fill="none" />
-              <rect x={0} y={2} width={8} height={8} stroke="currentColor" strokeWidth={1} fill="none" />
+              <rect x={0} y={5} width={12} height={1} />
             </svg>
-          ) : (
-            <svg width={10} height={10} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1}>
-              <rect x={0} y={0} width={12} height={12} />
+          </button>
+          <button
+            type="button"
+            className="electron-title-btn"
+            onClick={() => windowControls.toggleMaximize()}
+            aria-label={maximized ? 'Restore' : 'Maximize'}
+          >
+            {maximized ? (
+              <svg width={10} height={10} viewBox="0 0 12 12" fill="currentColor">
+                <rect x={2} y={0} width={8} height={8} stroke="currentColor" strokeWidth={1} fill="none" />
+                <rect x={0} y={2} width={8} height={8} stroke="currentColor" strokeWidth={1} fill="none" />
+              </svg>
+            ) : (
+              <svg width={10} height={10} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1}>
+                <rect x={0} y={0} width={12} height={12} />
+              </svg>
+            )}
+          </button>
+          <button
+            type="button"
+            className="electron-title-btn electron-title-btn-close"
+            onClick={() => windowControls.close()}
+            aria-label="Close"
+          >
+            <svg width={10} height={10} viewBox="0 0 12 12" stroke="currentColor" strokeWidth={1.5}>
+              <path d="M1 1l10 10M11 1L1 11" />
             </svg>
-          )}
-        </button>
-        <button
-          type="button"
-          className="electron-title-btn electron-title-btn-close"
-          onClick={() => windowControls.close()}
-          aria-label="Close"
-        >
-          <svg width={10} height={10} viewBox="0 0 12 12" stroke="currentColor" strokeWidth={1.5}>
-            <path d="M1 1l10 10M11 1L1 11" />
-          </svg>
-        </button>
-      </div>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

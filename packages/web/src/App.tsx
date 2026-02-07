@@ -116,6 +116,19 @@ export default function App() {
     }
   }, [theme, s.silentMode]);
 
+  // Electron：设置标题栏高度变量并限制主区域高度，避免底部按钮被挤出视口
+  useEffect(() => {
+    if (!isElectron || !window.electronAPI) return;
+    const root = document.documentElement;
+    root.classList.add('electron-app');
+    const titleHeight = window.electronAPI.platform === 'darwin' ? 22 : 18;
+    root.style.setProperty('--electron-title-height', `${titleHeight}px`);
+    return () => {
+      root.classList.remove('electron-app');
+      root.style.removeProperty('--electron-title-height');
+    };
+  }, [isElectron]);
+
   useEffect(() => {
     document.title = t.appTitle;
   }, [t.appTitle]);

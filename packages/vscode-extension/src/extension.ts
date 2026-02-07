@@ -2,16 +2,78 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
+let editorPanel: vscode.WebviewPanel | undefined;
+
 export function activate(context: vscode.ExtensionContext) {
-  const sidebarProvider = new XovisSidebarProvider(context.extensionUri);
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('xovis.view', sidebarProvider)
+    vscode.commands.registerCommand('xovis.focusView', () => {
+      openOrRevealPanel(context.extensionUri);
+    })
+  );
+}
+
+function openOrRevealPanel(extensionUri: vscode.Uri): void {
+  const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
+  if (editorPanel) {
+    editorPanel.reveal(column);
+    return;
+  }
+  editorPanel = vscode.window.createWebviewPanel(
+    'xovis.panel',
+    'xovis',
+    column,
+    {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+    }
+  );
+  editorPanel.webview.html = getHtmlForWebview(editorPanel.webview, extensionUri, null);
+
+  const updateFavicon = () => {
+    editorPanel?.webview.postMessage({
+      type: 'theme',
+      favicon: getFaviconForTheme(),
+    });
+  };
+  const themeSub = vscode.window.onDidChangeActiveColorTheme(updateFavicon);
+
+  editorPanel.webview.onDidReceiveMessage(
+    async (message: { type: string; format?: string; content?: string; suggestedName?: string }) => {
+      if (message.type !== 'save' || message.content === undefined) return;
+      const { format, content, suggestedName } = message;
+      const defaultName = suggestedName ?? (format === 'json' ? 'graph.json' : 'export.svg');
+      const uri = await vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.file(defaultName),
+        filters:
+          format === 'json'
+            ? { JSON: ['json'] }
+            : format === 'svg'
+              ? { SVG: ['svg'] }
+              : format === 'pdf'
+                ? { PDF: ['pdf'] }
+                : { Images: ['png', 'jpg', 'jpeg', 'webp'] },
+      });
+      if (!uri) return;
+      try {
+        const dataUrlMatch = /^data:[\w+\-.]+\/[\w+\-.]+;base64,(.+)$/s.exec(content);
+        if (dataUrlMatch) {
+          const buf = Buffer.from(dataUrlMatch[1], 'base64');
+          await vscode.workspace.fs.writeFile(uri, buf);
+        } else {
+          await vscode.workspace.fs.writeFile(uri, Buffer.from(content, 'utf-8'));
+        }
+        vscode.window.showInformationMessage(`已保存: ${uri.fsPath}`);
+      } catch (e) {
+        vscode.window.showErrorMessage(`保存失败: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
   );
 
-  const focusCommand = vscode.commands.registerCommand('xovis.focusView', () => {
-    vscode.commands.executeCommand('xovis.view.focus');
+  editorPanel.onDidDispose(() => {
+    themeSub.dispose();
+    editorPanel = undefined;
   });
-  context.subscriptions.push(focusCommand);
 }
 
 function getFaviconForTheme(): string {
@@ -56,61 +118,7 @@ function getHtmlForWebview(
   return html;
 }
 
-class XovisSidebarProvider implements vscode.WebviewViewProvider {
-  constructor(private readonly extensionUri: vscode.Uri) {}
-
-  resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
-  ): void {
-    webviewView.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [this.extensionUri],
-      ...({ retainContextWhenHidden: true } as vscode.WebviewOptions),
-    };
-
-    webviewView.webview.html = getHtmlForWebview(webviewView.webview, this.extensionUri, null);
-
-    const updateFavicon = () => {
-      webviewView.webview.postMessage({
-        type: 'theme',
-        favicon: getFaviconForTheme(),
-      });
-    };
-    const themeSubscription = vscode.window.onDidChangeActiveColorTheme(updateFavicon);
-    webviewView.onDidDispose(() => themeSubscription.dispose());
-
-    webviewView.webview.onDidReceiveMessage(async (message: { type: string; format?: string; content?: string; suggestedName?: string }) => {
-      if (message.type !== 'save' || message.content === undefined) return;
-      const { format, content, suggestedName } = message;
-      const defaultName = suggestedName ?? (format === 'json' ? 'graph.json' : 'export.svg');
-      const uri = await vscode.window.showSaveDialog({
-        defaultUri: vscode.Uri.file(defaultName),
-        filters:
-          format === 'json'
-            ? { JSON: ['json'] }
-            : format === 'svg'
-              ? { SVG: ['svg'] }
-              : format === 'pdf'
-                ? { PDF: ['pdf'] }
-                : { Images: ['png', 'jpg', 'jpeg', 'webp'] },
-      });
-      if (!uri) return;
-      try {
-        const dataUrlMatch = /^data:[\w+\-.]+\/[\w+\-.]+;base64,(.+)$/s.exec(content);
-        if (dataUrlMatch) {
-          const buf = Buffer.from(dataUrlMatch[1], 'base64');
-          await vscode.workspace.fs.writeFile(uri, buf);
-        } else {
-          await vscode.workspace.fs.writeFile(uri, Buffer.from(content, 'utf-8'));
-        }
-        vscode.window.showInformationMessage(`已保存: ${uri.fsPath}`);
-      } catch (e) {
-        vscode.window.showErrorMessage(`保存失败: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    });
-  }
+export function deactivate() {
+  editorPanel?.dispose();
+  editorPanel = undefined;
 }
-
-export function deactivate() {}

@@ -26,11 +26,16 @@
   background: #e81123;
   color: #fff;
 }
-/* Electron 标题栏：多 tab 与窗口按钮同一行 */
+/* Electron 标题栏：多 tab 与窗口按钮同一行，禁止换行 */
+.electron-title-bar {
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
 .electron-title-bar-tabs {
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
+  flex-wrap: nowrap;
 }
 .electron-title-bar-tabs::-webkit-scrollbar {
   display: none;
@@ -62,6 +67,14 @@
 .electron-title-tab-add:hover {
   background: color-mix(in srgb, var(--border) 30%, transparent);
   color: var(--text);
+}
+/* Electron 标题栏按钮在 Mac 上随标题栏高度拉伸 */
+.electron-app .electron-title-bar .electron-title-btn {
+  height: 100%;
+}
+.electron-app .electron-title-bar .electron-title-tab,
+.electron-app .electron-title-bar .electron-title-tab-add {
+  height: 100%;
 }
 /* 图标按钮统一：所有图标按钮 28×28，顶栏/图内/详情关闭一致 */
 .btn.icon-btn {
@@ -191,6 +204,26 @@
   height: 100%;
   min-height: 100vh;
   overflow: hidden;
+}
+/* Electron：主区域高度 = 视口减去标题栏，覆盖注入样式，避免底部按钮被挤出 */
+.electron-app .app {
+  height: calc(100vh - var(--electron-title-height, 0px)) !important;
+  min-height: 0 !important;
+}
+.electron-app .main {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100%;
+}
+/* Electron 底部工具栏始终贴底、留出安全区，不被挤出 */
+.electron-app .toolbar-bl,
+.electron-app .toolbar-bc,
+.electron-app .toolbar-right {
+  bottom: 12px;
+}
+.electron-app .floating-trigger.toolbar-bl {
+  flex-wrap: nowrap;
+  min-height: 28px;
 }
 
 /* 计算图：铺满全屏；target 不接指针事件，仅子节点接，避免挡住浮层点击 */

@@ -7,6 +7,9 @@
     <title>xovis</title>
   </head>
   <body>
+    <script>
+      (function(){ if (window.electronAPI) { var h = window.electronAPI.platform === 'darwin' ? 22 : 18; document.documentElement.classList.add('electron-app'); document.documentElement.style.setProperty('--electron-title-height', h + 'px'); } })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

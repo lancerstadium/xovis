@@ -29,24 +29,6 @@
           "when": "true"
         }
       ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "xovis",
-          "title": "xovis",
-          "icon": "images/favicon-raw.svg"
-        }
-      ]
-    },
-    "views": {
-      "xovis": [
-        {
-          "type": "webview",
-          "id": "xovis.view",
-          "name": "计算图"
-        }
-      ]
     }
   },
   "scripts": {
