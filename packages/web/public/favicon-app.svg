@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- ?????? -->
-  <rect width="512" height="512" rx="80" ry="80" fill="#ffffff"/>
-  <!-- ???? -->
+  <!-- 圆角白底：缩小边距，其他元素不变 -->
+  <rect x="56" y="56" width="400" height="400" rx="56" ry="56" fill="#ffffff"/>
+  <!-- 图形 -->
   <g transform="translate(64, 64) scale(1.5)">
     <defs>
       <linearGradient id="f" x1="0%" y1="0%" x2="100%" y2="100%">
