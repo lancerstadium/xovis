@@ -12,7 +12,7 @@ JSON computation graph visualization tool with dagre layout and multi-format exp
 
 ## Features
 
-- 📊 Visualize JSON computation graphs (see [docs/json-spec.md](docs/json-spec.md) for format)
+- 📊 Visualize JSON computation graphs (see [doc/json-spec.md](doc/json-spec.md) for format)
 - 🎨 Customizable themes, languages, layout directions, fonts, and node sizes
 - 📤 Export to SVG, PNG, JPG, WebP, PDF, and more formats
 - 📱 Support for Web, desktop apps (Windows/macOS/Linux), and VSCode extension
@@ -79,7 +79,7 @@ pnpm package:vscode        # VSCode extension
 packages/
   core/   # JSON parsing and types
   web/    # React application
-docs/
+doc/
   json-spec.md   # JSON computation graph format specification
 ```
 

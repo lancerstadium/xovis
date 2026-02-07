@@ -1,5 +1,5 @@
 /**
- * JSON 计算图解析（见 docs/json-spec.md，扩展信息统一在 metadata）
+ * JSON 计算图解析（见 doc/json-spec.md，扩展信息统一在 metadata）
  */
 
 import type { Graph, GraphNode, GraphEdge, Tensor } from './types';

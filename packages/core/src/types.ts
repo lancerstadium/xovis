@@ -1,4 +1,4 @@
-/** JSON 计算图类型（见 docs/json-spec.md） */
+/** JSON 计算图类型（见 doc/json-spec.md） */
 
 export type Dtype = 'float32' | 'float16' | 'int32' | 'int64' | 'uint8' | 'bool' | 'string';
 

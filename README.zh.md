@@ -12,7 +12,7 @@ JSON 计算图可视化工具，支持 dagre 布局和多种格式导出。
 
 ## 功能特性
 
-- 📊 可视化 JSON 计算图（格式见 [docs/json-spec.md](docs/json-spec.md)）
+- 📊 可视化 JSON 计算图（格式见 [doc/json-spec.md](doc/json-spec.md)）
 - 🎨 可自定义主题、语言、布局方向、字体、节点尺寸
 - 📤 支持导出 SVG、PNG、JPG、WebP、PDF 等多种格式
 - 📱 支持 Web、桌面应用（Windows/macOS/Linux）、VSCode 扩展
@@ -79,7 +79,7 @@ pnpm package:vscode        # VSCode 扩展
 packages/
   core/   # JSON 解析与类型
   web/    # React 应用
-docs/
+doc/
   json-spec.md   # JSON 计算图格式规范
 ```
 

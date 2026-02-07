@@ -1,6 +1,6 @@
 # @xovis/core
 
-JSON 计算图解析与类型，严格遵循 [json-spec](../../docs/json-spec.md)。
+JSON 计算图解析与类型，严格遵循 [json-spec](../../doc/json-spec.md)。
 
 ## 安装
 
