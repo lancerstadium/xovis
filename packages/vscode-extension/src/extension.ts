@@ -44,7 +44,7 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
   const themeSub = vscode.window.onDidChangeActiveColorTheme(updateFavicon);
 
   editorPanel.webview.onDidReceiveMessage(
-    async (message: { type: string; format?: string; content?: string; suggestedName?: string; fileName?: string }) => {
+    async (message: { type: string; uri?: string; format?: string; content?: string; suggestedName?: string; fileName?: string }) => {
       if (message.type === 'requestLoadFile') {
         const uris = await vscode.window.showOpenDialog({
           canSelectMany: false,
@@ -55,6 +55,18 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
           const buf = await vscode.workspace.fs.readFile(uris[0]);
           const content = Buffer.from(buf).toString('utf-8');
           const fileName = path.basename(uris[0].fsPath) || 'file.json';
+          editorPanel?.webview.postMessage({ type: 'loadFile', content, fileName });
+        } catch (e) {
+          vscode.window.showErrorMessage(`读取失败: ${e instanceof Error ? e.message : String(e)}`);
+        }
+        return;
+      }
+      if (message.type === 'loadFileFromUri' && typeof message.uri === 'string') {
+        try {
+          const uri = vscode.Uri.parse(message.uri);
+          const buf = await vscode.workspace.fs.readFile(uri);
+          const content = Buffer.from(buf).toString('utf-8');
+          const fileName = path.basename(uri.fsPath) || 'file.json';
           editorPanel?.webview.postMessage({ type: 'loadFile', content, fileName });
         } catch (e) {
           vscode.window.showErrorMessage(`读取失败: ${e instanceof Error ? e.message : String(e)}`);
@@ -134,7 +146,7 @@ function getHtmlForWebview(
   ].join('; ');
   const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp.replace(/"/g, '&quot;')}">`;
   const vscodeFillStyle = `<style id="xovis-webview-fill">html,body,#root,#root>div,.app,.main{width:100%!important;height:100%!important;margin:0!important;padding:0!important;box-sizing:border-box;}html,body{overflow:hidden!important;min-height:100%!important;}</style>`;
-  const initialScript = `<script>window.__XOVIS_INITIAL_TEXT = ${initialText !== null ? JSON.stringify(initialText) : 'null'};window.__XOVIS_VSCODE_WEBVIEW__ = true;window.__XOVIS_MEDIA_BASE = ${JSON.stringify(baseSlash)};window.__XOVIS_VSCODE_SAVE = function(p){var api = typeof acquireVsCodeApi !== 'undefined' && acquireVsCodeApi();if(api)api.postMessage(p);};window.__XOVIS_VSCODE_REQUEST_LOAD = function(){var api = typeof acquireVsCodeApi !== 'undefined' && acquireVsCodeApi();if(api)api.postMessage({type:'requestLoadFile'});};</script>`;
+  const initialScript = `<script>window.__XOVIS_INITIAL_TEXT = ${initialText !== null ? JSON.stringify(initialText) : 'null'};window.__XOVIS_VSCODE_WEBVIEW__ = true;window.__XOVIS_MEDIA_BASE = ${JSON.stringify(baseSlash)};window.__XOVIS_VSCODE_SAVE = function(p){var api = typeof acquireVsCodeApi !== 'undefined' && acquireVsCodeApi();if(api)api.postMessage(p);};window.__XOVIS_VSCODE_REQUEST_LOAD = function(){var api = typeof acquireVsCodeApi !== 'undefined' && acquireVsCodeApi();if(api)api.postMessage({type:'requestLoadFile'});};window.__XOVIS_VSCODE_REQUEST_LOAD_URI = function(uri){var api = typeof acquireVsCodeApi !== 'undefined' && acquireVsCodeApi();if(api&&uri)api.postMessage({type:'loadFileFromUri',uri:uri});};</script>`;
   const dropScript = `<script>document.addEventListener('dragover',function(e){e.preventDefault();},{passive:false});document.addEventListener('drop',function(e){e.preventDefault();},{passive:false});</script>`;
   const themeScript = `<script>window.addEventListener('message', function(e){if(e.data&&e.data.type==='theme'&&e.data.favicon){var l=document.querySelector('link[rel="icon"]');if(l&&window.__XOVIS_MEDIA_BASE)l.href=window.__XOVIS_MEDIA_BASE+e.data.favicon;}});</script>`;
   html = html.replace('<head>', '<head>\n' + baseTag);

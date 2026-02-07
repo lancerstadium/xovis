@@ -1081,7 +1081,10 @@ export const ChartView = forwardRef<
     setDropError(null);
   }, []);
 
-  const onDragLeave = useCallback(() => {
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget;
+    const next = e.relatedTarget as Node | null;
+    if (next != null && el.contains(next)) return;
     setDropOver(false);
   }, []);
 
@@ -1091,6 +1094,13 @@ export const ChartView = forwardRef<
       setDropOver(false);
       const file = e.dataTransfer.files?.[0];
       if (!file) {
+        const uriList = e.dataTransfer.getData?.('text/uri-list');
+        const fileUri = uriList?.trim().split(/\r?\n/)[0];
+        const requestLoadUri = typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD_URI?: (uri: string) => void }).__XOVIS_VSCODE_REQUEST_LOAD_URI;
+        if (fileUri?.startsWith('file://') && requestLoadUri) {
+          requestLoadUri(fileUri);
+          return;
+        }
         const vscodeRequestLoad = (typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void }).__XOVIS_VSCODE_REQUEST_LOAD);
         if (vscodeRequestLoad) vscodeRequestLoad();
         return;
@@ -1329,13 +1339,11 @@ export const ChartView = forwardRef<
         flex: 1,
         minHeight: 0,
         overflow: 'hidden',
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
+        boxSizing: 'border-box',
         ...panZoomCursor(isDragging),
-        border: dropOver ? '2px dashed var(--accent)' : '2px dashed transparent',
-        borderRadius: 8,
-        margin: 8,
-        transition: 'border-color 0.15s ease',
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -1345,8 +1353,22 @@ export const ChartView = forwardRef<
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      <div style={{ width: '100%', height: '100%', minHeight: 200, ...panZoomTransform }}>
-        <div className="chart-wrap">{content}</div>
+      {dropOver && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            border: '2px dashed var(--accent)',
+            borderRadius: 8,
+            margin: 8,
+            pointerEvents: 'none',
+            transition: 'opacity 0.15s ease',
+          }}
+          aria-hidden
+        />
+      )}
+      <div style={{ position: 'absolute', inset: 0, margin: 8, overflow: 'hidden', ...panZoomTransform }}>
+        <div className="chart-wrap" style={{ width: '100%', height: '100%', minHeight: 200 }}>{content}</div>
       </div>
       {dropError && (
         <div
@@ -1376,17 +1398,28 @@ export const ChartView = forwardRef<
           flex: 1,
           minHeight: 0,
           overflow: 'hidden',
+          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          border: dropOver ? '2px dashed var(--accent)' : '2px dashed transparent',
-          borderRadius: 8,
-          margin: 8,
-          transition: 'border-color 0.15s ease',
+          boxSizing: 'border-box',
         }}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
+        {dropOver && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: '2px dashed var(--accent)',
+              borderRadius: 8,
+              margin: 8,
+              pointerEvents: 'none',
+            }}
+            aria-hidden
+          />
+        )}
         <div className="chart-empty">
           <span className="chart-empty-text">{t.chartSelectColumnsHint}</span>
         </div>

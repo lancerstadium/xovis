@@ -329,7 +329,10 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     setDropError(null);
   }, []);
 
-  const onDragLeave = useCallback(() => {
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget;
+    const next = e.relatedTarget as Node | null;
+    if (next != null && el.contains(next)) return;
     setDropOver(false);
   }, []);
 
@@ -339,6 +342,13 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
       setDropOver(false);
       const file = e.dataTransfer.files?.[0];
       if (!file) {
+        const uriList = e.dataTransfer.getData?.('text/uri-list');
+        const fileUri = uriList?.trim().split(/\r?\n/)[0];
+        const requestLoadUri = typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD_URI?: (uri: string) => void }).__XOVIS_VSCODE_REQUEST_LOAD_URI;
+        if (fileUri?.startsWith('file://') && requestLoadUri) {
+          requestLoadUri(fileUri);
+          return;
+        }
         const vscodeRequestLoad = (typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void }).__XOVIS_VSCODE_REQUEST_LOAD);
         if (vscodeRequestLoad) vscodeRequestLoad();
         return;
@@ -501,16 +511,14 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
           display: 'flex',
           flexDirection: 'column',
           minHeight: 0,
+          boxSizing: 'border-box',
           ...panZoomCursor(isDragging),
           ...(!graph && {
             alignItems: 'center',
             justifyContent: 'center',
             gap: 12,
             color: 'var(--text2)',
-            border: dropOver ? '2px dashed var(--accent)' : 'none',
-            borderRadius: 8,
             margin: 8,
-            transition: 'border-color 0.15s ease',
           }),
         }}
         onPointerDown={onPointerDown}
@@ -521,6 +529,21 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
+        {/* 拖放判定框：全覆盖、明确四边，不参与点击 */
+        {dropOver && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: '2px dashed var(--accent)',
+              borderRadius: 8,
+              margin: 8,
+              pointerEvents: 'none',
+              transition: 'opacity 0.15s ease',
+            }}
+            aria-hidden
+          />
+        )}
         {!graph ? (
           <>
             <span
@@ -545,18 +568,12 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
         ) : (
           <div
             style={{
-              width: '100%',
-              height: '100%',
-              minHeight: 300,
-              ...panZoomTransform,
-              border: dropOver ? '2px dashed var(--accent)' : '2px dashed transparent',
-              borderRadius: 8,
+              position: 'absolute',
+              inset: 0,
               margin: 8,
-              transition: 'border-color 0.15s ease',
+              overflow: 'hidden',
+              ...panZoomTransform,
             }}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
           >
             <svg
               ref={svgRef}
