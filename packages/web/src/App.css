@@ -104,6 +104,21 @@
   font-size: 16px;
   font-weight: 300;
 }
+/* 静默模式：标题栏 tab 与按钮默认隐藏，悬停标题栏时显示 */
+[data-silent='true'] .electron-app .electron-title-bar .electron-title-tab,
+[data-silent='true'] .electron-app .electron-title-bar .electron-title-tab-add,
+[data-silent='true'] .electron-app .electron-title-bar .electron-title-btn {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+[data-silent='true'] .electron-app .electron-title-bar:hover .electron-title-tab,
+[data-silent='true'] .electron-app .electron-title-bar:hover .electron-title-tab-add,
+[data-silent='true'] .electron-app .electron-title-bar:hover .electron-title-btn,
+[data-silent='true'] .electron-app .electron-title-bar .electron-title-tab:focus-visible,
+[data-silent='true'] .electron-app .electron-title-bar .electron-title-tab-add:focus-visible,
+[data-silent='true'] .electron-app .electron-title-bar .electron-title-btn:focus-visible {
+  opacity: 1;
+}
 /* 图标按钮统一：所有图标按钮 28×28，顶栏/图内/详情关闭一致 */
 .btn.icon-btn {
   width: 28px;

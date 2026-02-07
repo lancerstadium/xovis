@@ -314,18 +314,14 @@ jobs:
           # 使用 hoisted 模式以改善与 vsce 的兼容性
           echo "node-linker=hoisted" > .npmrc
           pnpm install
-          # 复制图标文件
+          # 从 favicon-app.svg 生成插件图标 PNG
           mkdir -p images
-          if [ -f "../web/public/favicon-app.svg" ]; then
-            cp ../web/public/favicon-app.svg images/icon.svg || true
-            # 生成图标 PNG（如果 imagemagick 可用）
-            if command -v convert &> /dev/null; then
-              convert -background white -resize 128x128 images/icon.svg images/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
-            else
-              echo "Warning: ImageMagick not available, icon.png not generated"
-            fi
-          else
+          if [ -f "../web/public/favicon-app.svg" ] && command -v convert &> /dev/null; then
+            convert -background white -resize 128x128 ../web/public/favicon-app.svg images/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          elif [ ! -f "../web/public/favicon-app.svg" ]; then
             echo "Warning: favicon-app.svg not found, skipping icon generation"
+          else
+            echo "Warning: ImageMagick not available, icon.png not generated"
           fi
           pnpm run compile
           # 若 icon.png 不存在则从 package.json 移除 icon 字段，避免 vsce 报错

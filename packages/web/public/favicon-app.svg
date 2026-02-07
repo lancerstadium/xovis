@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- 圆角白底：缩小边距，其他元素不变 -->
-  <rect x="56" y="56" width="400" height="400" rx="56" ry="56" fill="#ffffff"/>
+  <!-- 圆角白底：与 Apple 应用图标比例一致（约 17.544%） -->
+  <rect x="56" y="56" width="400" height="400" rx="70" ry="70" fill="#ffffff"/>
   <!-- 图形 -->
   <g transform="translate(64, 64) scale(1.5)">
     <defs>
