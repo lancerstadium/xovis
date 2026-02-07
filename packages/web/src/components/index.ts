@@ -5,3 +5,4 @@ export { ChartView } from './ChartView';
 export { Detail } from './Detail';
 export { ViewMenu } from './ViewMenu';
 export { DataPanel } from './DataPanel';
+export { ElectronTitleBar } from './ElectronTitleBar';

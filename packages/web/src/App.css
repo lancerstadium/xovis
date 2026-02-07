@@ -5,6 +5,27 @@
   min-height: 100vh;
   background: var(--bg);
 }
+
+/* Electron 无边框窗口：Win/Linux 一体标题栏按钮 */
+.electron-title-btn {
+  width: 46px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.electron-title-btn:hover {
+  background: color-mix(in srgb, var(--border) 40%, transparent);
+}
+.electron-title-btn-close:hover {
+  background: #e81123;
+  color: #fff;
+}
 /* 图标按钮统一：所有图标按钮 28×28，顶栏/图内/详情关闭一致 */
 .btn.icon-btn {
   width: 28px;

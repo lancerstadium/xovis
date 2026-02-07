@@ -81,10 +81,15 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     });
   }
 
-  private getHtmlForWebview(webview: vscode.Webview, _document: vscode.TextDocument): string {
+  private getHtmlForWebview(webview: vscode.Webview, document: vscode.TextDocument): string {
     const iframeUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.extensionUri, 'media', 'index.html')
     );
+    // 注入初始文档，避免 postMessage 在宿主未就绪时丢失导致空白
+    const initialText = document.getText();
+    const initialScript = initialText.length > 0
+      ? `window.__XOVIS_INITIAL_TEXT = ${JSON.stringify(initialText)};`
+      : 'window.__XOVIS_INITIAL_TEXT = null;';
 
     return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -97,10 +102,12 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
 <body>
     <iframe id="app" src="${iframeUri}"></iframe>
     <script>
+        ${initialScript}
         const vscode = acquireVsCodeApi();
         const iframe = document.getElementById('app');
-        var lastText = null;
+        var lastText = window.__XOVIS_INITIAL_TEXT;
         function forwardToApp(text) {
+            if (text == null) return;
             lastText = text;
             if (iframe.contentWindow) {
                 try { iframe.contentWindow.postMessage({ type: 'update', text }, '*'); } catch (_) {}
@@ -111,12 +118,13 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
             if (m && m.type === 'update' && typeof m.text === 'string') forwardToApp(m.text);
         });
         iframe.addEventListener('load', function() {
+            forwardToApp(lastText);
             vscode.postMessage({ type: 'ready' });
             setTimeout(function() {
-                if (lastText != null) {
+                if (lastText != null && iframe.contentWindow) {
                     try { iframe.contentWindow.postMessage({ type: 'update', text: lastText }, '*'); } catch (_) {}
                 }
-            }, 400);
+            }, 500);
         });
     </script>
 </body>

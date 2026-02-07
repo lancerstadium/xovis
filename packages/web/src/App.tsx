@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Loader, CanvasPanel, Detail, ViewMenu } from './components';
+import { Loader, CanvasPanel, Detail, ViewMenu, ElectronTitleBar } from './components';
 import { DataPanel } from './components/DataPanel';
 import type { CanvasPanelHandle } from './components/CanvasPanel';
 import { useSettingsStore, useGraphStore } from './stores';
@@ -193,6 +193,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <ElectronTitleBar />
       <main className="main">
         {/* 画布：计算图或图表（与数据面板视图互斥），可导出 SVG */}
         <div className="target target-full">

@@ -1,12 +1,12 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 
-// TypeScript 编译为 CommonJS 时会自动注入 __dirname
-// 但源代码中需要声明，编译后会替换为实际的 __dirname
 declare const __dirname: string;
 
+let mainWindow: BrowserWindow | null = null;
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  const opts: Electron.BrowserWindowConstructorOptions = {
     width: 1400,
     height: 900,
     backgroundColor: '#f0f0f0',
@@ -16,7 +16,45 @@ function createWindow() {
       contextIsolation: true,
     },
     icon: join(__dirname, '../build/icon.png'),
+  };
+  if (process.platform === 'darwin') {
+    opts.titleBarStyle = 'hiddenInset';
+    opts.trafficLightPosition = { x: 14, y: 14 };
+  } else {
+    opts.frame = false;
+  }
+  mainWindow = new BrowserWindow(opts);
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (process.platform === 'darwin') {
+      mainWindow!.webContents.insertCSS(
+        'body { padding-top: max(env(safe-area-inset-top), 52px) !important; box-sizing: border-box; }'
+      );
+    } else {
+      mainWindow!.webContents.insertCSS(
+        'body { padding-top: 36px !important; box-sizing: border-box; }'
+      );
+    }
   });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+
+  ipcMain.handle('electron-window-minimize', () => {
+    mainWindow?.minimize();
+  });
+  ipcMain.handle('electron-window-maximize', () => {
+    mainWindow?.maximize();
+  });
+  ipcMain.handle('electron-window-close', () => {
+    mainWindow?.close();
+  });
+  ipcMain.handle('electron-window-toggle-maximize', () => {
+    if (mainWindow?.isMaximized()) mainWindow.unmaximize();
+    else mainWindow?.maximize();
+  });
+  ipcMain.handle('electron-window-is-maximized', () => mainWindow?.isMaximized() ?? false);
 
   if (process.env.NODE_ENV === 'development') {
     // 开发模式：连接到 web 开发服务器
