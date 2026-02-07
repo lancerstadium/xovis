@@ -529,7 +529,6 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
-        {/* 拖放判定框：全覆盖、明确四边，不参与点击 */
         {dropOver && (
           <div
             style={{
