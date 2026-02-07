@@ -50,6 +50,8 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     };
 
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);
+    // 立即发送当前文档，供 host 缓存，避免 iframe 未就绪时丢失
+    this.updateWebview(webviewPanel.webview, document);
 
     // 监听文档变化
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
@@ -62,11 +64,11 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
       changeDocumentSubscription.dispose();
     });
 
-    // 处理来自 webview 的消息（短延迟确保 iframe 内已注册 message 监听）
+    // 处理来自 webview 的消息
     webviewPanel.webview.onDidReceiveMessage((message) => {
       switch (message.type) {
         case 'ready':
-          setTimeout(() => this.updateWebview(webviewPanel.webview, document), 50);
+          this.updateWebview(webviewPanel.webview, document);
           break;
       }
     });
@@ -97,22 +99,24 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     <script>
         const vscode = acquireVsCodeApi();
         const iframe = document.getElementById('app');
-        let pendingText = null;
+        var lastText = null;
         function forwardToApp(text) {
+            lastText = text;
             if (iframe.contentWindow) {
                 try { iframe.contentWindow.postMessage({ type: 'update', text }, '*'); } catch (_) {}
-                pendingText = null;
-            } else {
-                pendingText = text;
             }
         }
-        window.addEventListener('message', event => {
-            const m = event.data;
-            if (m.type === 'update' && typeof m.text === 'string') forwardToApp(m.text);
+        window.addEventListener('message', function(event) {
+            var m = event.data;
+            if (m && m.type === 'update' && typeof m.text === 'string') forwardToApp(m.text);
         });
-        iframe.addEventListener('load', () => {
-            if (pendingText) forwardToApp(pendingText);
-            vscode.postMessage({ type: 'ready' });  // 触发 extension 发送当前文档
+        iframe.addEventListener('load', function() {
+            vscode.postMessage({ type: 'ready' });
+            setTimeout(function() {
+                if (lastText != null) {
+                    try { iframe.contentWindow.postMessage({ type: 'update', text: lastText }, '*'); } catch (_) {}
+                }
+            }, 400);
         });
     </script>
 </body>
