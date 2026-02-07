@@ -28,11 +28,11 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     if (process.platform === 'darwin') {
       mainWindow!.webContents.insertCSS(
-        'body { padding-top: max(env(safe-area-inset-top), 52px) !important; box-sizing: border-box; }'
+        'html, body { height: 100vh; margin: 0; overflow: hidden; box-sizing: border-box; } body { padding-top: max(env(safe-area-inset-top), 52px) !important; } .app { height: 100% !important; min-height: 0 !important; }'
       );
     } else {
       mainWindow!.webContents.insertCSS(
-        'body { padding-top: 24px !important; box-sizing: border-box; }'
+        'html, body { height: 100vh; margin: 0; overflow: hidden; box-sizing: border-box; } body { padding-top: 24px !important; } .app { height: 100% !important; min-height: 0 !important; }'
       );
     }
   });
