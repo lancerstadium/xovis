@@ -8,8 +8,8 @@
 
 /* Electron 无边框窗口：Win/Linux 一体标题栏按钮 */
 .electron-title-btn {
-  width: 46px;
-  height: 24px;
+  width: 40px;
+  height: 18px;
   padding: 0;
   border: none;
   background: transparent;
@@ -25,6 +25,43 @@
 .electron-title-btn-close:hover {
   background: #e81123;
   color: #fff;
+}
+/* Electron 标题栏：多 tab 与窗口按钮同一行 */
+.electron-title-bar-tabs {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.electron-title-bar-tabs::-webkit-scrollbar {
+  display: none;
+}
+.electron-title-tab:hover {
+  background: color-mix(in srgb, var(--border) 25%, transparent);
+}
+.electron-title-tab-close:hover {
+  background: color-mix(in srgb, var(--border) 50%, transparent);
+  color: var(--text);
+}
+.electron-title-tab-add {
+  width: 22px;
+  height: 100%;
+  min-width: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+}
+.electron-title-tab-add:hover {
+  background: color-mix(in srgb, var(--border) 30%, transparent);
+  color: var(--text);
 }
 /* 图标按钮统一：所有图标按钮 28×28，顶栏/图内/详情关闭一致 */
 .btn.icon-btn {

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Loader, CanvasPanel, Detail, ViewMenu, ElectronTitleBar } from './components';
 import { DataPanel } from './components/DataPanel';
 import type { CanvasPanelHandle } from './components/CanvasPanel';
-import { useSettingsStore, useGraphStore } from './stores';
+import { useSettingsStore, useGraphStore, useElectronTabsStore } from './stores';
 import { getLocale } from './locale';
 import './App.css';
 
@@ -61,7 +61,10 @@ const CSS_VAR_MAP: Record<string, string> = {
 export default function App() {
   const s = useSettingsStore();
   const { theme, lang, sidebarWidth, sidebarHeight, sidebarOpen, dataPanelOpen, set } = s;
-  const { graph, selected } = useGraphStore();
+  const { graph, selected, setGraph } = useGraphStore();
+  const activeTabId = useElectronTabsStore((state) => state.activeId);
+  const setTabGraph = useElectronTabsStore((state) => state.setTabGraph);
+  const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const viewTriggerRef = useRef<HTMLButtonElement>(null);
   const canvasPanelRef = useRef<CanvasPanelHandle | null>(null);
@@ -135,6 +138,18 @@ export default function App() {
       'calc(100vh - var(--float-trigger-row) - var(--float-panel-gap) - var(--float-trigger-row-bottom))'
     );
   }, []);
+
+  // Electron 多 tab：切换 tab 时同步该 tab 的 graph 到全局；全局 graph 变化时写回当前 tab
+  useEffect(() => {
+    if (!isElectron || !activeTabId) return;
+    const tab = useElectronTabsStore.getState().tabs.find((t) => t.id === activeTabId);
+    setGraph(tab?.graph ?? null);
+  }, [isElectron, activeTabId, setGraph]);
+
+  useEffect(() => {
+    if (!isElectron || !activeTabId) return;
+    setTabGraph(activeTabId, graph);
+  }, [isElectron, activeTabId, graph, setTabGraph]);
 
   /** 详情浮窗宽度：靠右时拖左缘，宽度 = 右缘 - 鼠标 X */
   const handleResizeWidth = useCallback(
@@ -685,10 +700,16 @@ function ExportSvgButton({
             ?.replace(/\.[^.]+$/, '')
         : `chart-${viewMode}`) || 'export';
 
+    const vscodeSave = (typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_SAVE?: (p: { type: string; format?: string; content?: string; suggestedName?: string }) => void }).__XOVIS_VSCODE_SAVE);
+
     // SVG格式直接导出
     if (exportFormat === 'svg') {
       const serialized = new XMLSerializer().serializeToString(svg);
       const withDeclaration = `<?xml version="1.0" encoding="UTF-8"?>\n${serialized}`;
+      if (vscodeSave) {
+        vscodeSave({ type: 'save', format: 'svg', content: withDeclaration, suggestedName: `${baseName}.svg` });
+        return;
+      }
       const blob = new Blob([withDeclaration], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const filename = `${baseName}.svg`;
@@ -739,6 +760,11 @@ function ExportSvgButton({
           throw new Error('svg2pdf.js not loaded correctly');
         }
 
+        if (vscodeSave) {
+          const dataUrl = pdf.output('datauristring');
+          vscodeSave({ type: 'save', format: 'pdf', content: dataUrl, suggestedName: `${baseName}.pdf` });
+          return;
+        }
         pdf.save(`${baseName}.pdf`);
         return;
       } catch (error) {
@@ -807,7 +833,12 @@ function ExportSvgButton({
 
           const imgData = canvas.toDataURL('image/png');
           pdf.addImage(imgData, 'PNG', 0, 0, widthMm, heightMm);
-          pdf.save(`${baseName}.pdf`);
+          if (vscodeSave) {
+            const dataUrl = pdf.output('datauristring');
+            vscodeSave({ type: 'save', format: 'pdf', content: dataUrl, suggestedName: `${baseName}.pdf` });
+          } else {
+            pdf.save(`${baseName}.pdf`);
+          }
         } catch (fallbackError) {
           console.error('Fallback PDF export also failed:', fallbackError);
           alert('PDF导出失败，请尝试其他格式');
@@ -904,9 +935,18 @@ function ExportSvgButton({
       canvas.toBlob(
         (blob) => {
           if (!blob) return;
-          const url = URL.createObjectURL(blob);
           const ext = exportFormat === 'jpg' ? 'jpg' : exportFormat;
           const filename = `${baseName}.${ext}`;
+          if (vscodeSave) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const dataUrl = reader.result as string;
+              vscodeSave({ type: 'save', format: exportFormat, content: dataUrl, suggestedName: filename });
+            };
+            reader.readAsDataURL(blob);
+            return;
+          }
+          const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
           a.download = filename;

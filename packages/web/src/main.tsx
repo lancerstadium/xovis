@@ -45,18 +45,36 @@ async function bootstrap() {
 }
 bootstrap();
 
-// VSCode 扩展 webview：监听来自父窗口的文档更新
-if (typeof window !== 'undefined' && window.self !== window.top) {
-  window.addEventListener('message', async (e) => {
-    if (e.data?.type === 'update' && typeof e.data.text === 'string') {
-      const { useGraphStore } = await import('./stores');
-      const { loadFile } = await import('./utils/loadFile');
-      const result = loadFile(e.data.text);
-      if (result.success) {
-        useGraphStore.getState().setGraph(result.graph);
-      } else {
-        useGraphStore.getState().setGraph(null);
-      }
+// VSCode 扩展 webview：监听文档更新（iframe 时来自父窗口，直接 webview 时来自扩展）
+function handleVscodeUpdate(e: MessageEvent) {
+  if (e.data?.type === 'update' && typeof e.data.text === 'string') {
+    import('./stores').then(({ useGraphStore }) =>
+      import('./utils/loadFile').then(({ loadFile }) => {
+        const result = loadFile(e.data.text);
+        if (result.success) useGraphStore.getState().setGraph(result.graph);
+        else useGraphStore.getState().setGraph(null);
+      })
+    );
+  }
+}
+if (typeof window !== 'undefined') {
+  if (window.self !== window.top) {
+    window.addEventListener('message', handleVscodeUpdate);
+  } else if (
+    (window as unknown as { __XOVIS_VSCODE_WEBVIEW__?: boolean }).__XOVIS_VSCODE_WEBVIEW__
+  ) {
+    window.addEventListener('message', handleVscodeUpdate);
+    // 有初始数据时立即应用
+    const initial = (window as unknown as { __XOVIS_INITIAL_TEXT?: string | null })
+      .__XOVIS_INITIAL_TEXT;
+    if (initial != null) {
+      import('./stores').then(({ useGraphStore }) =>
+        import('./utils/loadFile').then(({ loadFile }) => {
+          const result = loadFile(initial);
+          if (result.success) useGraphStore.getState().setGraph(result.graph);
+          else useGraphStore.getState().setGraph(null);
+        })
+      );
     }
-  });
+  }
 }

@@ -94,7 +94,7 @@
     "inputs": [0],
     "outputs": [7],
     "metadata": {
-      "author": "xoc",
+      "author": "lancerstadium",
       "framework": "onnx",
       "version": "1.0",
       "description": "Example complete graph with metadata"
