@@ -414,11 +414,7 @@ function isPatternFill(fs: FillStyleType): boolean {
 }
 
 /** 渲染填充图案 def（柱/饼共用） */
-function renderFillPattern(
-  fillStyle: FillStyleType,
-  color: string,
-  id: string
-): React.ReactNode {
+function renderFillPattern(fillStyle: FillStyleType, color: string, id: string): React.ReactNode {
   if (!isPatternFill(fillStyle)) return null;
   const strokeProps = { stroke: color, strokeWidth: 1, opacity: 0.6 };
   switch (fillStyle) {
@@ -586,27 +582,25 @@ function calculateVerticalDataLabelOffset(
   plotBottom: number
 ): number {
   const estimatedLabelHeight = labelFontSize + 4;
-  const spacing = 4;
+  const spacingTop = 6;
+  const spacingBottom = 10;
 
   if (position === 'top') {
-    // 上方（数据点的北）
-    return -markerSize / 2 - spacing;
+    return -markerSize / 2 - spacingTop;
   } else if (position === 'bottom') {
-    // 下方（数据点的南）
-    return markerSize / 2 + spacing;
+    return markerSize / 2 + spacingBottom;
   } else {
-    // auto: 如果标签放在上方会超出顶部边界，就放在下方；如果放在下方会超出底部边界，就放在上方
-    const labelTopIfTop = pointY - markerSize / 2 - spacing - estimatedLabelHeight;
-    const labelBottomIfBottom = pointY + markerSize / 2 + spacing + estimatedLabelHeight;
+    const labelTopIfTop = pointY - markerSize / 2 - spacingTop - estimatedLabelHeight;
+    const labelBottomIfBottom = pointY + markerSize / 2 + spacingBottom + estimatedLabelHeight;
     if (labelTopIfTop < plotTop) {
       // 放在上方会超出顶部边界，放在下方
-      return markerSize / 2 + spacing;
+      return markerSize / 2 + spacingBottom;
     } else if (labelBottomIfBottom > plotBottom) {
       // 放在下方会超出底部边界，放在上方
-      return -markerSize / 2 - spacing;
+      return -markerSize / 2 - spacingTop;
     } else {
       // 两边都有空间，默认放在上方
-      return -markerSize / 2 - spacing;
+      return -markerSize / 2 - spacingTop;
     }
   }
 }
@@ -621,99 +615,102 @@ function calculateHorizontalDataLabelOffset(
   plotRight: number
 ): { offsetX: number; offsetY: number; textAnchor: 'start' | 'end' | 'middle' } {
   const estimatedLabelWidth = labelFontSize * 3;
-  const spacing = 4;
+  const spacingTop = 6;
+  const spacingBottom = 10;
 
   if (position === 'top') {
-    // 上方（右方，数据点的北）
-    return { offsetX: markerSize / 2 + spacing, offsetY: 0, textAnchor: 'start' };
+    return { offsetX: markerSize / 2 + spacingTop, offsetY: 0, textAnchor: 'start' };
   } else if (position === 'bottom') {
-    // 下方（左方，数据点的南）
-    return { offsetX: -markerSize / 2 - spacing, offsetY: 0, textAnchor: 'end' };
+    return { offsetX: -markerSize / 2 - spacingBottom, offsetY: 0, textAnchor: 'end' };
   } else {
     // auto: 如果标签放在右方（上方）会超出右边界，就放在左方（下方）；如果放在左方（下方）会超出左边界，就放在右方（上方）
-    const labelRightIfTop = pointX + markerSize / 2 + spacing + estimatedLabelWidth;
-    const labelLeftIfBottom = pointX - markerSize / 2 - spacing - estimatedLabelWidth;
+    const labelRightIfTop = pointX + markerSize / 2 + spacingTop + estimatedLabelWidth;
+    const labelLeftIfBottom = pointX - markerSize / 2 - spacingBottom - estimatedLabelWidth;
     if (labelRightIfTop > plotRight) {
       // 放在右方会超出右边界，放在左方（下方）
-      return { offsetX: -markerSize / 2 - spacing, offsetY: 0, textAnchor: 'end' };
+      return { offsetX: -markerSize / 2 - spacingBottom, offsetY: 0, textAnchor: 'end' };
     } else if (labelLeftIfBottom < plotLeft) {
       // 放在左方会超出左边界，放在右方（上方）
-      return { offsetX: markerSize / 2 + spacing, offsetY: 0, textAnchor: 'start' };
+      return { offsetX: markerSize / 2 + spacingTop, offsetY: 0, textAnchor: 'start' };
     } else {
       // 两边都有空间，默认放在右方（上方）
-      return { offsetX: markerSize / 2 + spacing, offsetY: 0, textAnchor: 'start' };
+      return { offsetX: markerSize / 2 + spacingTop, offsetY: 0, textAnchor: 'start' };
     }
   }
 }
 
-/** 计算柱状图垂直方向的数据标签偏移（用于垂直柱状图） */
+/** 计算柱状图垂直方向的数据标签偏移（用于垂直柱状图）
+ * - 上方：柱子外部，标签在柱子上方
+ * - 下方：柱子内部靠上，标签在柱内靠近顶端 */
 function calculateBarVerticalDataLabelOffset(
   position: 'top' | 'bottom' | 'auto',
   barTop: number,
-  barBottom: number,
-  barHeight: number,
+  _barBottom: number,
+  _barHeight: number,
   labelFontSize: number,
   plotTop: number,
   plotBottom: number
 ): number {
   const estimatedLabelHeight = labelFontSize + 4;
-  const spacing = 4;
+  const halfH = estimatedLabelHeight / 2;
+  const spacingOutside = 6;
+  const spacingInside = 6;
 
   if (position === 'top') {
-    // 上方（数据点的北）
-    return -spacing;
+    // 柱子外部，标签在柱子上方
+    return -(halfH + spacingOutside);
   } else if (position === 'bottom') {
-    // 下方（数据点的南）
-    return barHeight + spacing;
+    // 柱子内部靠上
+    return halfH + spacingInside;
   } else {
-    // auto: 如果标签放在上方会超出顶部边界，就放在下方；如果放在下方会超出底部边界，就放在上方
-    const labelTopIfTop = barTop - spacing - estimatedLabelHeight;
-    const labelBottomIfBottom = barBottom + spacing + estimatedLabelHeight;
-    if (labelTopIfTop < plotTop) {
-      // 放在上方会超出顶部边界，放在下方
-      return barHeight + spacing;
-    } else if (labelBottomIfBottom > plotBottom) {
-      // 放在下方会超出底部边界，放在上方
-      return -spacing;
+    const labelTopIfOutside = barTop - halfH - spacingOutside - estimatedLabelHeight;
+    const labelBottomIfInside = barTop + halfH + spacingInside + estimatedLabelHeight;
+    if (labelTopIfOutside < plotTop) {
+      // 上方空间不足，放柱子内部靠上
+      return halfH + spacingInside;
+    } else if (labelBottomIfInside > plotBottom) {
+      // 内部靠上会超出底部（极少见），放上方外部
+      return -(halfH + spacingOutside);
     } else {
-      // 两边都有空间，默认放在上方
-      return -spacing;
+      // 默认优先放上方外部
+      return -(halfH + spacingOutside);
     }
   }
 }
 
-/** 计算柱状图水平方向的数据标签偏移（用于水平柱状图） */
+/** 计算柱状图水平方向的数据标签偏移（用于水平柱状图，X/Y 交换后）
+ * - 上方：柱子外部，标签在柱子右方
+ * - 下方：柱子内部靠右 */
 function calculateBarHorizontalDataLabelOffset(
   position: 'top' | 'bottom' | 'auto',
-  barLeft: number,
+  _barLeft: number,
   barRight: number,
   barWidth: number,
   labelFontSize: number,
   plotLeft: number,
   plotRight: number
-): number {
-  const estimatedLabelHeight = labelFontSize + 4;
-  const spacing = 4;
+): { offsetX: number; textAnchor: 'start' | 'end' } {
+  const estimatedLabelWidth = labelFontSize * 3;
+  const spacingOutside = 6;
+  const spacingInside = 6;
+  const halfBar = barWidth / 2;
 
   if (position === 'top') {
-    // 上方（右方，数据点的北）
-    return barWidth + spacing;
+    // 柱子外部，标签在柱子右方
+    return { offsetX: halfBar + spacingOutside, textAnchor: 'start' };
   } else if (position === 'bottom') {
-    // 下方（左方，数据点的南）
-    return -spacing;
+    // 柱子内部靠右：textAnchor='end' 使 x 为文字右缘，放在 barRight - spacing
+    return { offsetX: halfBar - spacingInside, textAnchor: 'end' };
   } else {
-    // auto: 如果标签放在右方（上方）会超出右边界，就放在左方（下方）；如果放在左方（下方）会超出左边界，就放在右方（上方）
-    const labelRightIfTop = barRight + spacing + estimatedLabelHeight;
-    const labelLeftIfBottom = barLeft - spacing - estimatedLabelHeight;
+    const labelRightIfTop = barRight + spacingOutside + estimatedLabelWidth;
+    const labelRightIfInside = barRight - spacingInside;
+    const labelLeftIfInside = labelRightIfInside - estimatedLabelWidth;
     if (labelRightIfTop > plotRight) {
-      // 放在右方会超出右边界，放在左方（下方）
-      return -spacing;
-    } else if (labelLeftIfBottom < plotLeft) {
-      // 放在左方会超出左边界，放在右方（上方）
-      return barWidth + spacing;
+      return { offsetX: halfBar - spacingInside, textAnchor: 'end' };
+    } else if (labelLeftIfInside < plotLeft) {
+      return { offsetX: halfBar + spacingOutside, textAnchor: 'start' };
     } else {
-      // 两边都有空间，默认放在右方（上方）
-      return barWidth + spacing;
+      return { offsetX: halfBar + spacingOutside, textAnchor: 'start' };
     }
   }
 }
@@ -1269,13 +1266,17 @@ export const ChartView = forwardRef<
     [graph]
   );
 
-  // 使用序列化来深度比较 chartYKeys，确保配置变化时能正确更新
-  // chartYKeysKey 变化时，chartData 会重新计算，buildChartData 会创建新的配置对象引用
-  const chartYKeysKey = useMemo(() => JSON.stringify(chartYKeys), [chartYKeys]);
+  // 仅使用已选中的 Y 列（key 非空），避免添加空 slot 未选中时影响图表数据与坐标轴
+  const selectedYKeys = useMemo(() => chartYKeys.filter((yc) => yc.key), [chartYKeys]);
+  // 只序列化 key 列表，确保添加空 slot 时 key 不变
+  const chartYKeysKey = useMemo(
+    () => JSON.stringify(selectedYKeys.map((yc) => yc.key)),
+    [selectedYKeys]
+  );
   const chartData = useMemo(() => {
     if (!graph) return null;
     const rows = getOperatorRows(graph);
-    return buildChartData(rows, chartXKey, chartYKeys);
+    return buildChartData(rows, chartXKey, selectedYKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, chartXKey, chartYKeysKey]);
 
@@ -1671,8 +1672,7 @@ export const ChartView = forwardRef<
         : chartSwapXY
           ? Math.max(0, Math.min(50, chartAxisPaddingLeft)) / 100
           : paddingBottom;
-    const effectiveMinY =
-      effectiveDataMinY - effectiveDataRangeY * valueScalePaddingMin;
+    const effectiveMinY = effectiveDataMinY - effectiveDataRangeY * valueScalePaddingMin;
     const effectiveMaxY = effectiveDataMaxY + effectiveDataRangeY * paddingTop;
     const axisBottomValue = effectiveDataMinY;
     const baseVals = chartData.baseVals ?? yVals.map(() => axisBottomValue);
@@ -1983,7 +1983,7 @@ export const ChartView = forwardRef<
                           | 'top'
                           | 'bottom'
                           | 'auto';
-                        const offsetX = calculateBarHorizontalDataLabelOffset(
+                        const { offsetX, textAnchor } = calculateBarHorizontalDataLabelOffset(
                           position,
                           clampedX0,
                           clampedX0 + effectiveBarW,
@@ -1992,23 +1992,14 @@ export const ChartView = forwardRef<
                           plotLeft,
                           plotRight
                         );
-                        const offsetY = offsetX > effectiveBarW / 2 ? -barH - 4 : 4;
+                        const barCenterX = clampedX0 + effectiveBarW / 2;
+                        const barCenterY = y0 + barH / 2;
                         return (
                           <text
                             className="chart-axis-label"
-                            x={
-                              clampedX0 +
-                              effectiveBarW / 2 +
-                              (chartData.yConfig?.dataLabelOffsetX ?? 0)
-                            }
-                            y={y0 + offsetY + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
-                            textAnchor={
-                              position === 'auto' && offsetX === effectiveBarW / 2
-                                ? 'middle'
-                                : offsetX > effectiveBarW / 2
-                                  ? 'start'
-                                  : 'end'
-                            }
+                            x={barCenterX + offsetX + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
+                            y={barCenterY + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
+                            textAnchor={textAnchor}
                             dominantBaseline="middle"
                             style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                           >
@@ -2075,14 +2066,10 @@ export const ChartView = forwardRef<
                         return (
                           <text
                             className="chart-axis-label"
-                            x={x0 + barW / 2 + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
+                            x={clampedX0 + barW / 2 + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
                             y={y0 + offsetY + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
                             textAnchor="middle"
-                            dominantBaseline={
-                              position === 'auto' && offsetY === effectiveBarH / 2
-                                ? 'middle'
-                                : 'auto'
-                            }
+                            dominantBaseline="middle"
                             style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                           >
                             {formatDataLabel(val, labelDecimals)}
@@ -2580,8 +2567,8 @@ export const ChartView = forwardRef<
   const { xLabels, seriesNames, data, baseData, seriesConfigs } = chartData;
   // 创建系列名称到原始索引的映射（用于查找配置）
   const seriesNameToIndex = new Map(seriesNames.map((name, idx) => [name, idx]));
-  // 如果交换X/Y，需要重新组织数据
-  const effectiveN = chartSwapXY ? seriesNames.length : xLabels.length;
+  // 如果交换X/Y，effectiveN 用可见系列数，保证未勾选可见的不影响坐标轴与布局
+  const effectiveN = chartSwapXY ? visibleSeriesIndices.length : xLabels.length;
   const effectiveSeriesCount = chartSwapXY ? xLabels.length : seriesCount;
   const effectiveXLabels = chartSwapXY ? seriesNames.map(String) : xLabels;
   // 使用过滤后的系列名称（已过滤不可见系列）
@@ -2598,21 +2585,17 @@ export const ChartView = forwardRef<
       : chartSwapXY
         ? Math.max(0, Math.min(50, chartAxisPaddingLeft)) / 100
         : Math.max(0, Math.min(50, chartAxisPaddingBottom)) / 100;
-  const axisBottomMulti =
-    dataMinY_withBases - dataRangeY_withBases * valueScalePaddingMin;
+  const axisBottomMulti = dataMinY_withBases - dataRangeY_withBases * valueScalePaddingMin;
   const resolveBase = (v: number) => (Number.isNaN(v) ? axisBottomMulti : v);
   const baseDataSafe = (baseData ?? data.map((row) => row.map(() => NaN))).map((row) =>
     row.map(resolveBase)
   );
-  // 创建过滤后的数据：只包含可见系列的数据
+  // 创建过滤后的数据：只包含可见系列的数据（未勾选可见的系列不参与坐标轴范围计算）
   const effectiveData = chartSwapXY
-    ? (() => {
-        // 转置：effectiveData[seriesIndex][xLabelIndex] = data[xLabelIndex][seriesIndex]
-        return seriesNames.map((_, j) => xLabels.map((_, i) => data[i]?.[j] ?? 0));
-      })()
+    ? visibleSeriesIndices.map((j) => xLabels.map((_, i) => data[i]?.[j] ?? 0))
     : data.map((row) => visibleSeriesIndices.map((origIdx) => row[origIdx] ?? 0));
   const effectiveBaseData = chartSwapXY
-    ? seriesNames.map((_, j) => xLabels.map((_, i) => baseDataSafe[i]?.[j] ?? 0))
+    ? visibleSeriesIndices.map((j) => xLabels.map((_, i) => baseDataSafe[i]?.[j] ?? 0))
     : baseDataSafe.map((row) => visibleSeriesIndices.map((origIdx) => row[origIdx] ?? 0));
 
   // 辅助函数：根据系列名称获取原始索引
@@ -2637,14 +2620,11 @@ export const ChartView = forwardRef<
 
   // 计算可用宽度（考虑padding后的实际可用空间）
   const availableW = innerW * (1 - xPaddingLeft - xPaddingRight);
-  const totalBarGapOuter =
-    effectiveN > 1 ? (effectiveN - 1) * Math.max(0, chartBarGapOuter) : 0;
+  const totalBarGapOuter = effectiveN > 1 ? (effectiveN - 1) * Math.max(0, chartBarGapOuter) : 0;
   const groupW =
     effectiveN > 0 ? Math.max(0, (availableW - totalBarGapOuter) / effectiveN) : availableW;
   const totalBarGapInner =
-    effectiveSeriesCount > 1
-      ? (effectiveSeriesCount - 1) * Math.max(0, chartBarGapInner)
-      : 0;
+    effectiveSeriesCount > 1 ? (effectiveSeriesCount - 1) * Math.max(0, chartBarGapInner) : 0;
   const maxBarWPerSeries =
     effectiveSeriesCount > 0
       ? Math.max(0, (groupW - totalBarGapInner) / effectiveSeriesCount)
@@ -2952,9 +2932,8 @@ export const ChartView = forwardRef<
         {viewMode === 'bar' &&
           (chartSwapXY
             ? effectiveData.map((seriesData, si) => {
-                const seriesName = seriesNames[si];
-                if (chartSeriesVisibility[seriesName] === false) return null;
-                const seriesConfig = seriesConfigs[si];
+                const origIdx = visibleSeriesIndices[si];
+                const seriesConfig = seriesConfigs[origIdx];
                 return (
                   <g key={si} className="chart-bar-group">
                     {seriesData.map((val, i) => {
@@ -2965,12 +2944,15 @@ export const ChartView = forwardRef<
                       const yCenter = getBarCenterYSwapped(i, si);
                       const y0 = yCenter - barThicknessSwapped / 2;
                       const x0 = barLeft;
-                      const clampedX0 = Math.max(plotLeft, Math.min(x0, plotLeft + innerW - barLength));
+                      const clampedX0 = Math.max(
+                        plotLeft,
+                        Math.min(x0, plotLeft + innerW - barLength)
+                      );
                       return (
                         <g
                           key={i}
                           data-xindex={i}
-                          data-seriesindex={si}
+                          data-seriesindex={origIdx}
                           style={{ cursor: 'pointer' }}
                         >
                           <rect
@@ -2983,9 +2965,9 @@ export const ChartView = forwardRef<
                             ry={chartBarCornerRadius}
                             {...getBarRectProps(
                               seriesConfig,
-                              seriesColor(si, palette, seriesConfig),
-                              `chartBarGrad-${si}`,
-                              `chartBarFill-${si}`
+                              seriesColor(origIdx, palette, seriesConfig),
+                              `chartBarGrad-${origIdx}`,
+                              `chartBarFill-${origIdx}`
                             )}
                           />
                           {(() => {
@@ -3000,7 +2982,7 @@ export const ChartView = forwardRef<
                               | 'bottom'
                               | 'auto';
                             const barCenterX = (barLeft + barRight) / 2;
-                            const offsetX = calculateBarHorizontalDataLabelOffset(
+                            const { offsetX, textAnchor } = calculateBarHorizontalDataLabelOffset(
                               position,
                               barLeft,
                               barRight,
@@ -3009,19 +2991,12 @@ export const ChartView = forwardRef<
                               plotLeft,
                               plotRight
                             );
-                            const offsetY = offsetX > barLength / 2 ? -barThicknessSwapped - 4 : 4;
                             return (
                               <text
                                 className="chart-axis-label"
                                 x={barCenterX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                                y={yCenter + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
-                                textAnchor={
-                                  position === 'auto' && offsetX === barLength / 2
-                                    ? 'middle'
-                                    : offsetX > barLength / 2
-                                      ? 'start'
-                                      : 'end'
-                                }
+                                y={yCenter + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                textAnchor={textAnchor}
                                 dominantBaseline="middle"
                                 style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                               >
@@ -3038,12 +3013,9 @@ export const ChartView = forwardRef<
             : effectiveXLabels.map((_, i) => {
                 const tickX = xScale(i);
                 const groupLeft = tickX - groupW / 2;
-                const totalBarsWidth =
-                  effectiveSeriesCount * barW + totalBarGapInner;
+                const totalBarsWidth = effectiveSeriesCount * barW + totalBarGapInner;
                 const actualGroupLeft =
-                  totalBarsWidth <= groupW
-                    ? groupLeft + (groupW - totalBarsWidth) / 2
-                    : groupLeft;
+                  totalBarsWidth <= groupW ? groupLeft + (groupW - totalBarsWidth) / 2 : groupLeft;
                 return (
                   <g key={i} className="chart-bar-group">
                     {effectiveSeriesNames.map((seriesName, si) => {
@@ -3110,11 +3082,7 @@ export const ChartView = forwardRef<
                                 x={clampedX0 + barW / 2 + (seriesConfig?.dataLabelOffsetX ?? 0)}
                                 y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor="middle"
-                                dominantBaseline={
-                                  position === 'auto' && offsetY === -effectiveBarH / 2
-                                    ? 'middle'
-                                    : 'auto'
-                                }
+                                dominantBaseline="middle"
                                 style={{ fontSize: dataLabelFontSize, ...labelStyle }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
@@ -3131,9 +3099,8 @@ export const ChartView = forwardRef<
         {viewMode === 'line' &&
           (chartSwapXY
             ? effectiveData.map((seriesData, si) => {
-                const seriesName = seriesNames[si];
-                if (chartSeriesVisibility[seriesName] === false) return null;
-                const seriesConfig = seriesConfigs[si];
+                const origIdx = visibleSeriesIndices[si];
+                const seriesConfig = seriesConfigs[origIdx];
                 const pts = seriesData.map((val, idx) => ({
                   x: xScale(val),
                   y: yScale(idx),
@@ -3150,7 +3117,7 @@ export const ChartView = forwardRef<
                         className="chart-line"
                         d={generateFitLinePath(pts, lineFitType, lineFitDegree)}
                         fill="none"
-                        stroke={seriesColor(si, palette, seriesConfig)}
+                        stroke={seriesColor(origIdx, palette, seriesConfig)}
                         strokeWidth={lineWidth}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -3161,7 +3128,7 @@ export const ChartView = forwardRef<
                         className="chart-line"
                         points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
                         fill="none"
-                        stroke={seriesColor(si, palette, seriesConfig)}
+                        stroke={seriesColor(origIdx, palette, seriesConfig)}
                         strokeWidth={lineWidth}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -3173,7 +3140,7 @@ export const ChartView = forwardRef<
                       const config = showPoints
                         ? getLineMarkerConfig(
                             seriesConfig,
-                            seriesColor(si, palette, seriesConfig)
+                            seriesColor(origIdx, palette, seriesConfig)
                           )
                         : null;
                       const markerSize = config?.size ?? 4;
@@ -3196,7 +3163,7 @@ export const ChartView = forwardRef<
                           <g
                             key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
                             data-xindex={idx}
-                            data-seriesindex={si}
+                            data-seriesindex={origIdx}
                             style={{ cursor: 'pointer' }}
                           >
                             {marker}
@@ -3357,14 +3324,12 @@ export const ChartView = forwardRef<
           (chartSwapXY
             ? effectiveData
                 .map((seriesData, si) => {
-                  // 交换XY后，si是原始系列索引，需要检查可见性
-                  const seriesName = seriesNames[si];
-                  if (chartSeriesVisibility[seriesName] === false) return null;
-                  const seriesConfig = seriesConfigs[si];
+                  const origIdx = visibleSeriesIndices[si];
+                  const seriesConfig = seriesConfigs[origIdx];
                   return seriesData.map((val, idx) => {
                     const config = getScatterMarkerConfig(
                       seriesConfig,
-                      seriesColor(si, palette, seriesConfig)
+                      seriesColor(origIdx, palette, seriesConfig)
                     );
                     const marker = renderMarker(
                       xScale(val),
@@ -3380,8 +3345,8 @@ export const ChartView = forwardRef<
                     return (
                       <g
                         key={`scatter-${idx}-${si}-${config.configKey}`}
-                        data-xindex={si}
-                        data-seriesindex={idx}
+                        data-xindex={idx}
+                        data-seriesindex={origIdx}
                         style={{ cursor: 'pointer' }}
                       >
                         {marker}
