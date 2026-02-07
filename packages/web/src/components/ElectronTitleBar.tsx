@@ -6,8 +6,8 @@ import { getLocale } from '../locale';
 const TITLE_BAR_HEIGHT_WIN = 18;
 /** Mac：32px 略高以与红绿灯对齐，tab/字体更清晰 */
 const TITLE_BAR_HEIGHT_MAC = 32;
-/** 红绿灯约 14+40=54px 宽，留 8px 间距后 tab 起始 */
-const MAC_TRAFFIC_LIGHTS_LEFT = 62;
+/** 红绿灯约 14+52=66px 宽，留足间距后 tab 起始 */
+const MAC_TRAFFIC_LIGHTS_LEFT = 76;
 
 export function ElectronTitleBar() {
   const api = window.electronAPI;
@@ -156,7 +156,7 @@ function TabItem({
     maxWidth: 120,
     minWidth: 0,
     border: 'none',
-    background: isActive ? 'var(--toolbarBg)' : 'transparent',
+    background: isActive ? 'var(--bg)' : 'transparent',
     color: isActive ? 'var(--text)' : 'var(--text2)',
     fontSize: 11,
     cursor: 'pointer',

@@ -376,6 +376,11 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   }, [graph, onWheel]);
 
   useEffect(() => {
+    setDropOver(false);
+  }, [graph]);
+
+  useEffect(() => {
+    if (graph != null) return;
     const el = emptyLogoRef.current;
     if (!el) return;
     fetch(`${import.meta.env.BASE_URL || '/'}favicon-raw.svg`)
@@ -385,7 +390,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
         el.innerHTML = sized;
       })
       .catch(() => {});
-  }, []);
+  }, [graph]);
 
   const onGraphClick = useCallback(
     (e: React.MouseEvent) => {
@@ -502,7 +507,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
             justifyContent: 'center',
             gap: 12,
             color: 'var(--text2)',
-            border: dropOver ? '2px dashed var(--accent)' : '2px dashed transparent',
+            border: dropOver ? '2px dashed var(--accent)' : 'none',
             borderRadius: 8,
             margin: 8,
             transition: 'border-color 0.15s ease',
