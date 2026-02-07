@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { useGraphStore, useSettingsStore } from '../stores';
+import { useGraphStore, useSettingsStore, useElectronTabsStore } from '../stores';
 import type { ChartYColumnConfig } from '../stores/settings';
 import { getLocale } from '../locale';
 import type { GraphNode } from '@xovis/core';
@@ -1114,6 +1114,12 @@ export const ChartView = forwardRef<
         if (result.success) {
           setGraph(result.graph);
           setDropError(null);
+          if (typeof window !== 'undefined' && window.electronAPI && file.name) {
+            const aid = useElectronTabsStore.getState().activeId;
+            if (aid) {
+              useElectronTabsStore.getState().setTabLabel(aid, file.name.replace(/^.*[/\\]/, ''));
+            }
+          }
         } else {
           setDropError(result.error);
         }

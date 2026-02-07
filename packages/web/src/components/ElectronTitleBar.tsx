@@ -106,11 +106,34 @@ export function ElectronTitleBar() {
           >
             {maximized ? (
               <svg width={10} height={10} viewBox="0 0 12 12" fill="currentColor">
-                <rect x={2} y={0} width={8} height={8} stroke="currentColor" strokeWidth={1} fill="none" />
-                <rect x={0} y={2} width={8} height={8} stroke="currentColor" strokeWidth={1} fill="none" />
+                <rect
+                  x={2}
+                  y={0}
+                  width={8}
+                  height={8}
+                  stroke="currentColor"
+                  strokeWidth={1}
+                  fill="none"
+                />
+                <rect
+                  x={0}
+                  y={2}
+                  width={8}
+                  height={8}
+                  stroke="currentColor"
+                  strokeWidth={1}
+                  fill="none"
+                />
               </svg>
             ) : (
-              <svg width={10} height={10} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1}>
+              <svg
+                width={10}
+                height={10}
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1}
+              >
                 <rect x={0} y={0} width={12} height={12} />
               </svg>
             )}
@@ -177,7 +200,9 @@ function TabItem({
       onMouseLeave={() => setHover(false)}
       className={`electron-title-tab${isActive ? ' electron-title-tab-active' : ''}`}
     >
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {tab.label}
+      </span>
       {canClose && (
         <button
           type="button"

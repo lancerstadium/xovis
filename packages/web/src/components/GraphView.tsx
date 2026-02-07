@@ -9,7 +9,7 @@ import {
 } from 'react';
 import dagre from '@dagrejs/dagre';
 import { type Graph, type GraphNode, type GraphEdge, type Tensor } from '@xovis/core';
-import { useGraphStore, useSettingsStore } from '../stores';
+import { useGraphStore, useSettingsStore, useElectronTabsStore } from '../stores';
 import { getLocale } from '../locale';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
 
@@ -362,6 +362,12 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
         if (result.success) {
           setGraph(result.graph);
           setDropError(null);
+          if (typeof window !== 'undefined' && window.electronAPI && file.name) {
+            const aid = useElectronTabsStore.getState().activeId;
+            if (aid) {
+              useElectronTabsStore.getState().setTabLabel(aid, file.name.replace(/^.*[/\\]/, ''));
+            }
+          }
           // 如果是CSV文件，自动切换到图表视图
           if (result.source === 'csv' && s.viewMode === 'graph') {
             s.set({ viewMode: 'bar' });

@@ -40,7 +40,8 @@ export const useElectronTabsStore = create<ElectronTabsState>((set, get) => ({
       if (idx < 0) return s;
       let next = s.tabs.filter((t) => t.id !== id);
       if (next.length === 0) next = [{ id: `tab-${++tabSeq}`, label: 'untitled', graph: null }];
-      const nextActive = s.activeId === id ? next[Math.max(0, idx - 1)]?.id ?? next[0].id : s.activeId;
+      const nextActive =
+        s.activeId === id ? (next[Math.max(0, idx - 1)]?.id ?? next[0].id) : s.activeId;
       return { tabs: next, activeId: nextActive };
     });
   },

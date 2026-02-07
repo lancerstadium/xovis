@@ -29,14 +29,25 @@ export function Loader() {
   const t = getLocale(lang);
 
   const load = (text: string, fileName?: string) => {
+    const label = fileName ? fileName.replace(/^.*[/\\]/, '') : t.tabUntitled;
+    const isElectron = typeof window !== 'undefined' && window.electronAPI;
+    if (isElectron && label !== t.tabUntitled) {
+      const { tabs, setActive } = useElectronTabsStore.getState();
+      const sameTab = tabs.find((tab) => tab.label === label);
+      if (sameTab) {
+        setActive(sameTab.id);
+        setGraph(sameTab.graph ?? null);
+        setError(null);
+        return;
+      }
+    }
     const result = loadFile(text, fileName);
     if (result.success) {
       setGraph(result.graph);
       setError(null);
-      if (typeof window !== 'undefined' && window.electronAPI) {
+      if (isElectron) {
         const aid = useElectronTabsStore.getState().activeId;
         if (aid) {
-          const label = fileName ? fileName.replace(/^.*[/\\]/, '') : t.tabUntitled;
           useElectronTabsStore.getState().setTabLabel(aid, label);
         }
       }
