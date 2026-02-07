@@ -44,8 +44,8 @@ jobs:
       - name: Build core
         run: pnpm build:core
 
-      - name: Build web
-        run: pnpm build:web
+      - name: Build web (base ./ for Electron file:// loading)
+        run: pnpm --filter @xovis/web run build:embed
 
       - name: Upload web artifacts
         uses: actions/upload-artifact@v4

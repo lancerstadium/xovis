@@ -4,7 +4,7 @@
 
 ## 前置要求
 
-- 已构建 web 应用 (`pnpm build:web`)
+- 桌面构建需使用相对路径的 web 构建 (`pnpm --filter @xovis/web run build:embed`)，否则打包后白屏
 - Node.js 18+
 - pnpm 8+
 
@@ -33,9 +33,9 @@ pnpm build:electron:win   # Windows
 pnpm build:electron:mac   # macOS
 pnpm build:electron:linux # Linux
 
-# 或手动
+# 或手动（必须用 build:embed，不能用 build，否则打包后 file:// 下资源路径错误会白屏）
 cd packages/web
-pnpm build
+pnpm run build:embed
 
 cd packages/electron
 pnpm build:win   # Windows
