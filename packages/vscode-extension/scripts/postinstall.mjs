@@ -11,7 +11,7 @@ const iconPng = path.join(imagesDir, 'icon.png');
 fs.mkdirSync(imagesDir, { recursive: true });
 
 // Generate icon.png (128x128) from favicon-app.svg for vsce - required for extension icon
-if (!fs.existsSync(svgSrc)) return;
+if (!fs.existsSync(svgSrc)) process.exit(0);
 try {
   const sharp = (await import('sharp')).default;
   await sharp(svgSrc).resize(128, 128).png().toFile(iconPng);
