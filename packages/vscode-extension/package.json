@@ -36,6 +36,9 @@
           },
           {
             "filenamePattern": "*.computation-graph.json"
+          },
+          {
+            "filenamePattern": "*.json"
           }
         ],
         "priority": "default"

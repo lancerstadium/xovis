@@ -62,11 +62,11 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
       changeDocumentSubscription.dispose();
     });
 
-    // 处理来自 webview 的消息
+    // 处理来自 webview 的消息（短延迟确保 iframe 内已注册 message 监听）
     webviewPanel.webview.onDidReceiveMessage((message) => {
       switch (message.type) {
         case 'ready':
-          this.updateWebview(webviewPanel.webview, document);
+          setTimeout(() => this.updateWebview(webviewPanel.webview, document), 50);
           break;
       }
     });
