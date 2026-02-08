@@ -1169,13 +1169,17 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
 
   if (!dataPanelOpen) return null;
 
+  /* 外层 .data-panel-wrap 由 App 提供并锚定在数据按钮上方，此处只渲染可调宽高内容 */
   return (
-    <div ref={ref} className="data-panel-wrap">
-      <div
-        ref={innerRef}
-        className="data-panel-resizable"
-        style={{ width: effectiveWidth, height: effectiveHeight }}
-      >
+    <div
+      ref={(el) => {
+        (innerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        if (typeof ref === 'function') ref(el);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      }}
+      className="data-panel-resizable"
+      style={{ width: effectiveWidth, height: effectiveHeight }}
+    >
         <div
           className="float-panel-resize-corner float-panel-resize-corner-tr"
           role="separator"
@@ -1356,6 +1360,5 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
           </div>
         </div>
       </div>
-    </div>
   );
 });

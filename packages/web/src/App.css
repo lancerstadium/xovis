@@ -357,12 +357,11 @@ body.pwa-banner-visible .main {
   transform: translateX(-50%);
   top: auto;
 }
-/* 数据面板：与详情/设置浮窗一致，fixed 相对视口，底边在底部按钮行上方（复用 --float-panel-max-height） */
+/* 数据面板：与详情/设置浮窗一致，fixed + 底边由 JS 锚定在数据按钮上方（App.tsx 设 bottom），左右与其它浮窗同距 */
 .data-panel-wrap {
   position: fixed;
   left: var(--float-panel-gap);
   right: var(--float-panel-gap);
-  bottom: var(--float-trigger-row-bottom);
   max-height: var(--float-panel-max-height);
   min-height: 120px;
   max-width: min(90vw, 960px);

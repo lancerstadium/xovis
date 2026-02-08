@@ -81,6 +81,7 @@ export default function App() {
   const dataTriggerRef = useRef<HTMLDivElement>(null);
   const [detailResizing, setDetailResizing] = useState(false);
   const [detailPosition, setDetailPosition] = useState({ top: 0, right: 0 });
+  const [dataPanelPosition, setDataPanelPosition] = useState({ bottom: 0 });
   const detailRightEdgePxRef = useRef(0);
   const t = getLocale(lang);
 
@@ -96,15 +97,25 @@ export default function App() {
     };
   }, []);
 
+  /** 浮窗与按钮间距（与详情/设置一致） */
+  const FLOAT_BUTTON_GAP = 4;
+
   /** 右上角详情浮窗：与左上角设置浮窗一致，锚定在按钮下方；resize/旋转后重新计算 */
   useLayoutEffect(() => {
     if (!sidebarOpen || !detailTriggerRef.current) return;
     const rect = detailTriggerRef.current.getBoundingClientRect();
-    const top = rect.bottom + 4;
+    const top = rect.bottom + FLOAT_BUTTON_GAP;
     const right = window.innerWidth - rect.right;
     setDetailPosition({ top, right });
     detailRightEdgePxRef.current = rect.right;
   }, [sidebarOpen, resizeTick]);
+
+  /** 下侧数据浮窗：锚定在数据按钮上方、与其它浮窗相同间距；resize/旋转后重新计算 */
+  useLayoutEffect(() => {
+    if (!dataPanelOpen || !dataTriggerRef.current) return;
+    const rect = dataTriggerRef.current.getBoundingClientRect();
+    setDataPanelPosition({ bottom: window.innerHeight - rect.top + FLOAT_BUTTON_GAP });
+  }, [dataPanelOpen, resizeTick]);
 
   /** 浮窗统一：点击空白关闭（详情、数据、设置均用点击外部逻辑，排除面板 + 触发按钮） */
   const closeDetail = useCallback(() => set({ sidebarOpen: false }), [set]);
@@ -320,7 +331,15 @@ export default function App() {
             </button>
           </div>
         )}
-        {dataPanelOpen && <DataPanel ref={dataPanelWrapRef} />}
+        {dataPanelOpen && (
+          <div
+            ref={dataPanelWrapRef}
+            className="data-panel-wrap"
+            style={{ bottom: dataPanelPosition.bottom }}
+          >
+            <DataPanel />
+          </div>
+        )}
         {graph && (
           <div className="floating-trigger toolbar-right">
             <button
