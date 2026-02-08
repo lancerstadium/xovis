@@ -18,7 +18,8 @@ export const CanvasPanel = forwardRef<CanvasPanelHandle, object>(
   const graph = useGraphStore((s) => s.graph);
   const chartXKey = useSettingsStore((s) => s.chartXKey);
   const chartYKeys = useSettingsStore((s) => s.chartYKeys);
-  const hasChartMapping = !!chartXKey && chartYKeys.filter((yc) => yc.key).length > 0;
+  const hasChartMapping =
+    !!chartXKey && chartYKeys.filter((yc) => yc.key).length > 0;
 
   const showGraph = !graph || viewMode === 'graph' || !hasChartMapping;
   useImperativeHandle(

@@ -5,6 +5,8 @@ import type { Lang } from '../locale';
 /** Y轴列配置：包含列名、颜色和丰富的样式设置 */
 export type ChartYColumnConfig = {
   key: string;
+  /** 显示用别名（图表中所有显示处：有别名用别名，否则用 key） */
+  alias?: string;
   color?: string;
   // 通用样式
   styleType?: 'solid' | 'gradient' | 'dashed' | 'dotted' | 'dashdot' | 'double-dash';
@@ -1307,8 +1309,14 @@ export interface ViewSettings {
   dataPanelOpen: boolean;
   /** 表格中未选中的列（主键 index/id 必选，不可取消） */
   dataPanelHiddenColumns: string[];
-  /** 画布视图模式：计算图 | 柱状图 | 扇形图 | 折线图 | 散点图 */
-  viewMode: 'graph' | 'bar' | 'pie' | 'line' | 'scatter';
+  /** 画布视图模式：计算图 | 柱状图 | 扇形图 | 折线图 | 散点图 | 相关系数图 */
+  viewMode: 'graph' | 'bar' | 'pie' | 'line' | 'scatter' | 'correlation';
+  /** 计算图热分析：是否开启 */
+  graphHeatAnalysisEnabled: boolean;
+  /** 计算图热分析：目标数据列（用于归一化着色），在设置·图·线条中配置 */
+  graphHeatTargetKey: string;
+  /** 计算图热分析：变色框/边宽度为原线条宽度的倍率（在设置·图·线条中调整），始色/终色复用图表相关系数色彩 */
+  graphHeatStrokeWidthMultiplier: number;
   /** 图表 X 轴/分类列（展平 metadata 键） */
   chartXKey: string;
   /** 图表 Y 轴/数值列（可多列，每列一个系列，包含颜色和样式配置） */
@@ -1491,6 +1499,20 @@ export interface ViewSettings {
   chartLegendItalic: boolean;
   /** 图表：系列可见性（系列名称 -> 是否可见） */
   chartSeriesVisibility: Record<string, boolean>;
+  /** @deprecated 相关系数图已与柱/线/散点共用数据映射（Y 轴列）；此键仅作迁移用 */
+  chartCorrelationColumns: string[];
+  /** 相关系数图：相关系数方法 */
+  chartCorrelationMethod: 'pearson' | 'spearman' | 'kendall';
+  /** 相关系数图：色条始端颜色 */
+  chartCorrelationColorStart: string;
+  /** 相关系数图：色条终端颜色 */
+  chartCorrelationColorEnd: string;
+  /** 相关系数图：单元填充（热力色块） */
+  chartCorrelationFill: boolean;
+  /** 相关系数图：显示数值 */
+  chartCorrelationShowValues: boolean;
+  /** 相关系数图：数值小数位（0–4） */
+  chartCorrelationDecimals: number;
   /** 导出：文件格式 */
   exportFormat: 'svg' | 'png' | 'jpg' | 'webp' | 'pdf';
   /** 导出：位图DPI（100-600，PNG/JPG格式有效，影响分辨率，默认300） */
@@ -1566,6 +1588,9 @@ const defaults: ViewSettings = {
   dataPanelOpen: false,
   dataPanelHiddenColumns: [],
   viewMode: 'graph',
+  graphHeatAnalysisEnabled: false,
+  graphHeatTargetKey: '',
+  graphHeatStrokeWidthMultiplier: 1.8,
   chartXKey: '',
   chartYKeys: [],
   chartBarGapInner: 0,
@@ -1653,6 +1678,13 @@ const defaults: ViewSettings = {
   chartLegendBold: false,
   chartLegendItalic: false,
   chartSeriesVisibility: {},
+  chartCorrelationColumns: [],
+  chartCorrelationMethod: 'pearson',
+  chartCorrelationColorStart: '#2563eb',
+  chartCorrelationColorEnd: '#dc2626',
+  chartCorrelationFill: true,
+  chartCorrelationShowValues: true,
+  chartCorrelationDecimals: 2,
   exportFormat: 'svg',
   exportImageDpi: 300,
   exportImageQuality: 95,
@@ -1883,6 +1915,24 @@ export const useSettingsStore = create<
         if (out.chartLegendItalic == null) out.chartLegendItalic = false;
         if (out.chartLegendMaxLength == null) out.chartLegendMaxLength = 12;
         if (out.chartSeriesVisibility == null) out.chartSeriesVisibility = {};
+        if (out.graphHeatAnalysisEnabled == null) out.graphHeatAnalysisEnabled = false;
+        if (out.graphHeatTargetKey == null) out.graphHeatTargetKey = '';
+        if (out.graphHeatStrokeWidthMultiplier == null) out.graphHeatStrokeWidthMultiplier = 1.8;
+        if (out.chartCorrelationColumns == null) out.chartCorrelationColumns = [];
+        // 迁移：曾用「分析列」配置的，同步为 Y 轴列（相关系数图现与柱/线/散点共用数据映射）
+        const corrCols = (out.chartCorrelationColumns as string[]).filter(Boolean);
+        if (corrCols.length > 0) {
+          const yKeys = (out.chartYKeys as ChartYColumnConfig[]) ?? [];
+          if (!yKeys.length || yKeys.every((yc) => !yc.key)) {
+            out.chartYKeys = corrCols.map((key) => ({ key }));
+          }
+        }
+        if (out.chartCorrelationMethod == null) out.chartCorrelationMethod = 'pearson';
+        if (out.chartCorrelationColorStart == null) out.chartCorrelationColorStart = '#2563eb';
+        if (out.chartCorrelationColorEnd == null) out.chartCorrelationColorEnd = '#dc2626';
+        if (out.chartCorrelationFill == null) out.chartCorrelationFill = true;
+        if (out.chartCorrelationShowValues == null) out.chartCorrelationShowValues = true;
+        if (out.chartCorrelationDecimals == null) out.chartCorrelationDecimals = 2;
         if (out.showWeightNodes == null) out.showWeightNodes = false;
         if (out.showIONodes == null) out.showIONodes = true;
         if (out.exportFormat == null) out.exportFormat = 'svg';

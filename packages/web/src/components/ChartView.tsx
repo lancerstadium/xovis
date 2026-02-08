@@ -35,6 +35,16 @@ type ChartData = {
   seriesConfigs: ChartYColumnConfig[];
 };
 
+const DUMMY_CHART_DATA: ChartData = {
+  kind: 'multi',
+  xLabels: [],
+  seriesNames: [],
+  data: [],
+  baseData: [],
+  rowIndices: [],
+  seriesConfigs: [],
+};
+
 /** 固定 X 列 + 多个 Y 列：单列=单系列，多列=多系列（按列名） */
 function buildChartData(
   rows: Record<string, unknown>[],
@@ -331,6 +341,112 @@ function gaussElimination(A: number[][], b: number[]): number[] {
     x[i] /= augmented[i][i];
   }
   return x;
+}
+
+/** Pearson 相关系数 */
+function correlationPearson(x: number[], y: number[]): number {
+  const n = x.length;
+  if (n < 2) return 0;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += x[i];
+    sumY += y[i];
+    sumXY += x[i] * y[i];
+    sumX2 += x[i] * x[i];
+    sumY2 += y[i] * y[i];
+  }
+  const num = n * sumXY - sumX * sumY;
+  const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  return den === 0 ? 0 : num / den;
+}
+
+/** 排名（相同值取平均秩） */
+function rank(arr: number[]): number[] {
+  const indexed = arr.map((v, i) => ({ v, i }));
+  indexed.sort((a, b) => a.v - b.v);
+  const out = new Array<number>(arr.length);
+  let r = 0;
+  while (r < indexed.length) {
+    let s = r;
+    while (s + 1 < indexed.length && indexed[s + 1].v === indexed[s].v) s++;
+    const mid = (r + s) / 2 + 1;
+    for (let j = r; j <= s; j++) out[indexed[j].i] = mid;
+    r = s + 1;
+  }
+  return out;
+}
+
+/** Spearman 秩相关 */
+function correlationSpearman(x: number[], y: number[]): number {
+  return correlationPearson(rank(x), rank(y));
+}
+
+/** Kendall tau */
+function correlationKendall(x: number[], y: number[]): number {
+  const n = x.length;
+  if (n < 2) return 0;
+  let concordant = 0, discordant = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const dx = x[j] - x[i], dy = y[j] - y[i];
+      const sign = dx * dy;
+      if (sign > 0) concordant++;
+      else if (sign < 0) discordant++;
+    }
+  }
+  const total = concordant + discordant;
+  return total === 0 ? 0 : (concordant - discordant) / total;
+}
+
+function correlationMatrix(
+  rows: Record<string, unknown>[],
+  columns: string[],
+  method: 'pearson' | 'spearman' | 'kendall'
+): number[][] {
+  const n = columns.length;
+  const fn = method === 'pearson' ? correlationPearson : method === 'spearman' ? correlationSpearman : correlationKendall;
+  // 只使用「所有列在该行均为有限值」的行，保证两两列按同一行对齐计算，避免错行导致全 1 或错误相关
+  const validRows: number[][] = [];
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    const vals = columns.map((col) => Number(row[col]));
+    if (vals.every((v) => Number.isFinite(v))) validRows.push(vals);
+  }
+  if (validRows.length < 2) return Array(n).fill(null).map(() => Array(n).fill(0));
+  const data = columns.map((_, colIdx) => validRows.map((row) => row[colIdx]));
+  const mat: number[][] = [];
+  for (let i = 0; i < n; i++) {
+    mat[i] = [];
+    for (let j = 0; j < n; j++) {
+      if (i === j) {
+        mat[i][j] = 1;
+      } else {
+        const v = fn(data[i], data[j]);
+        mat[i][j] = Number.isFinite(v) ? v : 0;
+      }
+    }
+  }
+  return mat;
+}
+
+/** 将 [-1,1] 映射到 t in [0,1] 用于颜色插值 */
+function correlationToT(v: number): number {
+  return (v + 1) / 2;
+}
+
+/** 线性插值 hex 颜色 */
+function lerpHexColor(hexStart: string, hexEnd: string, t: number): string {
+  const parse = (hex: string): [number, number, number] => {
+    const m = hex.replace(/^#/, '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (m) return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+    return [0, 0, 0];
+  };
+  const [r1, g1, b1] = parse(hexStart);
+  const [r2, g2, b2] = parse(hexEnd);
+  const r = Math.round(r1 + (r2 - r1) * t);
+  const g = Math.round(g1 + (g2 - g1) * t);
+  const b = Math.round(b1 + (b2 - b1) * t);
+  return `#${[r, g, b].map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('')}`;
 }
 
 /** 生成拟合折线路径 */
@@ -797,7 +913,7 @@ function getStrokeDasharray(style: string): string | undefined {
 
 /** 渲染图例符号：根据图表类型显示不同的样式。patternId 用于图案类填充时引用 defs 中的 pattern */
 function renderLegendSymbol(
-  chartType: 'bar' | 'pie' | 'line' | 'scatter',
+  chartType: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation',
   x: number,
   y: number,
   size: number,
@@ -806,7 +922,9 @@ function renderLegendSymbol(
   patternId?: string
 ): JSX.Element {
   const halfSize = size / 2;
-
+  if (chartType === 'correlation') {
+    return <rect x={x - halfSize} y={y - halfSize} width={size} height={size} fill={color} />;
+  }
   switch (chartType) {
     case 'bar': {
       const fillStyle = getBarFillStyle(config);
@@ -1054,7 +1172,7 @@ function renderMarker(
 
 export const ChartView = forwardRef<
   ChartViewHandle,
-  { viewMode: 'bar' | 'pie' | 'line' | 'scatter' }
+  { viewMode: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation' }
 >(function ChartView({ viewMode }, ref) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1089,7 +1207,6 @@ export const ChartView = forwardRef<
     chartTitleItalic,
     chartAxisTitleBold,
     chartAxisTitleItalic,
-    chartAxisLabelMaxFontSize,
     chartYTitlePosition,
     chartXTitlePosition,
     chartShowAxisLine,
@@ -1130,7 +1247,16 @@ export const ChartView = forwardRef<
     chartWidth,
     chartHeight,
     chartLabelMaxLength,
+    chartDataLabelFontSize,
+    chartDataLabelBold,
+    chartDataLabelItalic,
     operatorPalette,
+    chartCorrelationMethod = 'pearson',
+    chartCorrelationColorStart = '#2563eb',
+    chartCorrelationColorEnd = '#dc2626',
+    chartCorrelationFill = true,
+    chartCorrelationShowValues = true,
+    chartCorrelationDecimals = 2,
   } = s;
 
   // 缩放和平移逻辑（原 usePanZoom）
@@ -1353,11 +1479,7 @@ export const ChartView = forwardRef<
     fontWeight: chartAxisTitleBold ? 'bold' : 'normal',
     fontStyle: chartAxisTitleItalic ? 'italic' : 'normal',
   };
-  // 坐标轴刻度标签字号：可设最大，避免与小标题重合
-  const axisLabelFontSize =
-    chartAxisLabelMaxFontSize > 0
-      ? Math.min(labelFontSize, chartAxisLabelMaxFontSize)
-      : labelFontSize;
+  const axisLabelFontSize = labelFontSize;
 
   const axisLabelStyle: React.CSSProperties = {
     fontFamily: s.fontFamily,
@@ -1377,24 +1499,47 @@ export const ChartView = forwardRef<
   const legendLabelDisplay = (name: string) =>
     chartLegendMaxLength > 0 ? truncate(name, chartLegendMaxLength) : name;
 
+  const chartDataSafe = chartData ?? DUMMY_CHART_DATA;
+  // 显示名：有别名用别名，否则用列名（key），图表所有显示处统一用此名
+  const seriesDisplayNames = useMemo(
+    () =>
+      chartDataSafe.seriesNames.map(
+        (name, i) => (chartDataSafe.seriesConfigs[i]?.alias?.trim() || name)
+      ),
+    [chartDataSafe.seriesNames, chartDataSafe.seriesConfigs]
+  );
+  // 相关系数图复用与柱/线/散点相同的数据映射：参与分析的列 = Y 轴列（chartDataSafe.seriesNames）
+  const correlationCols = useMemo(
+    () => (viewMode === 'correlation' ? chartDataSafe.seriesNames : []),
+    [viewMode, chartDataSafe.seriesNames]
+  );
+  const correlationData = useMemo(() => {
+    if (!graph || correlationCols.length < 1) return null;
+    if (correlationCols.length === 1) return [[1]]; // 单列即自相关，相关系数为 1
+    const rows = getOperatorRows(graph);
+    return correlationMatrix(rows, correlationCols, chartCorrelationMethod);
+  }, [graph, correlationCols, chartCorrelationMethod]);
   // 根据可见性过滤系列（单列/多列统一为 multi 结构）
   const visibleSeriesIndices = useMemo(() => {
-    if (!chartData) return [];
-    return chartData.seriesNames
-      .map((name, idx) => ({ name, idx }))
+    return chartDataSafe.seriesNames
+      .map((name: string, idx: number) => ({ name, idx }))
       .filter(({ name }) => chartSeriesVisibility[name] !== false)
       .map(({ idx }) => idx);
-  }, [chartData, chartSeriesVisibility]);
-  const filteredSeriesNames = chartData
-    ? chartData.seriesNames.filter((_, idx) => visibleSeriesIndices.includes(idx))
-    : [];
+  }, [chartDataSafe, chartSeriesVisibility]);
+  const filteredSeriesNames = chartDataSafe.seriesNames.filter((_, idx: number) =>
+    visibleSeriesIndices.includes(idx)
+  );
+  const filteredSeriesDisplayNames = useMemo(
+    () => visibleSeriesIndices.map((idx) => seriesDisplayNames[idx]),
+    [visibleSeriesIndices, seriesDisplayNames]
+  );
   const seriesCount = filteredSeriesNames.length;
   const legendItemH = LEGEND_ITEM_HEIGHT + (chartLegendItemSpacing ?? 0);
   // 图例内外和方位是两个独立的选择，方位统一使用 chartLegendPosition
   const effectiveLegendPosition = chartLegendPosition;
   const isLegendOutside = !chartLegendInside;
   // 图例高度和宽度应该基于所有系列（包括隐藏的），因为图例要显示所有系列
-  const allSeriesCount = chartData ? chartData.seriesNames.length : 0;
+  const allSeriesCount = chartDataSafe.seriesNames.length;
   // 判断图例是否在左右两侧（包括角落位置）
   const isLegendOnLeft =
     effectiveLegendPosition === 'left' ||
@@ -1415,7 +1560,7 @@ export const ChartView = forwardRef<
 
   const autoLegendWidth =
     chartShowLegend &&
-    chartData &&
+    chartDataSafe &&
     allSeriesCount > 0 &&
     isLegendOutside &&
     (isLegendOnLeft || isLegendOnRight)
@@ -1436,8 +1581,9 @@ export const ChartView = forwardRef<
   const yTitleRightMargin = yTitleOnRight ? axisTitleFontSize + 12 : 0;
   const axisLabelGap = 6;
   const axisLabelH = chartShowAxisLabels ? axisLabelFontSize + 6 + axisLabelGap : 0;
+  // 轴标签区宽度：受 chartLabelMaxLength（labelTruncate）影响，预留截断后标签的显示宽度，从而影响图表绘图区大小
   const axisLabelW = chartShowAxisLabels
-    ? Math.max(28, Math.ceil(axisLabelFontSize * 2.2)) + axisLabelGap
+    ? Math.max(28, Math.ceil(axisLabelFontSize * 0.55 * Math.max(1, labelTruncate))) + axisLabelGap
     : 0;
 
   // 先计算一个临时的 innerW 用于计算图例高度（使用 legendWidth 的初始值）
@@ -1462,7 +1608,7 @@ export const ChartView = forwardRef<
         : tempInnerW; // 内部或其他位置也使用 tempInnerW
   const legendCharW = legendFontSize * 0.55;
   const legendItemSpacing = 16;
-  const allSeriesNames = chartData ? chartData.seriesNames : [];
+  const allSeriesNames = chartDataSafe.seriesNames;
   const legendItemContentWidths =
     allSeriesNames.length > 0
       ? allSeriesNames.map(
@@ -1482,7 +1628,7 @@ export const ChartView = forwardRef<
   // 计算图例行数（横向排布，根据列数计算）
   const legendRows = Math.ceil(allSeriesCount / Math.max(1, effectiveItemsPerRowForHeight));
   const autoLegendHeight =
-    chartShowLegend && chartData && allSeriesCount > 0 && isLegendOutside
+    chartShowLegend && chartDataSafe && allSeriesCount > 0 && isLegendOutside
       ? legendRows * legendItemH + LEGEND_GAP * 2
       : 0;
   const legendHeight = chartLegendHeight > 0 ? chartLegendHeight : autoLegendHeight;
@@ -1498,6 +1644,29 @@ export const ChartView = forwardRef<
   const innerW = Math.max(0, plotRight - plotLeft);
   const innerH = Math.max(0, plotBottom - plotTop);
 
+  // 相关系数图：完全复用图表绘图区，对 X/Y 等比例分割后填充（形状由图表配置决定，非自绘正方形）
+  const corrLayout =
+    viewMode === 'correlation' && correlationData
+      ? (() => {
+          const n = correlationCols.length;
+          const cellWidth = innerW / n;
+          const cellHeight = innerH / n;
+          const dec = Math.min(4, Math.max(0, chartCorrelationDecimals));
+          const startColor = chartCorrelationColorStart || '#2563eb';
+          const endColor = chartCorrelationColorEnd || '#dc2626';
+          return {
+            n,
+            startX: plotLeft,
+            startY: plotTop,
+            cellWidth,
+            cellHeight,
+            dec,
+            startColor,
+            endColor,
+          };
+        })()
+      : null;
+
   const onChartClick = useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (didDrag.current) return;
@@ -1508,22 +1677,22 @@ export const ChartView = forwardRef<
         return;
       }
       const tx = (e.target as SVGElement).closest?.('[data-xindex]') as SVGElement | null;
-      if (tx && chartData?.kind === 'multi') {
+      if (tx && chartDataSafe.kind === 'multi') {
         const xi = parseInt(tx.getAttribute('data-xindex') ?? '', 10);
         const si = parseInt(tx.getAttribute('data-seriesindex') ?? '', 10);
-        const rowIndex = chartData.rowIndices[xi]?.[si] ?? -1;
+        const rowIndex = chartDataSafe.rowIndices[xi]?.[si] ?? -1;
         if (rowIndex >= 0 && ops[rowIndex]) setSelected(ops[rowIndex]);
         return;
       }
       if (e.target === svgRef.current || (e.target as SVGElement).closest?.('.chart-content'))
         setSelected(null);
     },
-    [chartData, ops, setSelected, didDrag]
+    [chartDataSafe, ops, setSelected, didDrag]
   );
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || !chartData) return;
+    if (!el || !chartDataSafe) return;
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('touchstart', onTouchStart, { passive: false });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -1536,7 +1705,7 @@ export const ChartView = forwardRef<
       el.removeEventListener('touchend', onTouchEnd);
       el.removeEventListener('touchcancel', onTouchEnd);
     };
-  }, [chartData, onWheel, onTouchStart, onTouchMove, onTouchEnd]);
+  }, [chartDataSafe, onWheel, onTouchStart, onTouchMove, onTouchEnd]);
 
   const chartWrap = (content: React.ReactNode) => (
     <div
@@ -1606,7 +1775,10 @@ export const ChartView = forwardRef<
   );
 
   const yKeysValid = chartYKeys.filter((yc) => yc.key).length > 0;
-  const hasMapping = !!chartXKey && yKeysValid && chartData;
+  const hasMapping =
+    viewMode === 'correlation'
+      ? !!correlationData
+      : !!chartXKey && yKeysValid && chartData;
   if (!graph || !hasMapping) {
     return (
       <div
@@ -1661,15 +1833,13 @@ export const ChartView = forwardRef<
 
   const palette = operatorPalette ?? [];
 
-  const { xLabels, seriesNames, data, baseData, seriesConfigs } = chartData;
-  // 创建系列名称到原始索引的映射（用于查找配置）
-  const seriesNameToIndex = new Map(seriesNames.map((name, idx) => [name, idx]));
+  const { xLabels, seriesNames, data, baseData, seriesConfigs } = chartDataSafe;
   // 如果交换X/Y，effectiveN 用可见系列数，保证未勾选可见的不影响坐标轴与布局
   const effectiveN = chartSwapXY ? visibleSeriesIndices.length : xLabels.length;
   const effectiveSeriesCount = chartSwapXY ? xLabels.length : seriesCount;
-  const effectiveXLabels = chartSwapXY ? seriesNames.map(String) : xLabels;
-  // 使用过滤后的系列名称（已过滤不可见系列）
-  const effectiveSeriesNames = chartSwapXY ? xLabels : filteredSeriesNames;
+  const effectiveXLabels = chartSwapXY ? seriesDisplayNames.map(String) : xLabels;
+  // 使用过滤后的系列显示名（别名或列名，已过滤不可见系列）
+  const effectiveSeriesNames = chartSwapXY ? xLabels : filteredSeriesDisplayNames;
   const customBaseValues = (baseData ?? []).flat().filter((v) => !Number.isNaN(v));
   const dataMinY_withBases = Math.min(0, ...data.flat(), ...customBaseValues);
   const dataMaxY_withBases = Math.max(1, ...data.flat(), ...customBaseValues);
@@ -1694,11 +1864,6 @@ export const ChartView = forwardRef<
   const effectiveBaseData = chartSwapXY
     ? visibleSeriesIndices.map((j) => xLabels.map((_, i) => baseDataSafe[i]?.[j] ?? 0))
     : baseDataSafe.map((row) => visibleSeriesIndices.map((origIdx) => row[origIdx] ?? 0));
-
-  // 辅助函数：根据系列名称获取原始索引
-  const getOriginalSeriesIndex = (seriesName: string): number => {
-    return seriesNameToIndex.get(seriesName) ?? 0;
-  };
 
   const dataMaxY = Math.max(1, ...effectiveData.flat(), ...effectiveBaseData.flat());
   const dataMinY = Math.min(0, ...effectiveData.flat(), ...effectiveBaseData.flat());
@@ -1780,6 +1945,49 @@ export const ChartView = forwardRef<
           (1 - ratio) * (1 - plotPaddingTopMulti - plotPaddingBottomMulti) * innerH
         );
       };
+
+  // 刻度线位置：相关系数图与柱/线/散点共用同一套逻辑，只差数据源（correlation 用列名/cell 中心）
+  const xTickPositions: number[] =
+    viewMode === 'correlation' && corrLayout
+      ? correlationCols.map((_, j) => plotLeft + (j + 0.5) * corrLayout.cellWidth)
+      : chartSwapXY
+        ? gridTicks.map((t) => xScale(minY + t * rangeY))
+        : effectiveXLabels.map((_, i) => xScale(i));
+  const yTickPositions: number[] =
+    viewMode === 'correlation' && corrLayout
+      ? correlationCols.map((_, i) => plotTop + (i + 0.5) * corrLayout.cellHeight)
+      : chartSwapXY
+        ? effectiveSeriesNames.map((_, i) => yScale(i))
+        : gridTicks.map((t) => plotTop + innerH * (1 - t));
+
+  // 刻度标签文案：与刻度线一一对应，相关系数图两边用显示名（别名或列名），柱/线/散点按 swap 区分
+  const xTickLabelTexts: string[] =
+    viewMode === 'correlation' && corrLayout
+      ? seriesDisplayNames.map(String)
+      : chartSwapXY
+        ? gridTicks.map((t) => formatAxisTick(minY + t * rangeY))
+        : effectiveXLabels.map((l) => String(l));
+  const yTickLabelTexts: string[] =
+    viewMode === 'correlation' && corrLayout
+      ? seriesDisplayNames.map(String)
+      : chartSwapXY
+        ? effectiveSeriesNames.map((s) => String(s))
+        : gridTicks.map((t) => formatAxisTick(minY + t * rangeY));
+
+  // 网格线位置：与刻度线一致（grid 随 tick 走），相关系数图 = 均分的 Y 列名位置（cell 中心）
+  const xGridPositions: number[] =
+    viewMode === 'correlation' && corrLayout
+      ? correlationCols.map((_, j) => plotLeft + (j + 0.5) * corrLayout.cellWidth)
+      : chartSwapXY
+        ? gridTicks.map((t) => xScale(minY + t * rangeY))
+        : effectiveXLabels.map((_, i) => xScale(i));
+  const yGridPositions: number[] =
+    viewMode === 'correlation' && corrLayout
+      ? correlationCols.map((_, i) => plotTop + (i + 0.5) * corrLayout.cellHeight)
+      : chartSwapXY
+        ? effectiveSeriesNames.map((_, i) => yScale(i))
+        : gridTicks.map((t) => plotTop + innerH * (1 - t));
+
   const availableBarH = innerH * (1 - plotPaddingTopMulti - plotPaddingBottomMulti);
   const groupHeightSwapped =
     chartSwapXY && effectiveSeriesCount > 0
@@ -1872,7 +2080,7 @@ export const ChartView = forwardRef<
     >
       <defs>
         {seriesNames.map((_, si) => {
-          const config = chartData.seriesConfigs[si];
+          const config = chartDataSafe.seriesConfigs[si];
           const color = seriesColor(si, palette, config);
           const barFillStyle = getBarFillStyle(config);
           const pieFillStyle = getPieFillStyle(config);
@@ -1907,12 +2115,93 @@ export const ChartView = forwardRef<
             {truncate(chartTitle, 40)}
           </text>
         )}
-        {chartShowLegend && chartData.seriesNames.length > 0 && (
+        {/* 网格与柱/线/散点/相关系数共用：先画网格（垫底），再画内容，最后轴线/刻度/标题统一控制 */}
+        {chartShowGrid &&
+          (() => {
+            const stroke = chartGridColor || 'var(--text)';
+            const dash = getStrokeDasharray(chartGridStrokeStyle);
+            const yGrids = yGridPositions.map((y, i) => (
+              <line
+                key={`y-${i}`}
+                x1={plotLeft}
+                y1={y}
+                x2={plotRight}
+                y2={y}
+                stroke={stroke}
+                strokeWidth={chartGridStrokeWidth}
+                strokeOpacity={chartGridOpacity}
+                strokeDasharray={dash}
+              />
+            ));
+            const xGrids = xGridPositions.map((x, i) => (
+              <line
+                key={`x-${i}`}
+                x1={x}
+                y1={plotTop}
+                x2={x}
+                y2={plotBottom}
+                stroke={stroke}
+                strokeWidth={chartGridStrokeWidth}
+                strokeOpacity={chartGridOpacity}
+                strokeDasharray={dash}
+              />
+            ));
+            return [...yGrids, ...xGrids];
+          })()}
+        {viewMode === 'correlation' && corrLayout ? (
+          (() => {
+            const layout = corrLayout;
+            return (
+              <>
+                {correlationData!.map((row, i) =>
+                  row.map((v, j) => {
+                    const fill =
+                      chartCorrelationFill
+                        ? lerpHexColor(layout.startColor, layout.endColor, correlationToT(v))
+                        : 'transparent';
+                    return (
+                      <g key={`${i}-${j}`}>
+                        <rect
+                          x={layout.startX + j * layout.cellWidth}
+                          y={layout.startY + i * layout.cellHeight}
+                          width={layout.cellWidth}
+                          height={layout.cellHeight}
+                          fill={fill}
+                          stroke={chartAxisColor || 'var(--border)'}
+                          strokeWidth={chartAxisStrokeWidth || 0.5}
+                        />
+                        {chartCorrelationShowValues && (
+                          <text
+                            x={layout.startX + (j + 0.5) * layout.cellWidth}
+                            y={layout.startY + (i + 0.5) * layout.cellHeight}
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            style={{
+                              fontSize: Math.max(8, (chartDataLabelFontSize || labelFontSize) * 0.85),
+                              fill: chartAxisColor || 'var(--text)',
+                              fontFamily: s.fontFamily,
+                              fontWeight: chartDataLabelBold ? 'bold' : 'normal',
+                              fontStyle: chartDataLabelItalic ? 'italic' : 'normal',
+                            }}
+                          >
+                            {v.toFixed(layout.dec)}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  })
+                )}
+              </>
+            );
+          })()
+        ) : (
+          <>
+        {chartShowLegend && chartDataSafe.seriesNames.length > 0 && (
           <g
             className="chart-legend"
             style={{ fontSize: legendFontSize, fontFamily: s.fontFamily }}
           >
-            {chartData.seriesNames.map((name, originalSi) => {
+            {chartDataSafe.seriesNames.map((name, originalSi) => {
               const isVisible = chartSeriesVisibility[name] !== false;
               // 始终横向排布
               const row = Math.floor(originalSi / legendCols);
@@ -1932,8 +2221,8 @@ export const ChartView = forwardRef<
                       effectiveLegendSymbolSize / 2,
                       0,
                       effectiveLegendSymbolSize,
-                      seriesColor(originalSi, palette, chartData.seriesConfigs[originalSi]),
-                      chartData.seriesConfigs[originalSi],
+                      seriesColor(originalSi, palette, chartDataSafe.seriesConfigs[originalSi]),
+                      chartDataSafe.seriesConfigs[originalSi],
                       viewMode === 'bar'
                         ? `chartBarFill-${originalSi}`
                         : viewMode === 'pie'
@@ -1951,91 +2240,13 @@ export const ChartView = forwardRef<
                     className="chart-legend-label"
                     style={{ ...legendLabelStyle, opacity: isVisible ? 1 : 0.5 }}
                   >
-                    {legendLabelDisplay(name)}
+                    {legendLabelDisplay(seriesDisplayNames[originalSi])}
                   </text>
                 </g>
               );
             })}
           </g>
         )}
-        {chartShowGrid &&
-          (chartSwapXY
-            ? // 交换后：Y轴grid基于xLabels索引，X轴grid基于data值
-              (() => {
-                // Y轴grid：基于xLabels索引
-                const yGrids = effectiveSeriesNames.map((_, i) => {
-                  const gridY = yScale(i);
-                  return (
-                    <line
-                      key={`y-${i}`}
-                      x1={plotLeft}
-                      y1={gridY}
-                      x2={plotRight}
-                      y2={gridY}
-                      stroke={chartGridColor || 'var(--text)'}
-                      strokeWidth={chartGridStrokeWidth}
-                      strokeOpacity={chartGridOpacity}
-                      strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                    />
-                  );
-                });
-                // X轴grid：基于data值范围
-                const xGrids = gridTicks.map((tick, i) => {
-                  const gridX = xScale(minY + tick * rangeY);
-                  return (
-                    <line
-                      key={`x-${i}`}
-                      x1={gridX}
-                      y1={plotTop}
-                      x2={gridX}
-                      y2={plotBottom}
-                      stroke={chartGridColor || 'var(--text)'}
-                      strokeWidth={chartGridStrokeWidth}
-                      strokeOpacity={chartGridOpacity}
-                      strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                    />
-                  );
-                });
-                return [...yGrids, ...xGrids];
-              })()
-            : // 未交换：Y轴grid基于data值，X轴grid基于索引
-              (() => {
-                // Y轴grid：基于data值范围
-                const yGrids = gridTicks.map((tick, i) => {
-                  const gridY = plotTop + innerH * (1 - tick);
-                  return (
-                    <line
-                      key={`y-${i}`}
-                      x1={plotLeft}
-                      y1={gridY}
-                      x2={plotRight}
-                      y2={gridY}
-                      stroke={chartGridColor || 'var(--text)'}
-                      strokeWidth={chartGridStrokeWidth}
-                      strokeOpacity={chartGridOpacity}
-                      strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                    />
-                  );
-                });
-                // X轴grid：基于索引，每个数据点一个grid
-                const xGrids = effectiveXLabels.map((_, i) => {
-                  const gridX = xScale(i);
-                  return (
-                    <line
-                      key={`x-${i}`}
-                      x1={gridX}
-                      y1={plotTop}
-                      x2={gridX}
-                      y2={plotBottom}
-                      stroke={chartGridColor || 'var(--text)'}
-                      strokeWidth={chartGridStrokeWidth}
-                      strokeOpacity={chartGridOpacity}
-                      strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                    />
-                  );
-                });
-                return [...yGrids, ...xGrids];
-              })())}
 
         {viewMode === 'bar' &&
           (chartSwapXY
@@ -2131,8 +2342,8 @@ export const ChartView = forwardRef<
                   totalBarsWidth <= groupW ? groupLeft + (groupW - totalBarsWidth) / 2 : groupLeft;
                 return (
                   <g key={i} className="chart-bar-group">
-                    {effectiveSeriesNames.map((seriesName, si) => {
-                      const origIdx = getOriginalSeriesIndex(seriesName);
+                    {effectiveSeriesNames.map((_seriesDisplayName, si) => {
+                      const origIdx = chartSwapXY ? visibleSeriesIndices[i] : visibleSeriesIndices[si];
                       const val = effectiveData[i]?.[si] ?? 0;
                       const base = effectiveBaseData[i]?.[si] ?? 0;
                       const barTopPx = Math.min(yScale(val), yScale(base));
@@ -2332,8 +2543,8 @@ export const ChartView = forwardRef<
                   </g>
                 );
               })
-            : effectiveSeriesNames.map((name, si) => {
-                const origIdx = getOriginalSeriesIndex(name);
+            : effectiveSeriesNames.map((_name, si) => {
+                const origIdx = visibleSeriesIndices[si];
                 const seriesConfig = seriesConfigs[origIdx];
                 const pts = effectiveXLabels.map((_, idx) => ({
                   x: xScale(idx),
@@ -2525,10 +2736,45 @@ export const ChartView = forwardRef<
                 })
                 .filter((item) => item !== null)
                 .flat()
-            : effectiveXLabels
-                .map((_, xi) =>
-                  effectiveSeriesNames.map((name, si) => {
-                    const origIdx = getOriginalSeriesIndex(name);
+            : (() => {
+                const nSeries = chartSwapXY ? effectiveXLabels.length : effectiveSeriesNames.length;
+                const fitPaths = Array.from({ length: nSeries }, (_, seriesIdx) => {
+                  const origIdx = visibleSeriesIndices[seriesIdx];
+                  const seriesConfig = seriesConfigs[origIdx];
+                  const pts = chartSwapXY
+                    ? effectiveSeriesNames.map((_, idx) => ({
+                        x: xScale(idx),
+                        y: yScale(effectiveData[seriesIdx]?.[idx] ?? 0),
+                      }))
+                    : effectiveXLabels.map((_, idx) => ({
+                        x: xScale(idx),
+                        y: yScale(effectiveData[idx]?.[seriesIdx] ?? 0),
+                      }));
+                  const lineFit = getLineFit(seriesConfig, false);
+                  if (!lineFit || pts.length < 2) return null;
+                  const lineWidth = getLineWidth(seriesConfig);
+                  const lineStyle = getLineStyle(seriesConfig);
+                  return (
+                    <path
+                      key={`scatter-fit-${seriesIdx}`}
+                      className="chart-line"
+                      d={generateFitLinePath(
+                        pts,
+                        getLineFitType(seriesConfig),
+                        getLineFitDegree(seriesConfig, 2)
+                      )}
+                      fill="none"
+                      stroke={seriesColor(origIdx, palette, seriesConfig)}
+                      strokeWidth={lineWidth}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeDasharray={getStrokeDasharray(lineStyle)}
+                    />
+                  );
+                }).filter(Boolean);
+                const markers = effectiveXLabels.map((_, xi) =>
+                  effectiveSeriesNames.map((_name, si) => {
+                    const origIdx = chartSwapXY ? visibleSeriesIndices[xi] : visibleSeriesIndices[si];
                     const val = effectiveData[xi]?.[si] ?? 0;
                     const seriesConfig = seriesConfigs[origIdx];
                     const config = getScatterMarkerConfig(
@@ -2597,13 +2843,15 @@ export const ChartView = forwardRef<
                     );
                   })
                 )
-                .flat())}
+                  .flat();
+                return [...fitPaths, ...markers];
+              })())}
 
         {viewMode === 'pie' &&
-          chartData &&
+          chartDataSafe &&
           (() => {
             // 只计算可见系列
-            const visibleSeries = chartData.seriesNames
+            const visibleSeries = chartDataSafe.seriesNames
               .map((name, si) => ({ name, si }))
               .filter(({ name }) => chartSeriesVisibility[name] !== false);
 
@@ -2634,7 +2882,7 @@ export const ChartView = forwardRef<
                 chartPieInnerRadius > 0 ? r * (Math.min(80, chartPieInnerRadius) / 100) : 0;
               const startOffset = ((chartPieStartAngle % 360) + 360) % 360;
               let acc = 0;
-              const seriesConfig = chartData.seriesConfigs[si];
+              const seriesConfig = chartDataSafe.seriesConfigs[si];
               const fillStyle = getPieFillStyle(seriesConfig);
               const color = seriesColor(si, palette, seriesConfig);
               return (
@@ -2775,7 +3023,7 @@ export const ChartView = forwardRef<
                     const y1 = cy + r * Math.sin(startRad);
                     const x2 = cx + r * Math.cos(endRad);
                     const y2 = cy + r * Math.sin(endRad);
-                    const seriesConfig = chartData.seriesConfigs[si];
+                    const seriesConfig = chartDataSafe.seriesConfigs[si];
                     const fillStyle = getPieFillStyle(seriesConfig);
                     const color = seriesColor(si, palette, seriesConfig);
                     const edgeStyle = getPieEdgeStyle(seriesConfig);
@@ -2855,7 +3103,7 @@ export const ChartView = forwardRef<
                           dominantBaseline="middle"
                           style={{ fontFamily: s.fontFamily }}
                         >
-                          {truncate(chartData.seriesNames[si], pieLabelTruncate)}
+                          {truncate(seriesDisplayNames[si], pieLabelTruncate)}
                         </text>
                       );
                     })}
@@ -2863,6 +3111,8 @@ export const ChartView = forwardRef<
               );
             }
           })()}
+          </>
+        )}
 
         {chartShowAxisLine &&
           chartAxisBoxStyle !== 'none' &&
@@ -2919,119 +3169,54 @@ export const ChartView = forwardRef<
             }
           })()}
         {effectiveTickLength > 0 &&
-          (chartSwapXY
-            ? // 交换后：X轴刻度基于data值，Y轴刻度基于xLabels索引
-              (() => {
-                // X轴刻度：基于data的值范围
-                const xTicks = gridTicks.map((tick, i) => {
-                  const tickX = xScale(minY + tick * rangeY);
-                  return (
-                    <g key={`x-${i}`}>
-                      <line
-                        x1={tickX}
-                        y1={plotBottom}
-                        x2={tickX}
-                        y2={plotBottom + (isInside ? -effectiveTickLength : effectiveTickLength)}
-                        stroke={chartTickColor || 'var(--text)'}
-                        strokeWidth={chartAxisStrokeWidth}
-                      />
-                      {isFull && (
-                        <line
-                          x1={tickX}
-                          y1={plotTop}
-                          x2={tickX}
-                          y2={plotTop + (isInside ? effectiveTickLength : -effectiveTickLength)}
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                      )}
-                    </g>
-                  );
-                });
-                // Y轴刻度：基于xLabels的索引，每个数据点一个刻度
-                const yTicks = effectiveSeriesNames.map((_, i) => {
-                  const tickY = yScale(i);
-                  return (
-                    <g key={`y-${i}`}>
-                      <line
-                        x1={plotLeft}
-                        y1={tickY}
-                        x2={plotLeft + (isInside ? effectiveTickLength : -effectiveTickLength)}
-                        y2={tickY}
-                        stroke={chartTickColor || 'var(--text)'}
-                        strokeWidth={chartAxisStrokeWidth}
-                      />
-                      {isFull && (
-                        <line
-                          x1={plotRight}
-                          y1={tickY}
-                          x2={plotRight + (isInside ? -effectiveTickLength : effectiveTickLength)}
-                          y2={tickY}
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                      )}
-                    </g>
-                  );
-                });
-                return [...xTicks, ...yTicks];
-              })()
-            : // 未交换：X轴刻度基于索引（每个数据点），Y轴刻度基于data值
-              (() => {
-                // X轴刻度：基于索引，每个数据点一个刻度
-                const xTicks = effectiveXLabels.map((_, i) => {
-                  const tickX = xScale(i);
-                  return (
-                    <g key={`x-${i}`}>
-                      <line
-                        x1={tickX}
-                        y1={plotBottom}
-                        x2={tickX}
-                        y2={plotBottom + (isInside ? -effectiveTickLength : effectiveTickLength)}
-                        stroke={chartTickColor || 'var(--text)'}
-                        strokeWidth={chartAxisStrokeWidth}
-                      />
-                      {isFull && (
-                        <line
-                          x1={tickX}
-                          y1={plotTop}
-                          x2={tickX}
-                          y2={plotTop + (isInside ? effectiveTickLength : -effectiveTickLength)}
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                      )}
-                    </g>
-                  );
-                });
-                // Y轴刻度：基于数值范围
-                const yTicks = gridTicks.map((tick, i) => {
-                  const tickY = plotTop + innerH * (1 - tick);
-                  return (
-                    <g key={`y-${i}`}>
-                      <line
-                        x1={plotLeft}
-                        y1={tickY}
-                        x2={plotLeft + (isInside ? effectiveTickLength : -effectiveTickLength)}
-                        y2={tickY}
-                        stroke={chartTickColor || 'var(--text)'}
-                        strokeWidth={chartAxisStrokeWidth}
-                      />
-                      {isFull && (
-                        <line
-                          x1={plotRight}
-                          y1={tickY}
-                          x2={plotRight + (isInside ? -effectiveTickLength : effectiveTickLength)}
-                          y2={tickY}
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                      )}
-                    </g>
-                  );
-                });
-                return [...xTicks, ...yTicks];
-              })())}
+          (() => {
+            const stroke = chartTickColor || 'var(--text)';
+            const xTicks = xTickPositions.map((tickX, i) => (
+              <g key={`x-${i}`}>
+                <line
+                  x1={tickX}
+                  y1={plotBottom}
+                  x2={tickX}
+                  y2={plotBottom + (isInside ? -effectiveTickLength : effectiveTickLength)}
+                  stroke={stroke}
+                  strokeWidth={chartAxisStrokeWidth}
+                />
+                {isFull && (
+                  <line
+                    x1={tickX}
+                    y1={plotTop}
+                    x2={tickX}
+                    y2={plotTop + (isInside ? effectiveTickLength : -effectiveTickLength)}
+                    stroke={stroke}
+                    strokeWidth={chartAxisStrokeWidth}
+                  />
+                )}
+              </g>
+            ));
+            const yTicks = yTickPositions.map((tickY, i) => (
+              <g key={`y-${i}`}>
+                <line
+                  x1={plotLeft}
+                  y1={tickY}
+                  x2={plotLeft + (isInside ? effectiveTickLength : -effectiveTickLength)}
+                  y2={tickY}
+                  stroke={stroke}
+                  strokeWidth={chartAxisStrokeWidth}
+                />
+                {isFull && (
+                  <line
+                    x1={plotRight}
+                    y1={tickY}
+                    x2={plotRight + (isInside ? -effectiveTickLength : effectiveTickLength)}
+                    y2={tickY}
+                    stroke={stroke}
+                    strokeWidth={chartAxisStrokeWidth}
+                  />
+                )}
+              </g>
+            ));
+            return [...xTicks, ...yTicks];
+          })()}
         {effectiveYTitle &&
           (yTitleOnLeft ? (
             <text
@@ -3059,73 +3244,36 @@ export const ChartView = forwardRef<
             </text>
           ))}
         {chartShowAxisLabels &&
-          (chartSwapXY
-            ? // 交换后：Y轴显示xLabels标签，X轴显示data数值刻度
-              (() => {
-                // Y轴标签：显示所有xLabels（现在是effectiveSeriesNames）
-                const yLabels = effectiveSeriesNames.map((name, i) => (
-                  <text
-                    key={`y-${i}`}
-                    fontFamily={s.fontFamily}
-                    className="chart-axis-label"
-                    x={plotLeft - 6}
-                    y={yScale(i)}
-                    textAnchor="end"
-                    dominantBaseline="middle"
-                    style={axisLabelStyle}
-                  >
-                    {truncate(name, labelTruncate)}
-                  </text>
-                ));
-                // X轴刻度：基于data的值范围
-                const xTicks = gridTicks.map((tick, i) => (
-                  <text
-                    key={`x-${i}`}
-                    fontFamily={s.fontFamily}
-                    className="chart-axis-label"
-                    x={xScale(minY + tick * rangeY)}
-                    y={labelY}
-                    textAnchor="middle"
-                    style={axisLabelStyle}
-                  >
-                    {formatAxisTick(minY + tick * rangeY)}
-                  </text>
-                ));
-                return [...yLabels, ...xTicks];
-              })()
-            : // 未交换：Y轴显示数值刻度，X轴显示标签
-              (() => {
-                // Y轴刻度：基于数值范围
-                const yTicks = gridTicks.map((tick, i) => (
-                  <text
-                    key={`y-${i}`}
-                    fontFamily={s.fontFamily}
-                    className="chart-axis-label"
-                    x={plotLeft - 6}
-                    y={plotTop + innerH * (1 - tick)}
-                    textAnchor="end"
-                    dominantBaseline="middle"
-                    style={axisLabelStyle}
-                  >
-                    {formatAxisTick(minY + tick * rangeY)}
-                  </text>
-                ));
-                // X轴标签：显示所有xLabels
-                const xLabels = effectiveXLabels.map((label, i) => (
-                  <text
-                    key={`x-${i}`}
-                    fontFamily={s.fontFamily}
-                    className="chart-axis-label"
-                    x={xScale(i)}
-                    y={labelY}
-                    textAnchor="middle"
-                    style={axisLabelStyle}
-                  >
-                    {truncate(label, labelTruncate)}
-                  </text>
-                ));
-                return [...yTicks, ...xLabels];
-              })())}
+          (() => {
+            const xLabels = xTickLabelTexts.map((text, i) => (
+              <text
+                key={`x-${i}`}
+                fontFamily={s.fontFamily}
+                className="chart-axis-label"
+                x={xTickPositions[i]}
+                y={labelY}
+                textAnchor="middle"
+                style={axisLabelStyle}
+              >
+                {truncate(text, labelTruncate)}
+              </text>
+            ));
+            const yLabels = yTickLabelTexts.map((text, i) => (
+              <text
+                key={`y-${i}`}
+                fontFamily={s.fontFamily}
+                className="chart-axis-label"
+                x={plotLeft - 6}
+                y={yTickPositions[i]}
+                textAnchor="end"
+                dominantBaseline="middle"
+                style={axisLabelStyle}
+              >
+                {truncate(text, labelTruncate)}
+              </text>
+            ));
+            return [...yLabels, ...xLabels];
+          })()}
         {effectiveXTitle &&
           (xTitleOnBottom ? (
             <text

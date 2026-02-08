@@ -510,6 +510,29 @@ body.pwa-banner-visible .main {
   border-radius: 8px;
   padding: 2px;
 }
+
+/* 视图按钮两排，每排最多 5 个，每排撑满整行、按钮均分 */
+.view-segment-rows {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+.view-segment-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  width: 100%;
+  background: color-mix(in srgb, var(--border) 28%, transparent);
+  border-radius: 8px;
+  padding: 2px;
+}
+.view-segment-row .segment-item {
+  flex: 1;
+  min-width: 0;
+}
+
 .segment-item {
   flex: 1;
   min-width: 0;

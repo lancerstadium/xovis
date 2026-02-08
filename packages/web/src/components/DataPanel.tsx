@@ -102,8 +102,18 @@ const getFloatPanelMaxHeight = () =>
     : 400;
 const DATA_PANEL_MAX_HEIGHT = () => Math.round(getFloatPanelMaxHeight());
 
-const VIEW_MODES = ['graph', 'bar', 'pie', 'line', 'scatter'] as const;
+const VIEW_MODES = ['graph', 'bar', 'pie', 'line', 'scatter', 'correlation'] as const;
 type ViewModeId = (typeof VIEW_MODES)[number];
+
+const VIEW_MODES_PER_ROW = 5;
+function viewModeRows(): ViewModeId[][] {
+  const list = [...VIEW_MODES];
+  const rows: ViewModeId[][] = [];
+  for (let i = 0; i < list.length; i += VIEW_MODES_PER_ROW) {
+    rows.push(list.slice(i, i + VIEW_MODES_PER_ROW));
+  }
+  return rows;
+}
 
 /** 主键列，表格中必选、不可取消勾选 */
 const PRIMARY_KEY_COLUMNS = ['index', 'id'];
@@ -235,6 +245,100 @@ function MappingRow({
   );
 }
 
+/** 拟合选项块：折线图/散点图复用 */
+function FitOptionsBlock({
+  config,
+  onChange,
+  t,
+}: {
+  config: ChartYColumnConfig;
+  onChange: (config: ChartYColumnConfig) => void;
+  t: ReturnType<typeof getLocale>;
+}) {
+  return (
+    <>
+      <label
+        className="panel-check panel-control-row"
+        title={t.dataPanelFit}
+        aria-label={t.dataPanelFit}
+      >
+        <span className="panel-check-label">{t.dataPanelFit}</span>
+        <span className="panel-check-box-wrap">
+          <input
+            type="checkbox"
+            className="panel-check-input"
+            checked={config.lineFit ?? false}
+            onChange={(e) => onChange({ ...config, lineFit: e.target.checked })}
+          />
+          <span className="panel-check-box" aria-hidden />
+        </span>
+      </label>
+      {config.lineFit && (
+        <>
+          <div className="panel-control-row">
+            <span className="panel-option-label">{t.dataPanelFitType}</span>
+            <div className="panel-option-value">
+              <select
+                className="view-input"
+                value={config.lineFitType || 'linear'}
+                onChange={(e) =>
+                  onChange({
+                    ...config,
+                    lineFitType: e.target.value as
+                      | 'linear'
+                      | 'polynomial'
+                      | 'exponential'
+                      | 'logarithmic'
+                      | 'power'
+                      | 'movingAverage',
+                  })
+                }
+              >
+                <option value="linear">{t.dataPanelFitTypeLinear}</option>
+                <option value="polynomial">{t.dataPanelFitTypePolynomial}</option>
+                <option value="exponential">{t.dataPanelFitTypeExponential}</option>
+                <option value="logarithmic">{t.dataPanelFitTypeLogarithmic}</option>
+                <option value="power">{t.dataPanelFitTypePower}</option>
+                <option value="movingAverage">{t.dataPanelFitTypeMovingAverage}</option>
+              </select>
+            </div>
+          </div>
+          {config.lineFitType === 'polynomial' && (
+            <div className="panel-control-row">
+              <span className="panel-option-label">{t.dataPanelPolynomialDegree}</span>
+              <div className="panel-option-value">
+                <NumberInput
+                  value={config.lineFitDegree ?? 2}
+                  min={2}
+                  max={5}
+                  step={1}
+                  defaultVal={2}
+                  onChange={(n) => onChange({ ...config, lineFitDegree: n })}
+                />
+              </div>
+            </div>
+          )}
+          {config.lineFitType === 'movingAverage' && (
+            <div className="panel-control-row">
+              <span className="panel-option-label">{t.dataPanelWindowSize}</span>
+              <div className="panel-option-value">
+                <NumberInput
+                  value={config.lineFitDegree ?? 3}
+                  min={2}
+                  max={20}
+                  step={1}
+                  defaultVal={3}
+                  onChange={(n) => onChange({ ...config, lineFitDegree: n })}
+                />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+}
+
 /** Y列配置行：列选择 + 颜色选择 + 丰富的样式配置 */
 function YColumnConfigRow({
   config,
@@ -257,7 +361,7 @@ function YColumnConfigRow({
   removeLabel?: string;
   isSingle: boolean;
   index: number;
-  chartType: 'bar' | 'pie' | 'line' | 'scatter';
+  chartType: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation';
   seriesName?: string;
   isVisible?: boolean;
   onToggleVisibility?: () => void;
@@ -267,6 +371,7 @@ function YColumnConfigRow({
   const [expanded, setExpanded] = useState(true);
   const s = useSettingsStore();
   const styleLabels = getStyleLabels(s.lang);
+  const isCorrelation = chartType === 'correlation';
 
   return (
     <>
@@ -291,16 +396,29 @@ function YColumnConfigRow({
             ))}
           </select>
           <input
-            type="color"
-            className="view-input"
-            style={{ width: '32px', height: '22px', padding: '2px', flexShrink: 0 }}
-            value={config.color || '#1d4ed8'}
-            onChange={(e) => onChange({ ...config, color: e.target.value })}
-            aria-label={t.dataPanelColor}
-            title={t.dataPanelColor}
+            type="text"
+            className="view-input chart-config-alias"
+            placeholder={t.dataPanelAlias}
+            value={config.alias ?? ''}
+            onChange={(e) => onChange({ ...config, alias: e.target.value.trim() || undefined })}
+            aria-label={t.dataPanelAlias}
+            title={t.dataPanelAlias}
+            style={{ minWidth: '4em', flex: '1 1 60px' }}
           />
-          {/* 多系列时显示可见性开关 */}
+          {!isCorrelation && (
+            <input
+              type="color"
+              className="view-input"
+              style={{ width: '32px', height: '22px', padding: '2px', flexShrink: 0 }}
+              value={config.color || '#1d4ed8'}
+              onChange={(e) => onChange({ ...config, color: e.target.value })}
+              aria-label={t.dataPanelColor}
+              title={t.dataPanelColor}
+            />
+          )}
+          {/* 多系列时显示可见性开关（相关系数图不展开样式，也不做单列显隐） */}
           {!isSingle &&
+            !isCorrelation &&
             seriesName &&
             onToggleVisibility !== undefined &&
             isVisible !== undefined && (
@@ -332,15 +450,17 @@ function YColumnConfigRow({
                 {isVisible ? '✓' : ''}
               </button>
             )}
-          <button
-            type="button"
-            className="chart-style-expand-btn"
-            onClick={() => setExpanded(!expanded)}
-            title={expanded ? t.dataPanelCollapseStyle : t.dataPanelExpandStyle}
-            aria-label={expanded ? t.dataPanelCollapseStyle : t.dataPanelExpandStyle}
-          >
-            {expanded ? '▼' : '▶'}
-          </button>
+          {!isCorrelation && (
+            <button
+              type="button"
+              className="chart-style-expand-btn"
+              onClick={() => setExpanded(!expanded)}
+              title={expanded ? t.dataPanelCollapseStyle : t.dataPanelExpandStyle}
+              aria-label={expanded ? t.dataPanelCollapseStyle : t.dataPanelExpandStyle}
+            >
+              {expanded ? '▼' : '▶'}
+            </button>
+          )}
           {onRemove && removeLabel && (
             <button
               type="button"
@@ -354,7 +474,7 @@ function YColumnConfigRow({
           )}
         </div>
       </div>
-      {expanded && (
+      {!isCorrelation && expanded && (
         <div className="chart-panel-subsection" style={{ marginTop: '4px', marginBottom: '4px' }}>
           {chartType === 'bar' && (
             <>
@@ -483,84 +603,7 @@ function YColumnConfigRow({
                   />
                 </div>
               </div>
-              <label
-                className="panel-check panel-control-row"
-                title={t.dataPanelFit}
-                aria-label={t.dataPanelFit}
-              >
-                <span className="panel-check-label">{t.dataPanelFit}</span>
-                <span className="panel-check-box-wrap">
-                  <input
-                    type="checkbox"
-                    className="panel-check-input"
-                    checked={config.lineFit ?? false}
-                    onChange={(e) => onChange({ ...config, lineFit: e.target.checked })}
-                  />
-                  <span className="panel-check-box" aria-hidden />
-                </span>
-              </label>
-              {config.lineFit && (
-                <>
-                  <div className="panel-control-row">
-                    <span className="panel-option-label">{t.dataPanelFitType}</span>
-                    <div className="panel-option-value">
-                      <select
-                        className="view-input"
-                        value={config.lineFitType || 'linear'}
-                        onChange={(e) =>
-                          onChange({
-                            ...config,
-                            lineFitType: e.target.value as
-                              | 'linear'
-                              | 'polynomial'
-                              | 'exponential'
-                              | 'logarithmic'
-                              | 'power'
-                              | 'movingAverage',
-                          })
-                        }
-                      >
-                        <option value="linear">{t.dataPanelFitTypeLinear}</option>
-                        <option value="polynomial">{t.dataPanelFitTypePolynomial}</option>
-                        <option value="exponential">{t.dataPanelFitTypeExponential}</option>
-                        <option value="logarithmic">{t.dataPanelFitTypeLogarithmic}</option>
-                        <option value="power">{t.dataPanelFitTypePower}</option>
-                        <option value="movingAverage">{t.dataPanelFitTypeMovingAverage}</option>
-                      </select>
-                    </div>
-                  </div>
-                  {config.lineFitType === 'polynomial' && (
-                    <div className="panel-control-row">
-                      <span className="panel-option-label">{t.dataPanelPolynomialDegree}</span>
-                      <div className="panel-option-value">
-                        <NumberInput
-                          value={config.lineFitDegree ?? 2}
-                          min={2}
-                          max={5}
-                          step={1}
-                          defaultVal={2}
-                          onChange={(n) => onChange({ ...config, lineFitDegree: n })}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {config.lineFitType === 'movingAverage' && (
-                    <div className="panel-control-row">
-                      <span className="panel-option-label">{t.dataPanelWindowSize}</span>
-                      <div className="panel-option-value">
-                        <NumberInput
-                          value={config.lineFitDegree ?? 3}
-                          min={2}
-                          max={20}
-                          step={1}
-                          defaultVal={3}
-                          onChange={(n) => onChange({ ...config, lineFitDegree: n })}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+              <FitOptionsBlock config={config} onChange={onChange} t={t} />
               <label
                 className="panel-check panel-control-row"
                 title={t.dataPanelShowMarkers}
@@ -639,6 +682,7 @@ function YColumnConfigRow({
           )}
           {chartType === 'scatter' && (
             <>
+              <FitOptionsBlock config={config} onChange={onChange} t={t} />
               <div className="panel-control-row">
                 <span className="panel-option-label">{t.dataPanelMarkerStyle}</span>
                 <div className="panel-option-value">
@@ -941,7 +985,7 @@ function MappingEditor({
   columns: string[];
   set: (v: { chartXKey?: string; chartYKeys?: ChartYColumnConfig[] }) => void;
   t: ReturnType<typeof getLocale>;
-  chartType: 'bar' | 'pie' | 'line' | 'scatter';
+  chartType: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation';
   chartSeriesVisibility: Record<string, boolean>;
   toggleSeriesVisibility: (seriesName: string) => void;
 }) {
@@ -1014,6 +1058,8 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     dataPanelWidth,
     dataPanelHeight,
     chartSeriesVisibility = {},
+    graphHeatAnalysisEnabled,
+    graphHeatTargetKey,
   } = s;
   const t = getLocale(s.lang);
 
@@ -1165,6 +1211,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     pie: t.viewPie,
     line: t.viewLine,
     scatter: t.viewScatter,
+    correlation: t.viewCorrelation,
   };
 
   if (!dataPanelOpen) return null;
@@ -1215,20 +1262,58 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
             <div className="view-pane">
               {dataTab === 'view' ? (
                 <div className="view-scroll panel-content data-view-pane">
-                  <div className="segment-group" role="group" aria-label={t.dataTabView}>
-                    {VIEW_MODES.map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        role="radio"
-                        aria-checked={viewMode === mode}
-                        className={`segment-item ${viewMode === mode ? 'active' : ''}`}
-                        onClick={() => set({ viewMode: mode })}
-                      >
-                        {viewLabels[mode]}
-                      </button>
+                  <div className="view-segment-rows" role="group" aria-label={t.dataTabView}>
+                    {viewModeRows().map((row, rowIdx) => (
+                      <div key={rowIdx} className="view-segment-row">
+                        {row.map((mode) => (
+                          <button
+                            key={mode}
+                            type="button"
+                            role="radio"
+                            aria-checked={viewMode === mode}
+                            className={`segment-item ${viewMode === mode ? 'active' : ''}`}
+                            onClick={() => set({ viewMode: mode })}
+                          >
+                            {viewLabels[mode]}
+                          </button>
+                        ))}
+                      </div>
                     ))}
                   </div>
+                  {viewMode === 'graph' && (
+                    <div className="chart-panel">
+                      <section className="chart-panel-section">
+                        <h3 className="chart-panel-section-title">{t.graphHeatAnalysis}</h3>
+                        <div className="panel-row">
+                          <span className="panel-row-label">{t.graphHeatAnalysisEnabled}</span>
+                          <span className="panel-row-value">
+                            <label className="panel-check">
+                              <span className="panel-check-label" aria-hidden>{''}</span>
+                              <span className="panel-check-box-wrap">
+                                <input
+                                  type="checkbox"
+                                  className="panel-check-input"
+                                  checked={!!graphHeatAnalysisEnabled}
+                                  onChange={(e) => set({ graphHeatAnalysisEnabled: e.target.checked })}
+                                  aria-label={t.graphHeatAnalysisEnabled}
+                                />
+                                <span className="panel-check-box" aria-hidden                                 />
+                              </span>
+                            </label>
+                          </span>
+                        </div>
+                        {graphHeatAnalysisEnabled && (
+                          <MappingRow
+                            roleLabel={t.graphHeatTargetKey}
+                            value={graphHeatTargetKey ?? ''}
+                            columns={selectedColumns}
+                            onChange={(v) => set({ graphHeatTargetKey: v })}
+                            emptyPlaceholder="—"
+                          />
+                        )}
+                      </section>
+                    </div>
+                  )}
                   {viewMode !== 'graph' && (
                     <div className="chart-panel">
                       <section className="chart-panel-section">
@@ -1246,7 +1331,9 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                                 ? 'pie'
                                 : viewMode === 'line'
                                   ? 'line'
-                                  : 'scatter'
+                                  : viewMode === 'correlation'
+                                    ? 'correlation'
+                                    : 'scatter'
                           }
                           chartSeriesVisibility={chartSeriesVisibility}
                           toggleSeriesVisibility={toggleSeriesVisibility}

@@ -1018,14 +1018,6 @@ export function ViewMenu({
                     defaultVal={0}
                     onChange={(n) => s.set({ chartAxisTitleFontSize: n })}
                   />
-                  <NumRow
-                    label={t.settingsChartAxisLabelMaxFontSize}
-                    value={s.chartAxisLabelMaxFontSize}
-                    min={0}
-                    max={24}
-                    defaultVal={0}
-                    onChange={(n) => s.set({ chartAxisLabelMaxFontSize: n })}
-                  />
                   <Row label={t.settingsChartYTitlePosition}>
                     <select
                       className="view-input"
@@ -1075,14 +1067,6 @@ export function ViewMenu({
                 </Section>
                 <Section title={t.settingsSectionChartDataLabels}>
                   <div style={{ padding: '8px 0', color: 'var(--text2)', fontSize: '12px' }}></div>
-                  <NumRow
-                    label={t.settingsChartLabelMaxLength}
-                    value={s.chartLabelMaxLength}
-                    min={0}
-                    max={32}
-                    defaultVal={0}
-                    onChange={(n) => s.set({ chartLabelMaxLength: n })}
-                  />
                 </Section>
                 <Section title={t.settingsSectionChartAxis}>
                   <NumRow
@@ -1124,6 +1108,14 @@ export function ViewMenu({
                     max={6}
                     defaultVal={0}
                     onChange={(n) => s.set({ chartAxisLabelDecimals: n })}
+                  />
+                  <NumRow
+                    label={t.settingsChartAxisLabelMaxChars}
+                    value={s.chartLabelMaxLength}
+                    min={0}
+                    max={32}
+                    defaultVal={0}
+                    onChange={(n) => s.set({ chartLabelMaxLength: n })}
                   />
                   <div className="panel-check-list">
                     <PanelCheck
@@ -1417,6 +1409,43 @@ export function ViewMenu({
                     onChange={(n) => s.set({ chartLegendSymbolSize: n })}
                   />
                 </Section>
+                <Section title={t.settingsSectionChartCorrelation}>
+                  <Row label={t.chartCorrelationMethod}>
+                    <select
+                      className="view-input"
+                      value={s.chartCorrelationMethod ?? 'pearson'}
+                      onChange={(e) =>
+                        s.set({
+                          chartCorrelationMethod: e.target.value as 'pearson' | 'spearman' | 'kendall',
+                        })
+                      }
+                    >
+                      <option value="pearson">{t.chartCorrelationMethodPearson}</option>
+                      <option value="spearman">{t.chartCorrelationMethodSpearman}</option>
+                      <option value="kendall">{t.chartCorrelationMethodKendall}</option>
+                    </select>
+                  </Row>
+                  <div className="panel-check-list">
+                    <PanelCheck
+                      label={t.chartCorrelationFill}
+                      checked={s.chartCorrelationFill !== false}
+                      onChange={(v) => s.set({ chartCorrelationFill: v })}
+                    />
+                    <PanelCheck
+                      label={t.chartCorrelationShowValues}
+                      checked={s.chartCorrelationShowValues !== false}
+                      onChange={(v) => s.set({ chartCorrelationShowValues: v })}
+                    />
+                  </div>
+                  <NumRow
+                    label={t.chartCorrelationDecimals}
+                    value={s.chartCorrelationDecimals ?? 2}
+                    min={0}
+                    max={4}
+                    defaultVal={2}
+                    onChange={(n) => s.set({ chartCorrelationDecimals: n })}
+                  />
+                </Section>
                 <Section title={t.settingsSectionChartBar}>
                   <NumRow
                     label={t.settingsChartBarGapInner}
@@ -1549,6 +1578,15 @@ export function ViewMenu({
                     defaultVal={0}
                     onChange={(n) => s.set({ nodeShadowBlur: n })}
                   />
+                  <NumRow
+                    label={t.settingsGraphHeatStrokeWidthMultiplier}
+                    value={s.graphHeatStrokeWidthMultiplier ?? 1.8}
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    defaultVal={1.8}
+                    onChange={(n) => s.set({ graphHeatStrokeWidthMultiplier: n })}
+                  />
                 </Section>
               </div>
             )}
@@ -1595,6 +1633,18 @@ export function ViewMenu({
                     label={t.settingsChartTickColor}
                     value={s.chartTickColor}
                     onChange={(v) => s.set({ chartTickColor: v })}
+                  />
+                  <ColorItem
+                    id="chart-correlation-color-start"
+                    label={t.chartCorrelationColorStart}
+                    value={s.chartCorrelationColorStart ?? '#2563eb'}
+                    onChange={(v) => s.set({ chartCorrelationColorStart: v })}
+                  />
+                  <ColorItem
+                    id="chart-correlation-color-end"
+                    label={t.chartCorrelationColorEnd}
+                    value={s.chartCorrelationColorEnd ?? '#dc2626'}
+                    onChange={(v) => s.set({ chartCorrelationColorEnd: v })}
                   />
                 </Section>
                 <Section title={t.settingsColorTensorRole}>

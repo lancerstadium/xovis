@@ -12,6 +12,24 @@ import { type Graph, type GraphNode, type GraphEdge, type Tensor } from '@xovis/
 import { useGraphStore, useSettingsStore, useElectronTabsStore } from '../stores';
 import { getLocale } from '../locale';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
+import { getOperatorRows } from '../utils/operatorRows';
+
+/** 解析 hex 颜色为 r,g,b (0-255) */
+function parseHex(hex: string): [number, number, number] {
+  const m = hex.replace(/^#/, '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (m) return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  return [0, 0, 0];
+}
+
+/** 线性插值两个 hex 颜色，t in [0,1] */
+function lerpHex(hexStart: string, hexEnd: string, t: number): string {
+  const [r1, g1, b1] = parseHex(hexStart);
+  const [r2, g2, b2] = parseHex(hexEnd);
+  const r = Math.round(r1 + (r2 - r1) * t);
+  const g = Math.round(g1 + (g2 - g1) * t);
+  const b = Math.round(b1 + (b2 - b1) * t);
+  return `#${[r, g, b].map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('')}`;
+}
 
 /** 算子节点只显示重要属性（常见 Conv/Pool 等） */
 const OP_ATTR_ORDER = [
@@ -255,7 +273,42 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   const { graph, selected, setSelected, setGraph } = useGraphStore();
   const s = useSettingsStore();
   const t = getLocale(s.lang);
+  const {
+    graphHeatAnalysisEnabled,
+    graphHeatTargetKey,
+    graphHeatStrokeWidthMultiplier = 1.8,
+    chartCorrelationColorStart,
+    chartCorrelationColorEnd,
+  } = s;
   const { nodes: layoutNodes, edges: layoutEdges } = useLayout(graph);
+
+  /** 热分析：节点 id -> 归一化后的线条颜色（仅算子节点） */
+  const nodeHeatColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!graph?.nodes?.length || !graphHeatAnalysisEnabled || !graphHeatTargetKey?.trim()) return map;
+    const rows = getOperatorRows({ nodes: graph.nodes });
+    const key = graphHeatTargetKey.trim();
+    const values = rows
+      .map((r) => ({ id: String(r.id), v: Number(r[key]) }))
+      .filter((x) => Number.isFinite(x.v));
+    if (values.length === 0) return map;
+    const min = Math.min(...values.map((x) => x.v));
+    const max = Math.max(...values.map((x) => x.v));
+    const span = max - min || 1;
+    const start = chartCorrelationColorStart || '#2563eb';
+    const end = chartCorrelationColorEnd || '#dc2626';
+    values.forEach(({ id, v }) => {
+      const t = (v - min) / span;
+      map.set(id, lerpHex(start, end, t));
+    });
+    return map;
+  }, [
+    graph?.nodes,
+    graphHeatAnalysisEnabled,
+    graphHeatTargetKey,
+    chartCorrelationColorStart,
+    chartCorrelationColorEnd,
+  ]);
 
   // 缩放和平移逻辑（原 usePanZoom）
   const ZOOM_SENSITIVITY = 0.003;
@@ -520,6 +573,9 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   const isEdgeSelected = (id: string) => selected && 'source' in selected && selected.id === id;
   const edgeW = Math.max(0.5, Math.min(4, s.edgeWidth ?? 1));
   const nodeStrokeW = Math.max(0.5, Math.min(3, s.nodeStrokeWidth ?? 1));
+  const heatMul = Math.max(0.5, Math.min(3, graphHeatStrokeWidthMultiplier ?? 1.8));
+  const heatEdgeW = edgeW * heatMul;
+  const heatNodeStrokeW = nodeStrokeW * heatMul;
   const nodeRx = Math.max(0, Math.min(20, s.nodeCornerRadius ?? 4));
   const edgeCurve = Math.max(0, Math.min(1, s.edgeCurvature ?? 0));
 
@@ -661,6 +717,30 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                     floodOpacity="0.2"
                   />
                 </filter>
+                {graphHeatAnalysisEnabled &&
+                  layoutEdges.map((e: LayoutEdge) => {
+                    const ge = edgeMap.get(e.id);
+                    if (!ge || e.points.length < 2) return null;
+                    const srcColor = nodeHeatColorMap.get(ge.source);
+                    const tgtColor = nodeHeatColorMap.get(ge.target);
+                    if (!srcColor || !tgtColor || srcColor === tgtColor) return null;
+                    const start = e.points[0];
+                    const end = e.points[e.points.length - 1];
+                    return (
+                      <linearGradient
+                        key={e.id}
+                        id={`heat-edge-${e.id}`}
+                        gradientUnits="userSpaceOnUse"
+                        x1={start.x}
+                        y1={start.y}
+                        x2={end.x}
+                        y2={end.y}
+                      >
+                        <stop offset="0" stopColor={srcColor} />
+                        <stop offset="1" stopColor={tgtColor} />
+                      </linearGradient>
+                    );
+                  })}
               </defs>
               <g className="graphContent">
                 {layoutEdges.map((e: LayoutEdge) => {
@@ -674,6 +754,18 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                     s.edgeLabelShowShape && Array.isArray(shape) && shape.length
                       ? `[${shape.join(',')}]`
                       : '';
+                  const srcColor = nodeHeatColorMap.get(ge.source);
+                  const tgtColor = nodeHeatColorMap.get(ge.target);
+                  const edgeUseGradient =
+                    graphHeatAnalysisEnabled &&
+                    srcColor &&
+                    tgtColor &&
+                    srcColor !== tgtColor;
+                  const edgeStroke = isEdgeSelected(e.id)
+                    ? 'var(--accent)'
+                    : edgeUseGradient
+                      ? `url(#heat-edge-${e.id})`
+                      : 'var(--edge-stroke)';
                   return (
                     <g
                       key={e.id}
@@ -702,8 +794,8 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                       <path
                         d={d}
                         fill="none"
-                        stroke={isEdgeSelected(e.id) ? 'var(--accent)' : 'var(--edge-stroke)'}
-                        strokeWidth={edgeW}
+                        stroke={edgeStroke}
+                        strokeWidth={edgeUseGradient ? heatEdgeW : edgeW}
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         style={{ pointerEvents: 'none' }}
@@ -733,7 +825,10 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                     isTensor && graph ? graph.tensors[node.metadata?.tensorIndex as number] : null;
                   const fill =
                     isTensor && tensor ? tensorColorByRole(tensor.name) : opColor(node.name);
-                  const stroke = isTensor ? 'var(--tensor-stroke)' : 'var(--node-stroke)';
+                  const heatStroke = !isTensor && graphHeatAnalysisEnabled ? nodeHeatColorMap.get(node.id) : null;
+                  const stroke = isTensor
+                    ? 'var(--tensor-stroke)'
+                    : heatStroke ?? 'var(--node-stroke)';
                   const rx = isTensor ? Math.min(nodeRx, pos.height / 2) : nodeRx;
                   const sel = isNodeSelected(pos.id);
                   const showAttrs = s.nodeLabelShowAttrs;
@@ -799,7 +894,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                             ry={rx}
                             fill="none"
                             stroke={sel ? 'var(--accent)' : stroke}
-                            strokeWidth={sel ? 2 : nodeStrokeW}
+                            strokeWidth={sel ? 2 : (heatStroke ? heatNodeStrokeW : nodeStrokeW)}
                             filter={s.nodeShadowBlur > 0 ? 'url(#node-shadow)' : undefined}
                           />
                           <text
@@ -859,7 +954,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                             ry={rx}
                             fill={fill}
                             stroke={sel ? 'var(--accent)' : stroke}
-                            strokeWidth={sel ? 2 : nodeStrokeW}
+                            strokeWidth={sel ? 2 : (heatStroke ? heatNodeStrokeW : nodeStrokeW)}
                             filter={s.nodeShadowBlur > 0 ? 'url(#node-shadow)' : undefined}
                           />
                           <text

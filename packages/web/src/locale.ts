@@ -22,6 +22,7 @@ export const locale: Record<
     viewPie: string;
     viewLine: string;
     viewScatter: string;
+    viewCorrelation: string;
     dataTabTable: string;
     dataTabView: string;
     tableIndex: string;
@@ -34,6 +35,22 @@ export const locale: Record<
     chartSeriesNone: string;
     chartDataMapping: string;
     chartDataMappingIntro: string;
+    graphHeatAnalysis: string;
+    graphHeatAnalysisEnabled: string;
+    graphHeatTargetKey: string;
+    graphHeatColorStart: string;
+    graphHeatColorEnd: string;
+    chartCorrelationSection: string;
+    chartCorrelationColumns: string;
+    chartCorrelationMethod: string;
+    chartCorrelationMethodPearson: string;
+    chartCorrelationMethodSpearman: string;
+    chartCorrelationMethodKendall: string;
+    chartCorrelationColorStart: string;
+    chartCorrelationColorEnd: string;
+    chartCorrelationFill: string;
+    chartCorrelationShowValues: string;
+    chartCorrelationDecimals: string;
     chartYColumnsLabel: string;
     chartAddYColumn: string;
     chartAddYColumnHint: string;
@@ -102,6 +119,7 @@ export const locale: Record<
     settingsEdgeCurvature: string;
     settingsNodeCornerRadius: string;
     settingsNodeStrokeWidth: string;
+    settingsGraphHeatStrokeWidthMultiplier: string;
     settingsNodeTextColor: string;
     settingsEdgeLabelShape: string;
     settingsNodeLabelAttrs: string;
@@ -126,6 +144,7 @@ export const locale: Record<
     settingsSectionChartScatter: string;
     settingsSectionChartPie: string;
     settingsSectionChartDataLabels: string;
+    settingsSectionChartCorrelation: string;
     settingsChartSeriesKey: string;
     settingsChartWidth: string;
     settingsChartHeight: string;
@@ -203,6 +222,7 @@ export const locale: Record<
     settingsChartAxisPaddingBottom: string;
     settingsChartAxisTickLength: string;
     settingsChartAxisLabelDecimals: string;
+    settingsChartAxisLabelMaxChars: string;
     settingsChartExportScale: string;
     settingsChartGridLineCount: string;
     settingsChartLegendItemSpacing: string;
@@ -303,6 +323,7 @@ export const locale: Record<
     dataPanelDataLabelItalic: string;
     dataPanelYAxis: string;
     dataPanelYAxisWithIndex: string;
+    dataPanelAlias: string;
     // Style options
     styleSolid: string;
     styleGradient: string;
@@ -398,6 +419,7 @@ export const locale: Record<
     viewPie: '扇形图',
     viewLine: '折线图',
     viewScatter: '散点图',
+    viewCorrelation: '相关系数图',
     dataTabTable: '表格',
     dataTabView: '视图',
     tableIndex: '序号',
@@ -410,6 +432,22 @@ export const locale: Record<
     chartSeriesNone: '不分组',
     chartDataMapping: '数据映射',
     chartDataMappingIntro: '先选 X 轴列（分类），再为 Y 轴添加一列或多列（数值）。',
+    graphHeatAnalysis: '热分析',
+    graphHeatAnalysisEnabled: '开启热分析',
+    graphHeatTargetKey: '目标数据',
+    graphHeatColorStart: '始色',
+    graphHeatColorEnd: '终色',
+    chartCorrelationSection: '相关系数',
+    chartCorrelationColumns: '分析列',
+    chartCorrelationMethod: '相关系数方法',
+    chartCorrelationMethodPearson: 'Pearson',
+    chartCorrelationMethodSpearman: 'Spearman',
+    chartCorrelationMethodKendall: 'Kendall',
+    chartCorrelationColorStart: '始色',
+    chartCorrelationColorEnd: '终色',
+    chartCorrelationFill: '单元填充',
+    chartCorrelationShowValues: '显示数值',
+    chartCorrelationDecimals: '小数位',
     chartYColumnsLabel: 'Y 轴列（可多列）',
     chartAddYColumn: '添加 Y 列',
     chartAddYColumnHint: '点击可增加多个数值系列，图表将显示多组柱/多条线等。',
@@ -478,6 +516,7 @@ export const locale: Record<
     settingsEdgeCurvature: '边弧度',
     settingsNodeCornerRadius: '节点圆角',
     settingsNodeStrokeWidth: '节点框粗细',
+    settingsGraphHeatStrokeWidthMultiplier: '热分析线条宽度倍率',
     settingsNodeTextColor: '节点文字',
     settingsEdgeLabelShape: '边显形状',
     settingsNodeLabelAttrs: '点显属性',
@@ -502,6 +541,7 @@ export const locale: Record<
     settingsSectionChartScatter: '图表·散点图',
     settingsSectionChartPie: '图表·扇形图',
     settingsSectionChartDataLabels: '图表·数据标签',
+    settingsSectionChartCorrelation: '图表·相关系数',
     settingsChartSeriesKey: '分组列（多系列）',
     settingsChartWidth: '画布宽度',
     settingsChartHeight: '画布高度',
@@ -511,6 +551,7 @@ export const locale: Record<
     settingsChartAxisPaddingTop: '上边界距离',
     settingsChartAxisPaddingBottom: '下边界距离',
     settingsChartAxisLabelDecimals: '轴刻度小数位',
+    settingsChartAxisLabelMaxChars: '轴刻度标签最大字符数',
     settingsChartExportScale: '导出缩放',
     settingsChartBarGap: '柱间距',
     settingsChartBarGapInner: '组内间距',
@@ -679,6 +720,7 @@ export const locale: Record<
     dataPanelDataLabelItalic: '斜体',
     dataPanelYAxis: 'Y轴',
     dataPanelYAxisWithIndex: 'Y轴 {index}',
+    dataPanelAlias: '别名',
     // Style options
     styleSolid: '实线',
     styleGradient: '渐变',
@@ -773,6 +815,7 @@ export const locale: Record<
     viewPie: 'Pie',
     viewLine: 'Line',
     viewScatter: 'Scatter',
+    viewCorrelation: 'Correlation',
     dataTabTable: 'Table',
     dataTabView: 'View',
     tableIndex: '#',
@@ -785,6 +828,22 @@ export const locale: Record<
     chartSeriesNone: 'None',
     chartDataMapping: 'Data mapping',
     chartDataMappingIntro: 'Select X axis column, then add one or more Y axis columns.',
+    graphHeatAnalysis: 'Heat analysis',
+    graphHeatAnalysisEnabled: 'Enable heat analysis',
+    graphHeatTargetKey: 'Target data',
+    graphHeatColorStart: 'Start color',
+    graphHeatColorEnd: 'End color',
+    chartCorrelationSection: 'Correlation',
+    chartCorrelationColumns: 'Columns',
+    chartCorrelationMethod: 'Method',
+    chartCorrelationMethodPearson: 'Pearson',
+    chartCorrelationMethodSpearman: 'Spearman',
+    chartCorrelationMethodKendall: 'Kendall',
+    chartCorrelationColorStart: 'Start color',
+    chartCorrelationColorEnd: 'End color',
+    chartCorrelationFill: 'Cell fill',
+    chartCorrelationShowValues: 'Show values',
+    chartCorrelationDecimals: 'Decimals',
     chartYColumnsLabel: 'Y axis columns',
     chartAddYColumn: 'Add Y column',
     chartAddYColumnHint: 'Click to add more value series; chart will show multiple bars/lines etc.',
@@ -853,6 +912,7 @@ export const locale: Record<
     settingsEdgeCurvature: 'Edge curvature',
     settingsNodeCornerRadius: 'Node corner radius',
     settingsNodeStrokeWidth: 'Node stroke',
+    settingsGraphHeatStrokeWidthMultiplier: 'Heat analysis stroke width multiplier',
     settingsNodeTextColor: 'Node text',
     settingsEdgeLabelShape: 'Shape on edge',
     settingsNodeLabelAttrs: 'Node attributes',
@@ -877,6 +937,7 @@ export const locale: Record<
     settingsSectionChartScatter: 'Chart · Scatter',
     settingsSectionChartPie: 'Chart · Pie',
     settingsSectionChartDataLabels: 'Data labels',
+    settingsSectionChartCorrelation: 'Chart · Correlation',
     settingsChartSeriesKey: 'Series key',
     settingsChartWidth: 'Canvas width',
     settingsChartHeight: 'Canvas height',
@@ -886,6 +947,7 @@ export const locale: Record<
     settingsChartAxisPaddingTop: 'Top padding',
     settingsChartAxisPaddingBottom: 'Bottom padding',
     settingsChartAxisLabelDecimals: 'Axis tick decimals',
+    settingsChartAxisLabelMaxChars: 'Axis label max characters',
     settingsChartExportScale: 'Export scale',
     settingsChartBarGap: 'Bar gap',
     settingsChartBarGapInner: 'Inner gap',
@@ -1054,6 +1116,7 @@ export const locale: Record<
     dataPanelDataLabelItalic: 'Italic',
     dataPanelYAxis: 'Y axis',
     dataPanelYAxisWithIndex: 'Y axis {index}',
+    dataPanelAlias: 'Alias',
     // Style options
     styleSolid: 'Solid',
     styleGradient: 'Gradient',
