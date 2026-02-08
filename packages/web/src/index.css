@@ -1,4 +1,5 @@
-/* 学术风预设初值，由 store 覆盖；浮窗高度=视口减上/下按钮行与间距，App.tsx 同步写入 */
+/* 学术风预设初值，由 store 覆盖；浮窗高度=视口减上/下按钮行与间距，App.tsx 同步写入。
+ * iOS 首进色块成因：首帧 env(safe-area-inset-*) 有时未生效(为 0)，固定栏被状态栏/Home 条遮挡；旋转后 resize 重算即正常。对策：index 首帧从 localStorage 恢复主题、触屏下固定栏用 max(inset, 最小 44/34px) 保底。 */
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --float-trigger-row: 44px;
@@ -68,6 +69,7 @@ html {
   min-width: 0;
   overflow: hidden;
   overscroll-behavior: none;
+  background: var(--bg);
 }
 @supports (height: 100dvh) {
   html {

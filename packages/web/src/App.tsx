@@ -128,6 +128,9 @@ export default function App() {
     const mode = theme.startsWith('light') ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', mode);
     document.documentElement.setAttribute('data-silent', s.silentMode ? 'true' : 'false');
+    const themeColor = mode === 'dark' ? '#18181b' : '#f0f0f0';
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (meta) meta.content = themeColor;
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link) {
       const base = import.meta.env.BASE_URL || '/';
