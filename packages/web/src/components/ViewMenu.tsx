@@ -595,9 +595,17 @@ export function ViewMenu({
 
   if (!open) return null;
 
-  const fontSelectValue = FONT_OPTIONS.some((o) => o.value === s.fontFamily)
-    ? s.fontFamily
-    : FONT_CUSTOM_VALUE;
+  const fontSelectValue = (() => {
+    const n = normalizeFontStack(s.fontFamily || '');
+    if (!n) return FONT_CUSTOM_VALUE;
+    const exact = FONT_OPTIONS.find((o) => normalizeFontStack(o.value) === n);
+    if (exact) return exact.value;
+    const first = FONT_OPTIONS.find((o) => {
+      const ov = normalizeFontStack(o.value);
+      return n === ov || n.startsWith(ov + ', ') || n.startsWith(ov + ' ');
+    });
+    return first?.value ?? FONT_CUSTOM_VALUE;
+  })();
   const tensorRole = s.tensorRoleColors ?? ['#dbeafe', '#fed7aa', '#e9d5ff', '#bbf7d0'];
 
   const dropdown = (

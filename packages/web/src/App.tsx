@@ -131,14 +131,6 @@ export default function App() {
     if (Object.keys(updates).length > 0) state.set(updates);
   }, [sidebarOpen, resizeTick]);
 
-  /** 设置「字体」同步到 body，保证全应用（含 PWA/自定义字体）生效 */
-  useEffect(() => {
-    document.body.style.fontFamily = s.fontFamily;
-    return () => {
-      document.body.style.fontFamily = '';
-    };
-  }, [s.fontFamily]);
-
   /** 浮窗统一：点击空白关闭（详情、数据、设置均用点击外部逻辑，排除面板 + 触发按钮） */
   const closeDetail = useCallback(() => set({ sidebarOpen: false }), [set]);
   const closeDataPanel = useCallback(() => set({ dataPanelOpen: false }), [set]);
