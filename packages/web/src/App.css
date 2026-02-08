@@ -139,17 +139,6 @@ body.pwa-banner-visible .main {
 .btn.icon-btn svg {
   display: block;
 }
-@media (pointer: coarse) {
-  .toolbar-bl .btn.icon-btn,
-  .toolbar-bl .icon-btn,
-  .toolbar-bc .btn.icon-btn,
-  .toolbar-bc .icon-btn,
-  .toolbar-right .btn.icon-btn,
-  .toolbar-right .icon-btn {
-    width: 24px;
-    height: 24px;
-  }
-}
 
 /* 左下角工具栏：与其它 floating-trigger 一致 */
 .loader-combo {
@@ -352,18 +341,18 @@ body.pwa-banner-visible .main {
   right: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-right, 0px));
 }
 .toolbar-bl {
-  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset-bottom, 10px) + var(--safe-area-inset-bottom, 0px));
   left: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-left, 0px));
   top: auto;
 }
 .toolbar-right {
-  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset-bottom, 10px) + var(--safe-area-inset-bottom, 0px));
   right: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-right, 0px));
   left: auto;
   top: auto;
 }
 .toolbar-bc {
-  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset-bottom, 10px) + var(--safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   top: auto;

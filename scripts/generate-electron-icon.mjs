@@ -45,5 +45,7 @@ function withConvert() {
 
 const ok = (await withSharp()) || withConvert();
 if (!ok) {
-  console.warn('scripts/generate-electron-icon: run pnpm install and ensure sharp or ImageMagick is available');
+  console.warn(
+    'scripts/generate-electron-icon: run pnpm install and ensure sharp or ImageMagick is available'
+  );
 }
