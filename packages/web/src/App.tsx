@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { Loader, CanvasPanel, Detail, ViewMenu, ElectronTitleBar, PwaInstallBanner } from './components';
 import { DataPanel } from './components/DataPanel';
 import type { CanvasPanelHandle } from './components/CanvasPanel';
@@ -73,7 +73,19 @@ export default function App() {
   const dataPanelWrapRef = useRef<HTMLDivElement>(null);
   const dataTriggerRef = useRef<HTMLDivElement>(null);
   const [resizeAxis, setResizeAxis] = useState<'width' | 'height' | null>(null);
+  const [detailPosition, setDetailPosition] = useState({ top: 0, right: 0 });
+  const detailRightEdgePxRef = useRef(0);
   const t = getLocale(lang);
+
+  /** 右上角详情浮窗：与左上角设置浮窗一致，锚定在按钮下方 */
+  useLayoutEffect(() => {
+    if (!sidebarOpen || !detailTriggerRef.current) return;
+    const rect = detailTriggerRef.current.getBoundingClientRect();
+    const top = rect.bottom + 4;
+    const right = window.innerWidth - rect.right;
+    setDetailPosition({ top, right });
+    detailRightEdgePxRef.current = rect.right;
+  }, [sidebarOpen]);
 
   /** 浮窗统一：点击空白关闭（详情、数据、设置均用点击外部逻辑，排除面板 + 触发按钮） */
   const closeDetail = useCallback(() => set({ sidebarOpen: false }), [set]);
@@ -165,11 +177,11 @@ export default function App() {
     setTabGraph(activeTabId, graph);
   }, [isElectron, activeTabId, graph, setTabGraph]);
 
-  /** 详情浮窗宽度：靠右时拖左缘，宽度 = 右缘 - 鼠标 X */
+  /** 详情浮窗宽度：靠右时拖左缘，右缘与按钮右缘对齐（与 detailPosition 一致）。支持鼠标与触控（统一用 clientX/clientY） */
   const handleResizeWidth = useCallback(
-    (e: MouseEvent) => {
-      const rightEdge = window.innerWidth - DETAIL_CARD_GAP;
-      const w = rightEdge - e.clientX;
+    (pos: { clientX: number; clientY: number }) => {
+      const rightEdge = detailRightEdgePxRef.current;
+      const w = rightEdge - pos.clientX;
       const maxW = Math.min(
         window.innerWidth - DETAIL_CARD_GAP * 2,
         window.innerWidth * SIDEBAR_MAX_RATIO
@@ -180,11 +192,11 @@ export default function App() {
   );
 
   const handleResizeHeight = useCallback(
-    (e: MouseEvent) => {
+    (pos: { clientX: number; clientY: number }) => {
       const wrap = detailWrapRef.current;
       if (!wrap) return;
       const top = wrap.getBoundingClientRect().top;
-      const h = Math.round(e.clientY - top);
+      const h = Math.round(pos.clientY - top);
       set({
         sidebarHeight: Math.max(SIDEBAR_HEIGHT_MIN, Math.min(floatPanelMaxHeight(), h)),
       });
@@ -194,22 +206,45 @@ export default function App() {
 
   useEffect(() => {
     if (!resizeAxis) return;
-    const onMove = (e: MouseEvent) =>
-      resizeAxis === 'width' ? handleResizeWidth(e) : handleResizeHeight(e);
+    const onMove = (pos: { clientX: number; clientY: number }) =>
+      resizeAxis === 'width' ? handleResizeWidth(pos) : handleResizeHeight(pos);
+    const onMouseMove = (e: MouseEvent) => onMove(e);
+    const onPointerMove = (e: PointerEvent) => onMove(e);
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) {
+        e.preventDefault();
+        onMove(e.touches[0]);
+      }
+    };
     const onUp = () => {
       setResizeAxis(null);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
+    const onMouseUp = onUp;
+    const onPointerUp = onUp;
+    const onTouchEnd = onUp;
     document.body.style.cursor = resizeAxis === 'width' ? 'col-resize' : 'row-resize';
     document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', onTouchEnd, { capture: true });
     return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
@@ -372,14 +407,16 @@ export default function App() {
           )}
         </button>
 
-        {/* 右上角详情浮窗：靠右、左缘与底边可调 */}
+        {/* 右上角详情浮窗：锚定在按钮下方（与左上角设置浮窗一致），左缘与底边可调 */}
         {sidebarOpen && (
           <div
             ref={detailWrapRef}
             className="detail-card-wrap detail-card-wrap-right float-panel-wrap"
             style={{
+              position: 'fixed',
               left: 'auto',
-              right: DETAIL_CARD_GAP,
+              top: detailPosition.top,
+              right: detailPosition.right,
               width: sidebarWidth,
               ...(sidebarHeight > 0 ? { height: sidebarHeight } : {}),
             }}
@@ -389,7 +426,12 @@ export default function App() {
                 className="float-panel-splitter float-panel-splitter-v"
                 role="separator"
                 aria-orientation="vertical"
+                style={{ touchAction: 'none' }}
                 onMouseDown={(e) => {
+                  e.preventDefault();
+                  setResizeAxis('width');
+                }}
+                onTouchStart={(e) => {
                   e.preventDefault();
                   setResizeAxis('width');
                 }}
@@ -404,7 +446,12 @@ export default function App() {
               className="float-panel-splitter float-panel-splitter-h"
               role="separator"
               aria-orientation="horizontal"
+              style={{ touchAction: 'none' }}
               onMouseDown={(e) => {
+                e.preventDefault();
+                setResizeAxis('height');
+              }}
+              onTouchStart={(e) => {
                 e.preventDefault();
                 setResizeAxis('height');
               }}

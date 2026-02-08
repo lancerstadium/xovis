@@ -1039,41 +1039,56 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
   useEffect(() => {
     if (!resizeEdge) return;
     const centerX = () => window.innerWidth / 2;
-    const onMove = (e: MouseEvent) => {
+    const onMove = (pos: { clientX: number; clientY: number }) => {
       if (resizeEdge === 'top') {
         const inner = innerRef.current;
         if (!inner) return;
         const bottom = inner.getBoundingClientRect().bottom;
-        const h = bottom - e.clientY;
+        const h = bottom - pos.clientY;
         set({
           dataPanelHeight: Math.max(DATA_PANEL_MIN_HEIGHT, Math.min(DATA_PANEL_MAX_HEIGHT(), h)),
         });
       } else if (resizeEdge === 'left') {
-        const w = 2 * (centerX() - e.clientX);
+        const w = 2 * (centerX() - pos.clientX);
         set({
           dataPanelWidth: Math.max(DATA_PANEL_MIN_WIDTH, Math.min(DATA_PANEL_MAX_WIDTH(), w)),
         });
       } else if (resizeEdge === 'right') {
-        const w = 2 * (e.clientX - centerX());
+        const w = 2 * (pos.clientX - centerX());
         set({
           dataPanelWidth: Math.max(DATA_PANEL_MIN_WIDTH, Math.min(DATA_PANEL_MAX_WIDTH(), w)),
         });
       }
     };
+    const onMouseMove = (e: MouseEvent) => onMove(e);
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) {
+        e.preventDefault();
+        onMove(e.touches[0]);
+      }
+    };
     const onUp = () => {
       setResizeEdge(null);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
+    const onMouseUp = onUp;
+    const onTouchEnd = onUp;
     document.body.style.cursor = resizeEdge === 'top' ? 'row-resize' : 'col-resize';
     document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', onTouchEnd, { capture: true });
     return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
@@ -1142,6 +1157,10 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     e.preventDefault();
     setResizeEdge(edge);
   };
+  const startResizeTouch = (edge: DataPanelResizeEdge) => (e: React.TouchEvent) => {
+    e.preventDefault();
+    setResizeEdge(edge);
+  };
 
   return (
     <div ref={ref} className="data-panel-wrap">
@@ -1154,14 +1173,18 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
           className="float-panel-splitter float-panel-splitter-h data-panel-splitter-top"
           role="separator"
           aria-orientation="horizontal"
+          style={{ touchAction: 'none' }}
           onMouseDown={startResize('top')}
+          onTouchStart={startResizeTouch('top')}
         />
         <div className="data-panel-resizable-body">
           <div
             className="float-panel-splitter float-panel-splitter-v data-panel-splitter-left"
             role="separator"
             aria-orientation="vertical"
+            style={{ touchAction: 'none' }}
             onMouseDown={startResize('left')}
+            onTouchStart={startResizeTouch('left')}
           />
           <div className="view-dropdown panel-glass data-panel-inner">
             <div className="view-tabs">
@@ -1330,7 +1353,9 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
             className="float-panel-splitter float-panel-splitter-v data-panel-splitter-right"
             role="separator"
             aria-orientation="vertical"
+            style={{ touchAction: 'none' }}
             onMouseDown={startResize('right')}
+            onTouchStart={startResizeTouch('right')}
           />
         </div>
       </div>

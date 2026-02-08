@@ -277,6 +277,31 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     setZoom((z) => Math.max(0.01, z * (1 + delta)));
   }, []);
 
+  const pinchRef = useRef<{ initialDistance: number; initialZoom: number } | null>(null);
+  const getTouchDistance = (touches: TouchList) =>
+    Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY);
+  const onTouchStart = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const initialDistance = getTouchDistance(e.touches);
+      setZoom((z) => {
+        pinchRef.current = { initialDistance, initialZoom: z };
+        return z;
+      });
+    }
+  }, []);
+  const onTouchMove = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      e.preventDefault();
+      const scale = getTouchDistance(e.touches) / pinchRef.current.initialDistance;
+      const next = pinchRef.current.initialZoom * scale;
+      setZoom(Math.max(0.01, next));
+    }
+  }, []);
+  const onTouchEnd = useCallback((e: TouchEvent) => {
+    if (e.touches.length < 2) pinchRef.current = null;
+  }, []);
+
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (e.button !== 0) return;
@@ -388,8 +413,18 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     const el = containerRef.current;
     if (!el || !graph) return;
     el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, [graph, onWheel]);
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [graph, onWheel, onTouchStart, onTouchMove, onTouchEnd]);
 
   useEffect(() => {
     setDropOver(false);
@@ -518,6 +553,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
           flexDirection: 'column',
           minHeight: 0,
           boxSizing: 'border-box',
+          touchAction: 'none',
           ...panZoomCursor(isDragging),
           ...(!graph && {
             alignItems: 'center',

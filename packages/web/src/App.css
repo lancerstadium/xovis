@@ -8,7 +8,15 @@ body.pwa-banner-visible .main {
   width: 100%;
   height: 100%;
   min-height: 100vh;
+  max-height: 100%;
   background: var(--bg);
+}
+/* 手机横屏：限制在可见视口内，避免图表溢出 */
+@supports (height: 100dvh) {
+  .app {
+    min-height: 100%;
+    max-height: 100%;
+  }
 }
 /* Electron：根与主区域背景与菜单栏统一为 --bg */
 .electron-app,
@@ -251,7 +259,14 @@ body.pwa-banner-visible .main {
   width: 100%;
   height: 100%;
   min-height: 100vh;
+  max-height: 100%;
   overflow: hidden;
+}
+@supports (height: 100dvh) {
+  .main {
+    min-height: 0;
+    max-height: 100%;
+  }
 }
 /* Electron：主区域高度 = 视口减去标题栏，覆盖注入样式，避免底部按钮被挤出 */
 .electron-app .app {
@@ -791,6 +806,18 @@ body.pwa-banner-visible .main {
   border-radius: 0 0 12px 12px;
 }
 
+/* 触控设备：拖拽条加大可触区域，便于手指拖拽 */
+@media (pointer: coarse) {
+  .float-panel-splitter-v {
+    min-width: 28px;
+    width: 28px;
+  }
+  .float-panel-splitter-h {
+    min-height: 28px;
+    height: 28px;
+  }
+}
+
 /* 左右浮窗唯一外观：透明度、背景色、圆角、毛玻璃完全共用，观感无区别 */
 .panel-glass {
   position: relative;
@@ -970,6 +997,18 @@ body.pwa-banner-visible .main {
 .view-dropdown-splitter:hover,
 .view-dropdown-splitter-h:hover {
   background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+@media (pointer: coarse) {
+  .view-dropdown-splitter {
+    flex: 0 0 28px;
+    min-width: 28px;
+    width: 28px;
+  }
+  .view-dropdown-splitter-h {
+    flex: 0 0 28px;
+    min-height: 28px;
+    height: 28px;
+  }
 }
 .view-tabs {
   display: flex;

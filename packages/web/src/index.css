@@ -52,13 +52,30 @@
   padding: 0;
   box-sizing: border-box;
 }
-html,
+html {
+  height: 100%;
+  min-height: 100vh;
+  max-height: 100dvh;
+  width: 100%;
+}
 body,
 #root {
   height: 100%;
   min-height: 100vh;
   width: 100%;
   overflow: hidden;
+}
+/* 手机横屏等：限制在可见视口内，避免图表溢出 */
+@supports (height: 100dvh) {
+  html {
+    min-height: 100dvh;
+    max-height: 100dvh;
+  }
+  body,
+  #root {
+    min-height: 100%;
+    max-height: 100%;
+  }
 }
 body {
   font-family:

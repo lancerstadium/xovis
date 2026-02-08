@@ -490,53 +490,83 @@ export function ViewMenu({
     if (!resizing) return;
     const VIEW_MENU_MIN = 220;
     const VIEW_MENU_MAX = Math.min(480, window.innerWidth * 0.9);
-    const onMove = (e: MouseEvent) => {
+    const onMove = (pos: { clientX: number; clientY: number }) => {
       const wrap = wrapRef.current;
       if (!wrap) return;
       const left = wrap.getBoundingClientRect().left;
-      const w = Math.max(VIEW_MENU_MIN, Math.min(VIEW_MENU_MAX, e.clientX - left));
+      const w = Math.max(VIEW_MENU_MIN, Math.min(VIEW_MENU_MAX, pos.clientX - left));
       s.set({ viewMenuWidth: w });
+    };
+    const onMouseMove = (e: MouseEvent) => onMove(e);
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) {
+        e.preventDefault();
+        onMove(e.touches[0]);
+      }
     };
     const onUp = () => {
       setResizing(false);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
+    const onMouseUp = onUp;
+    const onTouchEnd = onUp;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', onTouchEnd, { capture: true });
     return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
     };
   }, [resizing, s]);
 
   useEffect(() => {
     if (!resizingHeight) return;
-    const onMove = (e: MouseEvent) => {
+    const onMove = (pos: { clientX: number; clientY: number }) => {
       const wrap = wrapRef.current;
       if (!wrap) return;
       const top = wrap.getBoundingClientRect().top;
-      const h = Math.max(VIEW_MENU_HEIGHT_MIN, Math.min(VIEW_MENU_HEIGHT_MAX(), e.clientY - top));
+      const h = Math.max(VIEW_MENU_HEIGHT_MIN, Math.min(VIEW_MENU_HEIGHT_MAX(), pos.clientY - top));
       s.set({ viewMenuHeight: h });
+    };
+    const onMouseMove = (e: MouseEvent) => onMove(e);
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) {
+        e.preventDefault();
+        onMove(e.touches[0]);
+      }
     };
     const onUp = () => {
       setResizingHeight(false);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
+    const onMouseUp = onUp;
+    const onTouchEnd = onUp;
     document.body.style.cursor = 'row-resize';
     document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', onTouchEnd, { capture: true });
     return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove, { capture: true });
+      document.removeEventListener('touchend', onTouchEnd, { capture: true });
     };
   }, [resizingHeight, s]);
 
@@ -1520,7 +1550,12 @@ export function ViewMenu({
           className="view-dropdown-splitter"
           role="separator"
           aria-orientation="vertical"
+          style={{ touchAction: 'none' }}
           onMouseDown={(e) => {
+            e.preventDefault();
+            setResizing(true);
+          }}
+          onTouchStart={(e) => {
             e.preventDefault();
             setResizing(true);
           }}
@@ -1530,7 +1565,12 @@ export function ViewMenu({
         className="view-dropdown-splitter view-dropdown-splitter-h"
         role="separator"
         aria-orientation="horizontal"
+        style={{ touchAction: 'none' }}
         onMouseDown={(e) => {
+          e.preventDefault();
+          setResizingHeight(true);
+        }}
+        onTouchStart={(e) => {
           e.preventDefault();
           setResizingHeight(true);
         }}
