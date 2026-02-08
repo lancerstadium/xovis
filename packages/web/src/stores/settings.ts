@@ -1237,6 +1237,12 @@ export interface ViewSettings {
   silentMode: boolean;
   rankDir: 'LR' | 'TB';
   fontFamily: string;
+  /** 英文字体（font stack），用于组合 fontFamily */
+  fontFamilyEn: string;
+  /** 中文字体（font stack），可选，空表示不配置 */
+  fontFamilyZh: string;
+  /** 自定义字体（插在最前），可选 */
+  fontFamilyCustom: string;
   fontSize: number;
   nodeWidth: number;
   nodeHeight: number;
@@ -1503,12 +1509,23 @@ export interface ViewSettings {
   exportPadding: number;
 }
 
+/** 顺序：自定义 + 英文字体 + 中文字体 */
+function composeFontFamily(custom: string, en: string, zh: string): string {
+  const parts = [custom.trim(), en.trim(), zh.trim()].filter(Boolean);
+  return parts.length ? parts.join(', ') : '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif';
+}
+
+const DEFAULT_FONT_EN = '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif';
+
 const defaults: ViewSettings = {
   lang: 'zh',
   theme: 'light1',
   silentMode: false,
   rankDir: 'LR',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif',
+  fontFamily: DEFAULT_FONT_EN,
+  fontFamilyEn: DEFAULT_FONT_EN,
+  fontFamilyZh: '',
+  fontFamilyCustom: '',
   fontSize: 18,
   nodeWidth: 100,
   nodeHeight: 44,
@@ -1646,7 +1663,22 @@ export const useSettingsStore = create<
   persist(
     (setState) => ({
       ...defaults,
-      set: (patch) => setState((s) => ({ ...s, ...patch })),
+      set: (patch) =>
+        setState((s) => {
+          const next = { ...s, ...patch };
+          if (
+            'fontFamilyEn' in patch ||
+            'fontFamilyZh' in patch ||
+            'fontFamilyCustom' in patch
+          ) {
+            next.fontFamily = composeFontFamily(
+              next.fontFamilyCustom ?? s.fontFamilyCustom,
+              next.fontFamilyEn ?? s.fontFamilyEn,
+              next.fontFamilyZh ?? s.fontFamilyZh
+            );
+          }
+          return next;
+        }),
       applyPreset: (theme) => setState((s) => ({ ...s, theme, ...getFullPreset(theme) })),
     }),
     {
@@ -1690,6 +1722,10 @@ export const useSettingsStore = create<
         if (out.sidebarHeight == null) out.sidebarHeight = 0;
         if (out.dataPanelOpen == null) out.dataPanelOpen = false;
         if (out.dataPanelHiddenColumns == null) out.dataPanelHiddenColumns = [];
+        if (out.fontFamilyEn == null) out.fontFamilyEn = (out.fontFamily as string) ?? DEFAULT_FONT_EN;
+        if (out.fontFamilyZh == null) out.fontFamilyZh = '';
+        if (out.fontFamilyCustom == null) out.fontFamilyCustom = '';
+        out.fontFamily = composeFontFamily(out.fontFamilyCustom, out.fontFamilyEn, out.fontFamilyZh);
         if (out.viewMode == null) out.viewMode = 'graph';
         if (out.chartXKey == null) out.chartXKey = '';
         if (out.chartYKeys == null) {

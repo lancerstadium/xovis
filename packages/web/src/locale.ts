@@ -343,6 +343,9 @@ export const locale: Record<
     settingsLayoutLR: string;
     settingsLayoutTB: string;
     settingsFont: string;
+    settingsFontEn: string;
+    settingsFontZh: string;
+    settingsFontZhNone: string;
     settingsFontSize: string;
     settingsNodeSize: string;
     settingsNodeGap: string;
@@ -713,6 +716,9 @@ export const locale: Record<
     settingsLayoutLR: '左右',
     settingsLayoutTB: '上下',
     settingsFont: '字体',
+    settingsFontEn: '英文字体',
+    settingsFontZh: '中文字体',
+    settingsFontZhNone: '不配置',
     settingsFontSize: '字号',
     settingsNodeSize: '节点尺寸',
     settingsNodeGap: '节点间距',
@@ -1082,6 +1088,9 @@ export const locale: Record<
     settingsLayoutLR: 'Left-Right',
     settingsLayoutTB: 'Top-Bottom',
     settingsFont: 'Font',
+    settingsFontEn: 'English font',
+    settingsFontZh: 'Chinese font',
+    settingsFontZhNone: 'None',
     settingsFontSize: 'Font size',
     settingsNodeSize: 'Node size',
     settingsNodeGap: 'Node gap',

@@ -67,16 +67,11 @@ const COLOR_LABELS: Record<ColorKey, keyof ReturnType<typeof getLocale>> = {
   edgeStroke: 'colorEdgeStroke',
 };
 
-/** 字体样式：name 直接显示，nameKey 用 locale；value 为 font stack，下拉多选项 + 可编辑自定义 */
-const FONT_OPTIONS: {
-  name?: string;
-  nameKey?: keyof ReturnType<typeof getLocale>;
-  value: string;
-}[] = [
-  {
-    nameKey: 'settingsFontSystem',
-    value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif',
-  },
+/** 字体项：name 直接显示，nameKey 用 locale；value 为 font stack */
+type FontOption = { name?: string; nameKey?: keyof ReturnType<typeof getLocale>; value: string };
+
+const FONT_OPTIONS_EN: FontOption[] = [
+  { nameKey: 'settingsFontSystem', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif' },
   { nameKey: 'settingsFontSans', value: 'system-ui, "Segoe UI", Roboto, sans-serif' },
   { nameKey: 'settingsFontMono', value: 'ui-monospace, "Cascadia Code", "Consolas", monospace' },
   { name: 'Times New Roman', value: '"Times New Roman", Times, serif' },
@@ -88,55 +83,29 @@ const FONT_OPTIONS: {
   { name: 'Courier New', value: '"Courier New", Courier, monospace' },
   { name: 'Tahoma', value: 'Tahoma, Geneva, sans-serif' },
   { name: 'Calibri', value: 'Calibri, "Segoe UI", sans-serif' },
-  { name: 'PingFang SC', value: '"PingFang SC", "Microsoft YaHei", sans-serif' },
-  { name: 'Microsoft YaHei', value: '"Microsoft YaHei", "PingFang SC", sans-serif' },
-  { name: 'Source Han Sans', value: '"Source Han Sans SC", "PingFang SC", sans-serif' },
-  { name: 'Noto Sans SC', value: '"Noto Sans SC", "PingFang SC", sans-serif' },
-  { name: 'SimSun', value: 'SimSun, "宋体", serif' },
-  { name: 'SimHei', value: 'SimHei, "黑体", sans-serif' },
-  { name: 'KaiTi', value: 'KaiTi, "楷体", serif' },
-  { name: 'FangSong', value: 'FangSong, "仿宋", serif' },
-  { name: 'DengXian', value: '"DengXian", "等线", sans-serif' },
-  { name: 'STSong', value: '"STSong", "华文宋体", SimSun, serif' },
-  { name: 'STKaiti', value: '"STKaiti", "华文楷体", KaiTi, serif' },
-  { name: 'STHeiti', value: '"STHeiti", "华文黑体", SimHei, sans-serif' },
-  { name: 'STFangsong', value: '"STFangsong", "华文仿宋", FangSong, serif' },
-  { name: 'Hiragino Sans GB', value: '"Hiragino Sans GB", "冬青黑体", "Microsoft YaHei", sans-serif' },
   { name: 'Roboto', value: 'Roboto, sans-serif' },
   { name: 'Open Sans', value: '"Open Sans", sans-serif' },
 ];
-const FONT_CUSTOM_VALUE = '__custom__';
 
-/** 规范化逗号旁空格，便于匹配 */
-function normalizeFontStack(s: string): string {
-  return s.replace(/\s*,\s*/g, ', ').trim();
-}
+/* 中文字体：同一字体在 Windows/Mac 名称不同，用 font stack 列出多系统名称以便匹配 */
+const FONT_OPTIONS_ZH: FontOption[] = [
+  { name: '苹方', value: '"PingFang SC", "Microsoft YaHei", sans-serif' },
+  { name: '微软雅黑', value: '"Microsoft YaHei", "PingFang SC", sans-serif' },
+  { name: '思源黑体', value: '"Source Han Sans SC", "PingFang SC", sans-serif' },
+  { name: 'Noto Sans SC', value: '"Noto Sans SC", "PingFang SC", sans-serif' },
+  { name: '宋体', value: 'SimSun, "宋体", "Songti SC", serif' },
+  { name: '黑体', value: 'SimHei, "黑体", "Heiti SC", sans-serif' },
+  { name: '楷体', value: 'KaiTi, "楷体", "Kaiti SC", serif' },
+  { name: '仿宋', value: 'FangSong, "仿宋", "Fangsong SC", serif' },
+  { name: '等线', value: '"DengXian", "等线", sans-serif' },
+  { name: '华文宋体', value: '"STSong", "华文宋体", SimSun, "宋体", serif' },
+  { name: '华文楷体', value: '"STKaiti", "华文楷体", KaiTi, "楷体", serif' },
+  { name: '华文黑体', value: '"STHeiti", "华文黑体", SimHei, "黑体", sans-serif' },
+  { name: '华文仿宋', value: '"STFangsong", "华文仿宋", FangSong, "仿宋", serif' },
+  { name: '冬青黑体', value: '"Hiragino Sans GB", "冬青黑体", "Microsoft YaHei", sans-serif' },
+];
 
-/** 从 font-family 中移除一段（整段 segment）；在规范化串上操作以容忍逗号旁空格 */
-function removeFontSegment(fontFamily: string, segment: string): string {
-  const n = normalizeFontStack(fontFamily);
-  const seg = normalizeFontStack(segment);
-  const idx = n.indexOf(seg);
-  if (idx === -1) return fontFamily;
-  const rest = (n.slice(0, idx) + n.slice(idx + seg.length))
-    .replace(/,+\s*/g, ', ')
-    .replace(/^\s*,\s*|\s*,\s*$/g, '')
-    .trim();
-  return rest;
-}
-
-/** 队列：新选插到最前；已在队列则去重置顶；已是队首则收束为仅该字体 */
-function fontFamilyQueuePrepend(current: string, newSegment: string): string {
-  const cur = normalizeFontStack(current);
-  const seg = normalizeFontStack(newSegment);
-  if (!cur) return newSegment;
-  if (cur === seg) return newSegment;
-  if (cur.startsWith(seg + ',') || cur.startsWith(seg + ' ')) return newSegment;
-  const without = removeFontSegment(current, newSegment);
-  return without ? `${newSegment}, ${normalizeFontStack(without)}` : newSegment;
-}
-
-function fontOptionLabel(o: (typeof FONT_OPTIONS)[0], t: ReturnType<typeof getLocale>): string {
+function fontOptionLabel(o: FontOption, t: ReturnType<typeof getLocale>): string {
   return o.name ?? (o.nameKey ? t[o.nameKey] : o.value);
 }
 
@@ -595,17 +564,6 @@ export function ViewMenu({
 
   if (!open) return null;
 
-  const fontSelectValue = (() => {
-    const n = normalizeFontStack(s.fontFamily || '');
-    if (!n) return FONT_CUSTOM_VALUE;
-    const exact = FONT_OPTIONS.find((o) => normalizeFontStack(o.value) === n);
-    if (exact) return exact.value;
-    const first = FONT_OPTIONS.find((o) => {
-      const ov = normalizeFontStack(o.value);
-      return n === ov || n.startsWith(ov + ', ') || n.startsWith(ov + ' ');
-    });
-    return first?.value ?? FONT_CUSTOM_VALUE;
-  })();
   const tensorRole = s.tensorRoleColors ?? ['#dbeafe', '#fed7aa', '#e9d5ff', '#bbf7d0'];
 
   const dropdown = (
@@ -691,40 +649,41 @@ export function ViewMenu({
                 </Section>
                 <Section title={t.settingsSectionText}>
                   <div className="panel-check-list">
-                    <PanelOptionRow label={t.settingsFont}>
-                      <div className="view-font-raw">
-                        <select
-                          className="view-input"
-                          value={fontSelectValue}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === FONT_CUSTOM_VALUE) {
-                              if (!FONT_OPTIONS.some((o) => o.value === s.fontFamily)) return;
-                              s.set({ fontFamily: '' });
-                            } else {
-                              s.set({
-                                fontFamily: fontFamilyQueuePrepend(s.fontFamily || '', v),
-                              });
-                            }
-                          }}
-                        >
-                          {FONT_OPTIONS.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {fontOptionLabel(o, t)}
-                            </option>
-                          ))}
-                          <option value={FONT_CUSTOM_VALUE}>{t.settingsFontCustom}</option>
-                        </select>
-                        {fontSelectValue === FONT_CUSTOM_VALUE && (
-                          <input
-                            type="text"
-                            className="view-input view-font-input"
-                            value={s.fontFamily}
-                            onChange={(e) => s.set({ fontFamily: e.target.value })}
-                            placeholder={t.settingsFontCustom}
-                          />
-                        )}
-                      </div>
+                    <PanelOptionRow label={t.settingsFontEn}>
+                      <select
+                        className="view-input"
+                        value={s.fontFamilyEn}
+                        onChange={(e) => s.set({ fontFamilyEn: e.target.value })}
+                      >
+                        {FONT_OPTIONS_EN.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {fontOptionLabel(o, t)}
+                          </option>
+                        ))}
+                      </select>
+                    </PanelOptionRow>
+                    <PanelOptionRow label={t.settingsFontZh}>
+                      <select
+                        className="view-input"
+                        value={s.fontFamilyZh}
+                        onChange={(e) => s.set({ fontFamilyZh: e.target.value })}
+                      >
+                        <option value="">{t.settingsFontZhNone}</option>
+                        {FONT_OPTIONS_ZH.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {fontOptionLabel(o, t)}
+                          </option>
+                        ))}
+                      </select>
+                    </PanelOptionRow>
+                    <PanelOptionRow label={t.settingsFontCustom}>
+                      <input
+                        type="text"
+                        className="view-input view-font-input"
+                        value={s.fontFamilyCustom}
+                        onChange={(e) => s.set({ fontFamilyCustom: e.target.value })}
+                        placeholder={t.settingsFontCustom}
+                      />
                     </PanelOptionRow>
                     <PanelOptionRow label={t.settingsFontSize}>
                       <NumberInput
