@@ -1526,15 +1526,14 @@ function stripTrailingGeneric(stack: string): { rest: string; generic: string } 
   return { rest: trimmed, generic: '' };
 }
 
+/** 组合顺序：自定义 → 英文 → 中文 → 泛用族 */
 function composeFontFamily(custom: string, en: string, zh: string): string {
   const c = custom.trim();
   const enStripped = stripTrailingGeneric(en);
   const zhStripped = stripTrailingGeneric(zh);
   const fontParts = [c, enStripped.rest, zhStripped.rest].filter(Boolean);
   const generic =
-    (zhStripped.rest ? zhStripped.generic : null) ||
-    enStripped.generic ||
-    'sans-serif';
+    (zhStripped.rest ? zhStripped.generic : null) || enStripped.generic || 'sans-serif';
   const raw = fontParts.length
     ? fontParts.join(', ') + ', ' + generic
     : "-apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, sans-serif";
@@ -1684,6 +1683,10 @@ export const useSettingsStore = create<
   ViewSettings & {
     set: (p: Partial<ViewSettings>) => void;
     applyPreset: (theme: ThemeId) => void;
+    /** 一键还原字体为默认（清除异常持久化导致的字体问题） */
+    resetFontToDefault: () => void;
+    /** 一键还原所有视图设置为默认 */
+    resetViewSettingsToDefault: () => void;
   }
 >()(
   persist(
@@ -1693,11 +1696,7 @@ export const useSettingsStore = create<
         setState((s) => {
           const next = { ...s, ...patch };
           // 字体三项任一变化时重算 fontFamily；并规范 zh/custom 引号，避免持久化后与选项不匹配
-          if (
-            'fontFamilyEn' in patch ||
-            'fontFamilyZh' in patch ||
-            'fontFamilyCustom' in patch
-          ) {
+          if ('fontFamilyEn' in patch || 'fontFamilyZh' in patch || 'fontFamilyCustom' in patch) {
             if (typeof next.fontFamilyZh === 'string' && next.fontFamilyZh)
               next.fontFamilyZh = normalizeFontQuotes(next.fontFamilyZh);
             if (typeof next.fontFamilyCustom === 'string' && next.fontFamilyCustom)
@@ -1711,13 +1710,34 @@ export const useSettingsStore = create<
           return next;
         }),
       applyPreset: (theme) => setState((s) => ({ ...s, theme, ...getFullPreset(theme) })),
+      resetFontToDefault: () =>
+        setState((s) => ({
+          ...s,
+          fontFamilyEn: DEFAULT_FONT_EN,
+          fontFamilyZh: '',
+          fontFamilyCustom: '',
+          fontFamily: composeFontFamily('', DEFAULT_FONT_EN, ''),
+        })),
+      resetViewSettingsToDefault: () =>
+        setState((s) => ({
+          ...defaults,
+          set: s.set,
+          applyPreset: s.applyPreset,
+          resetFontToDefault: s.resetFontToDefault,
+          resetViewSettingsToDefault: s.resetViewSettingsToDefault,
+        })),
     }),
     {
       name: 'xovis-settings',
       partialize: (s) =>
         Object.fromEntries(
           Object.entries(s).filter(
-            ([k]) => k !== 'set' && k !== 'applyPreset' && k !== 'dataPanelOpen'
+            ([k]) =>
+              k !== 'set' &&
+              k !== 'applyPreset' &&
+              k !== 'dataPanelOpen' &&
+              k !== 'resetFontToDefault' &&
+              k !== 'resetViewSettingsToDefault'
           )
         ) as Omit<ViewSettings, 'set' | 'applyPreset'>,
       migrate: (state: unknown) => {
@@ -1753,10 +1773,15 @@ export const useSettingsStore = create<
         if (out.sidebarHeight == null) out.sidebarHeight = 0;
         if (out.dataPanelOpen == null) out.dataPanelOpen = false;
         if (out.dataPanelHiddenColumns == null) out.dataPanelHiddenColumns = [];
-        if (out.fontFamilyEn == null) out.fontFamilyEn = (out.fontFamily as string) ?? DEFAULT_FONT_EN;
+        if (out.fontFamilyEn == null)
+          out.fontFamilyEn = (out.fontFamily as string) ?? DEFAULT_FONT_EN;
         if (out.fontFamilyZh == null) out.fontFamilyZh = '';
         if (out.fontFamilyCustom == null) out.fontFamilyCustom = '';
-        out.fontFamily = composeFontFamily(out.fontFamilyCustom, out.fontFamilyEn, out.fontFamilyZh);
+        out.fontFamily = composeFontFamily(
+          out.fontFamilyCustom,
+          out.fontFamilyEn,
+          out.fontFamilyZh
+        );
         if (out.viewMode == null) out.viewMode = 'graph';
         if (out.chartXKey == null) out.chartXKey = '';
         if (out.chartYKeys == null) {

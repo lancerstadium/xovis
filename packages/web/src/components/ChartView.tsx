@@ -1867,6 +1867,7 @@ export const ChartView = forwardRef<
         fontFamily: s.fontFamily,
         fontSize: labelFontSize,
       }}
+      fontFamily={s.fontFamily}
       onClick={onChartClick}
     >
       <defs>
@@ -1893,9 +1894,10 @@ export const ChartView = forwardRef<
           );
         })}
       </defs>
-      <g className="chart-content" style={{ fontFamily: s.fontFamily }}>
+      <g className="chart-content" style={{ fontFamily: s.fontFamily }} fontFamily={s.fontFamily}>
         {chartTitle && (
           <text
+            fontFamily={s.fontFamily}
             className="chart-title"
             x={w / 2}
             y={padding + titleFontSize}
@@ -1906,7 +1908,10 @@ export const ChartView = forwardRef<
           </text>
         )}
         {chartShowLegend && chartData.seriesNames.length > 0 && (
-          <g className="chart-legend" style={{ fontSize: legendFontSize, fontFamily: s.fontFamily }}>
+          <g
+            className="chart-legend"
+            style={{ fontSize: legendFontSize, fontFamily: s.fontFamily }}
+          >
             {chartData.seriesNames.map((name, originalSi) => {
               const isVisible = chartSeriesVisibility[name] !== false;
               // 始终横向排布
@@ -1938,6 +1943,7 @@ export const ChartView = forwardRef<
                   </g>
                   {/* 系列名称 */}
                   <text
+                    fontFamily={s.fontFamily}
                     x={symbolX + effectiveLegendSymbolSize + 8}
                     y={0}
                     textAnchor="start"
@@ -2095,12 +2101,17 @@ export const ChartView = forwardRef<
                             );
                             return (
                               <text
+                                fontFamily={s.fontFamily}
                                 className="chart-axis-label"
                                 x={barCenterX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
                                 y={yCenter + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor={textAnchor}
                                 dominantBaseline="middle"
-                                style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
+                                style={{
+                                  fontSize: dataLabelFontSize,
+                                  fontFamily: s.fontFamily,
+                                  ...labelStyle,
+                                }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
                               </text>
@@ -2180,12 +2191,17 @@ export const ChartView = forwardRef<
                             );
                             return (
                               <text
+                                fontFamily={s.fontFamily}
                                 className="chart-axis-label"
                                 x={clampedX0 + barW / 2 + (seriesConfig?.dataLabelOffsetX ?? 0)}
                                 y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor="middle"
                                 dominantBaseline="middle"
-                                style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
+                                style={{
+                                  fontSize: dataLabelFontSize,
+                                  fontFamily: s.fontFamily,
+                                  ...labelStyle,
+                                }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
                               </text>
@@ -2293,12 +2309,17 @@ export const ChartView = forwardRef<
                                 );
                               return (
                                 <text
+                                  fontFamily={s.fontFamily}
                                   className="chart-axis-label"
                                   x={pointX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
                                   y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                   textAnchor={textAnchor}
                                   dominantBaseline="middle"
-                                  style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
+                                  style={{
+                                    fontSize: dataLabelFontSize,
+                                    fontFamily: s.fontFamily,
+                                    ...labelStyle,
+                                  }}
                                 >
                                   {formatDataLabel(val, labelDecimals)}
                                 </text>
@@ -2403,12 +2424,17 @@ export const ChartView = forwardRef<
                               );
                               return (
                                 <text
+                                  fontFamily={s.fontFamily}
                                   className="chart-axis-label"
                                   x={pointX + (seriesConfig?.dataLabelOffsetX ?? 0)}
                                   y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                   textAnchor="middle"
                                   dominantBaseline="auto"
-                                  style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
+                                  style={{
+                                    fontSize: dataLabelFontSize,
+                                    fontFamily: s.fontFamily,
+                                    ...labelStyle,
+                                  }}
                                 >
                                   {formatDataLabel(effectiveData[idx]?.[si] ?? 0, labelDecimals)}
                                 </text>
@@ -2477,12 +2503,17 @@ export const ChartView = forwardRef<
                           const displayValue = val;
                           return (
                             <text
+                              fontFamily={s.fontFamily}
                               className="chart-axis-label"
                               x={pointX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
                               y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                               textAnchor={textAnchor}
                               dominantBaseline="middle"
-                              style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
+                              style={{
+                                fontSize: dataLabelFontSize,
+                                fontFamily: s.fontFamily,
+                                ...labelStyle,
+                              }}
                             >
                               {formatDataLabel(displayValue, labelDecimals)}
                             </text>
@@ -2546,12 +2577,17 @@ export const ChartView = forwardRef<
                           );
                           return (
                             <text
+                              fontFamily={s.fontFamily}
                               className="chart-axis-label"
                               x={pointX + (seriesConfig?.dataLabelOffsetX ?? 0)}
                               y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                               textAnchor="middle"
                               dominantBaseline="auto"
-                              style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
+                              style={{
+                                fontSize: dataLabelFontSize,
+                                fontFamily: s.fontFamily,
+                                ...labelStyle,
+                              }}
                             >
                               {formatDataLabel(val, labelDecimals)}
                             </text>
@@ -2697,6 +2733,7 @@ export const ChartView = forwardRef<
                       return (
                         <text
                           key={idx}
+                          fontFamily={s.fontFamily}
                           className="chart-pie-label"
                           x={tx}
                           y={ty}
@@ -2810,6 +2847,7 @@ export const ChartView = forwardRef<
                       return (
                         <text
                           key={si}
+                          fontFamily={s.fontFamily}
                           className="chart-pie-label"
                           x={tx}
                           y={ty}
@@ -2997,6 +3035,7 @@ export const ChartView = forwardRef<
         {effectiveYTitle &&
           (yTitleOnLeft ? (
             <text
+              fontFamily={s.fontFamily}
               x={plotLeft - axisLabelW - 6}
               y={plotTop + innerH / 2}
               textAnchor="middle"
@@ -3008,6 +3047,7 @@ export const ChartView = forwardRef<
             </text>
           ) : (
             <text
+              fontFamily={s.fontFamily}
               x={plotRight + 6 + (yTitleRightMargin - 6) / 2}
               y={plotTop + innerH / 2}
               textAnchor="middle"
@@ -3026,6 +3066,7 @@ export const ChartView = forwardRef<
                 const yLabels = effectiveSeriesNames.map((name, i) => (
                   <text
                     key={`y-${i}`}
+                    fontFamily={s.fontFamily}
                     className="chart-axis-label"
                     x={plotLeft - 6}
                     y={yScale(i)}
@@ -3040,6 +3081,7 @@ export const ChartView = forwardRef<
                 const xTicks = gridTicks.map((tick, i) => (
                   <text
                     key={`x-${i}`}
+                    fontFamily={s.fontFamily}
                     className="chart-axis-label"
                     x={xScale(minY + tick * rangeY)}
                     y={labelY}
@@ -3057,6 +3099,7 @@ export const ChartView = forwardRef<
                 const yTicks = gridTicks.map((tick, i) => (
                   <text
                     key={`y-${i}`}
+                    fontFamily={s.fontFamily}
                     className="chart-axis-label"
                     x={plotLeft - 6}
                     y={plotTop + innerH * (1 - tick)}
@@ -3071,6 +3114,7 @@ export const ChartView = forwardRef<
                 const xLabels = effectiveXLabels.map((label, i) => (
                   <text
                     key={`x-${i}`}
+                    fontFamily={s.fontFamily}
                     className="chart-axis-label"
                     x={xScale(i)}
                     y={labelY}
@@ -3085,6 +3129,7 @@ export const ChartView = forwardRef<
         {effectiveXTitle &&
           (xTitleOnBottom ? (
             <text
+              fontFamily={s.fontFamily}
               x={plotLeft + innerW / 2}
               y={plotBottom + axisLabelH + axisTitleFontSize - 2}
               textAnchor="middle"
@@ -3095,6 +3140,7 @@ export const ChartView = forwardRef<
             </text>
           ) : (
             <text
+              fontFamily={s.fontFamily}
               x={plotLeft + innerW / 2}
               y={plotTop - axisTitleFontSize - 2}
               textAnchor="middle"

@@ -347,6 +347,9 @@ export const locale: Record<
     settingsFontZh: string;
     settingsFontZhNone: string;
     settingsFontSize: string;
+    settingsSectionRestore: string;
+    settingsRestoreFont: string;
+    settingsRestoreView: string;
     settingsNodeSize: string;
     settingsNodeGap: string;
     settingsRankGap: string;
@@ -720,6 +723,9 @@ export const locale: Record<
     settingsFontZh: '中文字体',
     settingsFontZhNone: '不配置',
     settingsFontSize: '字号',
+    settingsSectionRestore: '还原',
+    settingsRestoreFont: '还原字体',
+    settingsRestoreView: '还原视图',
     settingsNodeSize: '节点尺寸',
     settingsNodeGap: '节点间距',
     settingsRankGap: '层级间距',
@@ -1092,6 +1098,9 @@ export const locale: Record<
     settingsFontZh: 'Chinese font',
     settingsFontZhNone: 'None',
     settingsFontSize: 'Font size',
+    settingsSectionRestore: 'Restore',
+    settingsRestoreFont: 'Restore font',
+    settingsRestoreView: 'Restore view',
     settingsNodeSize: 'Node size',
     settingsNodeGap: 'Node gap',
     settingsRankGap: 'Rank gap',

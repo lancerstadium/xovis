@@ -88,22 +88,23 @@ const FONT_OPTIONS_EN: FontOption[] = [
   { name: 'Open Sans', value: "'Open Sans', sans-serif" },
 ];
 
-/* 中文字体：Mac 以英文/系统名注册（ST*、* SC），故 Mac 名放前；Windows 用 SimSun/KaiTi 等，中文名「楷体」等放最后作回退 */
+/* 中文字体：Mac/iOS 用 -apple-system、PingFang SC、ST*、* SC；Windows 用 SimSun/KaiTi 等；中文名作回退 */
 const FONT_OPTIONS_ZH: FontOption[] = [
-  { name: '苹方', value: "'PingFang SC', -apple-system, 'PingFangSC-Regular', 'Microsoft YaHei', sans-serif" },
-  { name: '微软雅黑', value: "'Microsoft YaHei', 'PingFang SC', sans-serif" },
-  { name: '思源黑体', value: "'Source Han Sans SC', 'PingFang SC', sans-serif" },
-  { name: 'Noto Sans SC', value: "'Noto Sans SC', 'PingFang SC', sans-serif" },
+  { name: '苹方', value: "-apple-system, 'PingFang SC', 'PingFangSC-Regular', 'PingFangSC-Medium', 'Microsoft YaHei', sans-serif" },
+  { name: '微软雅黑', value: "'Microsoft YaHei', -apple-system, 'PingFang SC', sans-serif" },
+  { name: '思源黑体', value: "'Source Han Sans SC', 'PingFang SC', -apple-system, sans-serif" },
+  { name: 'Noto Sans SC', value: "'Noto Sans SC', 'PingFang SC', -apple-system, sans-serif" },
   { name: '宋体', value: "'STSong', 'Songti SC', SimSun, '宋体', serif" },
-  { name: '黑体', value: "'STHeiti', 'Heiti SC', SimHei, '黑体', sans-serif" },
-  { name: '楷体', value: "'STKaitiSC-Regular', 'STKaiti', 'Kaiti SC', KaiTi, 'KaiTi_GB2312', '楷体', serif" },
+  { name: '黑体', value: "'STHeiti', 'Heiti SC', 'PingFang SC', SimHei, '黑体', sans-serif" },
+  /* 楷体：Safari/macOS 认 Kaiti SC，故 Mac 名放前；Windows 用 KaiTi */
+  { name: '楷体', value: "'Kaiti SC', 'STKaiti', KaiTi, '楷体', serif" },
   { name: '仿宋', value: "'STFangsong', 'Fangsong SC', FangSong, 'FangSong_GB2312', '仿宋', serif" },
-  { name: '等线', value: "'DengXian', 'Dengxian', '等线', 'PingFang SC', 'Microsoft YaHei', sans-serif" },
+  { name: '等线', value: "'DengXian', 'Dengxian', '等线', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif" },
   { name: '华文宋体', value: "'STSong', '华文宋体', 'Songti SC', SimSun, '宋体', serif" },
-  { name: '华文楷体', value: "'STKaiti', '华文楷体', 'Kaiti SC', KaiTi, 'KaiTi_GB2312', '楷体', serif" },
-  { name: '华文黑体', value: "'STHeiti', '华文黑体', 'Heiti SC', SimHei, '黑体', sans-serif" },
+  { name: '华文楷体', value: "'STKaiti', '华文楷体', 'Kaiti SC', KaiTi, '楷体', serif" },
+  { name: '华文黑体', value: "'STHeiti', '华文黑体', 'Heiti SC', 'PingFang SC', SimHei, '黑体', sans-serif" },
   { name: '华文仿宋', value: "'STFangsong', '华文仿宋', 'Fangsong SC', FangSong, 'FangSong_GB2312', '仿宋', serif" },
-  { name: '冬青黑体', value: "'Hiragino Sans GB', '冬青黑体', 'Hiragino Sans', 'Microsoft YaHei', sans-serif" },
+  { name: '冬青黑体', value: "'Hiragino Sans GB', '冬青黑体', 'Hiragino Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif" },
 ];
 
 function fontOptionLabel(o: FontOption, t: ReturnType<typeof getLocale>): string {
@@ -852,6 +853,24 @@ export function ViewMenu({
                       defaultVal={2}
                       onChange={(n) => s.set({ chartExportScale: n })}
                     />
+                  </div>
+                </Section>
+                <Section title={t.settingsSectionRestore}>
+                  <div className="panel-restore-row">
+                    <button
+                      type="button"
+                      className="view-input view-btn-secondary"
+                      onClick={() => s.resetFontToDefault()}
+                    >
+                      {t.settingsRestoreFont}
+                    </button>
+                    <button
+                      type="button"
+                      className="view-input view-btn-secondary"
+                      onClick={() => s.resetViewSettingsToDefault()}
+                    >
+                      {t.settingsRestoreView}
+                    </button>
                   </div>
                 </Section>
               </div>

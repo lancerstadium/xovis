@@ -1146,6 +1146,16 @@ body.pwa-banner-visible .main {
   gap: 2px 6px;
   padding: 2px 0;
 }
+.panel-restore-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 2px 0;
+}
+.panel-restore-row .view-input {
+  flex: 1;
+  min-width: 80px;
+}
 .panel-control-row {
   display: flex;
   align-items: center;
