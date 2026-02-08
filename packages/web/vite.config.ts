@@ -28,7 +28,7 @@ export default defineConfig({
               background_color: '#f0f0f0',
               display: 'standalone',
               start_url: basePath,
-              // icons 由 pwaAssets 从 favicon.svg 生成 192/512 PNG；favicon.svg 仅保留 viewBox、不设 width/height，避免栅格化时按 32px 渲染再放大导致糊
+              // icons 由 pwaAssets 从 favicon.svg 生成 192/512 PNG；favicon.svg 设 width/height=512 供栅格化按高分辨率输出，避免糊
             },
             pwaAssets: {
               image: 'public/favicon.svg',
