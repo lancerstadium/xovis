@@ -2,14 +2,23 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" id="theme-color-meta" content="#f0f0f0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <!-- 首帧背景：与 data-theme 一致（由下段脚本从 localStorage 恢复），避免异色块 -->
-    <style>html,body{background-color:#f0f0f0}[data-theme="dark"] html,[data-theme="dark"] body{background-color:#18181b}</style>
+    <style>
+      html,
+      body {
+        background-color: #f0f0f0;
+      }
+      [data-theme='dark'] html,
+      [data-theme='dark'] body {
+        background-color: #18181b;
+      }
+    </style>
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <script>
-      (function(){
+      (function () {
         try {
           var raw = localStorage.getItem('xovis-settings');
           if (raw) {
@@ -42,7 +51,9 @@
           if (h > 0) document.documentElement.style.setProperty('--viewport-height-px', h + 'px');
         }
         setViewportHeight();
-        window.addEventListener('orientationchange', function () { setTimeout(setViewportHeight, 100); });
+        window.addEventListener('orientationchange', function () {
+          setTimeout(setViewportHeight, 100);
+        });
         window.addEventListener('resize', setViewportHeight);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', setViewportHeight);
