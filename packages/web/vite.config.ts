@@ -54,7 +54,9 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    host: true,
+    host: true, // 监听 0.0.0.0，允许局域网访问
+    cors: true, // 允许跨域，避免“拒绝访问”
+    strictPort: false, // 端口被占用时自动尝试下一端口
   },
   build: {
     outDir: 'dist',

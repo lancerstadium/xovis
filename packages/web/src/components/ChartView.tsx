@@ -24,25 +24,16 @@ const DEFAULT_LABEL_TRUNCATE = 8;
 const LEGEND_ITEM_HEIGHT = 18;
 const LEGEND_GAP = 8;
 
-/** 单系列：xVals, yVals, baseVals；多系列：xLabels, seriesNames, data, baseData, rowIndices */
-type ChartData =
-  | {
-      kind: 'single';
-      xVals: string[];
-      yVals: number[];
-      /** 有起始数据列时才有值；否则渲染时用轴底 effectiveDataMinY */
-      baseVals?: number[];
-      yConfig?: ChartYColumnConfig;
-    }
-  | {
-      kind: 'multi';
-      xLabels: string[];
-      seriesNames: string[];
-      data: number[][];
-      baseData: number[][];
-      rowIndices: number[][];
-      seriesConfigs: ChartYColumnConfig[];
-    };
+/** 统一为多系列结构：单列时 seriesNames.length=1，便于复用同一套渲染逻辑 */
+type ChartData = {
+  kind: 'multi';
+  xLabels: string[];
+  seriesNames: string[];
+  data: number[][];
+  baseData: number[][];
+  rowIndices: number[][];
+  seriesConfigs: ChartYColumnConfig[];
+};
 
 /** 固定 X 列 + 多个 Y 列：单列=单系列，多列=多系列（按列名） */
 function buildChartData(
@@ -52,22 +43,26 @@ function buildChartData(
 ): ChartData | null {
   const yKeysFiltered = yKeys.filter((yc) => yc.key);
   if (!xKey || yKeysFiltered.length === 0 || rows.length === 0) return null;
+  // 单列与多列统一为多系列结构：单列时 xLabels 按行保留（不聚合同名），seriesNames.length=1
   if (yKeysFiltered.length === 1) {
     const yConfig = { ...yKeysFiltered[0] };
     const yKey = yConfig.key;
     const baseKey = yConfig.barBaseKey;
-    const xVals = rows.map((r) => String(r[xKey] ?? ''));
-    const yVals = rows.map((r) => {
+    const xLabels = rows.map((r) => String(r[xKey] ?? ''));
+    const data: number[][] = rows.map((r) => {
       const n = Number(r[yKey]);
-      return Number.isFinite(n) ? n : 0;
+      return [Number.isFinite(n) ? n : 0];
     });
-    const baseVals = baseKey
+    const baseData: number[][] = baseKey
       ? rows.map((r) => {
           const n = Number(r[baseKey]);
-          return Number.isFinite(n) ? n : 0;
+          return [Number.isFinite(n) ? n : 0];
         })
-      : undefined;
-    return { kind: 'single', xVals, yVals, baseVals, yConfig };
+      : rows.map(() => [NaN]);
+    const rowIndices = rows.map((_, i) => [i]);
+    const seriesNames = [yKey];
+    const seriesConfigs = [yConfig];
+    return { kind: 'multi', xLabels, seriesNames, data, baseData, rowIndices, seriesConfigs };
   }
   const xOrder: string[] = [];
   const xIndex = new Map<string, number>();
@@ -1159,11 +1154,13 @@ export const ChartView = forwardRef<
   }, []);
 
   const pinchRef = useRef<{ initialDistance: number; initialZoom: number } | null>(null);
+  const isPinchingRef = useRef(false);
   const getTouchDistance = (touches: TouchList) =>
     Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY);
   const onTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length === 2) {
       e.preventDefault();
+      isPinchingRef.current = true;
       const initialDistance = getTouchDistance(e.touches);
       setZoom((z) => {
         pinchRef.current = { initialDistance, initialZoom: z };
@@ -1180,12 +1177,15 @@ export const ChartView = forwardRef<
     }
   }, []);
   const onTouchEnd = useCallback((e: TouchEvent) => {
-    if (e.touches.length < 2) pinchRef.current = null;
+    if (e.touches.length < 2) {
+      pinchRef.current = null;
+      isPinchingRef.current = false;
+    }
   }, []);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || isPinchingRef.current) return;
       didDrag.current = false;
       setIsDragging(true);
       panStart.current = { x: pan.x, y: pan.y, clientX: e.clientX, clientY: e.clientY };
@@ -1195,7 +1195,7 @@ export const ChartView = forwardRef<
   );
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!panStart.current) return;
+    if (isPinchingRef.current || !panStart.current) return;
     const dx = e.clientX - panStart.current.clientX;
     const dy = e.clientY - panStart.current.clientY;
     if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) didDrag.current = true;
@@ -1373,26 +1373,24 @@ export const ChartView = forwardRef<
   const legendLabelDisplay = (name: string) =>
     chartLegendMaxLength > 0 ? truncate(name, chartLegendMaxLength) : name;
 
-  const isMulti = chartData?.kind === 'multi';
-  // 根据可见性过滤系列
+  // 根据可见性过滤系列（单列/多列统一为 multi 结构）
   const visibleSeriesIndices = useMemo(() => {
-    if (!isMulti || chartData.kind !== 'multi') return [];
+    if (!chartData) return [];
     return chartData.seriesNames
       .map((name, idx) => ({ name, idx }))
       .filter(({ name }) => chartSeriesVisibility[name] !== false)
       .map(({ idx }) => idx);
-  }, [isMulti, chartData, chartSeriesVisibility]);
-  const filteredSeriesNames =
-    isMulti && chartData.kind === 'multi'
-      ? chartData.seriesNames.filter((_, idx) => visibleSeriesIndices.includes(idx))
-      : [];
-  const seriesCount = isMulti ? filteredSeriesNames.length : 1;
+  }, [chartData, chartSeriesVisibility]);
+  const filteredSeriesNames = chartData
+    ? chartData.seriesNames.filter((_, idx) => visibleSeriesIndices.includes(idx))
+    : [];
+  const seriesCount = filteredSeriesNames.length;
   const legendItemH = LEGEND_ITEM_HEIGHT + (chartLegendItemSpacing ?? 0);
   // 图例内外和方位是两个独立的选择，方位统一使用 chartLegendPosition
   const effectiveLegendPosition = chartLegendPosition;
   const isLegendOutside = !chartLegendInside;
   // 图例高度和宽度应该基于所有系列（包括隐藏的），因为图例要显示所有系列
-  const allSeriesCount = isMulti && chartData.kind === 'multi' ? chartData.seriesNames.length : 1;
+  const allSeriesCount = chartData ? chartData.seriesNames.length : 0;
   // 判断图例是否在左右两侧（包括角落位置）
   const isLegendOnLeft =
     effectiveLegendPosition === 'left' ||
@@ -1413,7 +1411,7 @@ export const ChartView = forwardRef<
 
   const autoLegendWidth =
     chartShowLegend &&
-    isMulti &&
+    chartData &&
     allSeriesCount > 0 &&
     isLegendOutside &&
     (isLegendOnLeft || isLegendOnRight)
@@ -1460,7 +1458,7 @@ export const ChartView = forwardRef<
         : tempInnerW; // 内部或其他位置也使用 tempInnerW
   const legendCharW = legendFontSize * 0.55;
   const legendItemSpacing = 16;
-  const allSeriesNames = isMulti && chartData.kind === 'multi' ? chartData.seriesNames : [];
+  const allSeriesNames = chartData ? chartData.seriesNames : [];
   const legendItemContentWidths =
     allSeriesNames.length > 0
       ? allSeriesNames.map(
@@ -1480,7 +1478,7 @@ export const ChartView = forwardRef<
   // 计算图例行数（横向排布，根据列数计算）
   const legendRows = Math.ceil(allSeriesCount / Math.max(1, effectiveItemsPerRowForHeight));
   const autoLegendHeight =
-    chartShowLegend && isMulti && allSeriesCount > 0 && isLegendOutside
+    chartShowLegend && chartData && allSeriesCount > 0 && isLegendOutside
       ? legendRows * legendItemH + LEGEND_GAP * 2
       : 0;
   const legendHeight = chartLegendHeight > 0 ? chartLegendHeight : autoLegendHeight;
@@ -1584,7 +1582,7 @@ export const ChartView = forwardRef<
           ...panZoomTransform,
         }}
       >
-        <div className="chart-wrap" style={{ width: '100%', height: '100%', minHeight: 200 }}>
+        <div className="chart-wrap" style={{ width: '100%', height: '100%', minHeight: 0 }}>
           {content}
         </div>
       </div>
@@ -1662,1000 +1660,6 @@ export const ChartView = forwardRef<
 
   const palette = operatorPalette ?? [];
 
-  if (chartData.kind === 'single') {
-    const { xVals, yVals, yConfig } = chartData;
-    const n = xVals.length;
-    const singleSeriesName = yConfig?.key || 'Y';
-    const singleLegendH = chartShowLegend && !chartLegendInside ? legendItemH + LEGEND_GAP * 2 : 0;
-    const singleIsLegendOnTop =
-      !chartLegendInside &&
-      (chartLegendPosition === 'top' ||
-        chartLegendPosition === 'top-left' ||
-        chartLegendPosition === 'top-right');
-    const singleIsLegendOnBottom =
-      !chartLegendInside &&
-      (chartLegendPosition === 'bottom' ||
-        chartLegendPosition === 'bottom-left' ||
-        chartLegendPosition === 'bottom-right');
-    const singlePlotTop =
-      padding + titleH + (singleIsLegendOnTop ? singleLegendH : 0) + xTitleTopMargin;
-    const singlePlotBottom =
-      h - padding - axisLabelH - xTitleH - (singleIsLegendOnBottom ? singleLegendH : 0);
-    const singleInnerH = Math.max(0, singlePlotBottom - singlePlotTop);
-    const legendCharW = legendFontSize * 0.55;
-    const singleLegendContentW =
-      effectiveLegendSymbolSize + 8 + legendLabelDisplay(singleSeriesName).length * legendCharW;
-    // 图例偏移量（不再交换）
-    const effectiveOffsetX = chartLegendOffsetX ?? 0;
-    const effectiveOffsetY = chartLegendOffsetY ?? 0;
-
-    const singleLegendX = chartLegendInside
-      ? chartLegendPosition === 'left' ||
-        chartLegendPosition === 'top-left' ||
-        chartLegendPosition === 'bottom-left'
-        ? plotLeft + 12 + effectiveOffsetX
-        : chartLegendPosition === 'right' ||
-            chartLegendPosition === 'top-right' ||
-            chartLegendPosition === 'bottom-right'
-          ? plotRight - 12 - singleLegendContentW + effectiveOffsetX
-          : w / 2 - singleLegendContentW / 2 + effectiveOffsetX
-      : (chartLegendPosition === 'left' ||
-        chartLegendPosition === 'top-left' ||
-        chartLegendPosition === 'bottom-left'
-          ? padding + 8
-          : chartLegendPosition === 'right' ||
-              chartLegendPosition === 'top-right' ||
-              chartLegendPosition === 'bottom-right'
-            ? w - padding - 80
-            : w / 2) + effectiveOffsetX;
-    const singleLegendY = chartLegendInside
-      ? chartLegendPosition === 'top' ||
-        chartLegendPosition === 'top-left' ||
-        chartLegendPosition === 'top-right'
-        ? singlePlotTop + 12 + effectiveOffsetY
-        : chartLegendPosition === 'bottom' ||
-            chartLegendPosition === 'bottom-left' ||
-            chartLegendPosition === 'bottom-right'
-          ? singlePlotBottom - 12 - legendItemH / 2 + effectiveOffsetY
-          : singlePlotTop + singleInnerH / 2 - legendItemH / 2 + effectiveOffsetY
-      : (chartLegendPosition === 'top' ||
-        chartLegendPosition === 'top-left' ||
-        chartLegendPosition === 'top-right'
-          ? padding + titleH + LEGEND_GAP
-          : chartLegendPosition === 'bottom' ||
-              chartLegendPosition === 'bottom-left' ||
-              chartLegendPosition === 'bottom-right'
-            ? h - padding - singleLegendH + LEGEND_GAP
-            : singlePlotTop + singleInnerH / 2 - legendItemH / 2) + effectiveOffsetY;
-    const paddingTop = Math.max(0, Math.min(50, chartAxisPaddingTop)) / 100;
-    const paddingBottom = Math.max(0, Math.min(50, chartAxisPaddingBottom)) / 100;
-    const effectiveDataMinY = chartSwapXY
-      ? Math.min(...yVals, 0)
-      : Math.min(0, ...yVals, ...(chartData.baseVals ?? []));
-    const effectiveDataMaxY = chartSwapXY
-      ? Math.max(...yVals, 1)
-      : Math.max(1, ...yVals, ...(chartData.baseVals ?? []));
-    const effectiveDataRangeY = effectiveDataMaxY - effectiveDataMinY || 1;
-    const valueScalePaddingMin =
-      viewMode === 'bar' && !chartData.baseVals
-        ? 0
-        : chartSwapXY
-          ? Math.max(0, Math.min(50, chartAxisPaddingLeft)) / 100
-          : paddingBottom;
-    const effectiveMinY = effectiveDataMinY - effectiveDataRangeY * valueScalePaddingMin;
-    const effectiveMaxY = effectiveDataMaxY + effectiveDataRangeY * paddingTop;
-    const axisBottomValue = effectiveDataMinY;
-    const baseVals = chartData.baseVals ?? yVals.map(() => axisBottomValue);
-    const paddingLeft = Math.max(0, Math.min(50, chartAxisPaddingLeft)) / 100;
-    const paddingRight = Math.max(0, Math.min(50, chartAxisPaddingRight)) / 100;
-    const effectiveRangeY = effectiveMaxY - effectiveMinY || 1;
-    const effectiveXVals = chartSwapXY ? yVals.map(String) : xVals;
-    const effectiveN = chartSwapXY ? yVals.length : n;
-
-    // X轴缩放：如果交换，基于yVals的值（考虑左右padding）；否则基于索引（考虑左右padding）
-    // 对于非数值坐标，确保刻度与数据点一一对应
-    const xPaddingLeft = paddingLeft / (1 + paddingLeft + paddingRight);
-    const xPaddingRight = paddingRight / (1 + paddingLeft + paddingRight);
-
-    // 计算可用宽度（考虑padding后的实际可用空间）
-    const availableW = innerW * (1 - xPaddingLeft - xPaddingRight);
-    const totalBarGapOuter = effectiveN > 1 ? (effectiveN - 1) * Math.max(0, chartBarGapOuter) : 0;
-    const maxBarWPerItem =
-      effectiveN > 0 ? (availableW - totalBarGapOuter) / effectiveN : availableW;
-    // 如果设置了固定宽度，使用固定宽度（但不超过最大可用宽度）；否则自适应计算
-    const barW =
-      chartBarWidth > 0
-        ? Math.min(chartBarWidth, maxBarWPerItem)
-        : effectiveN > 0
-          ? chartBarMinWidth > 0
-            ? Math.min(chartBarMinWidth, maxBarWPerItem) // 确保不超过最大可用宽度
-            : maxBarWPerItem
-          : 20;
-    const labelY = singlePlotBottom + axisLabelH - 4;
-    const barNoBase = viewMode === 'bar' && !chartData.baseVals;
-    const plotPaddingLeft = barNoBase && chartSwapXY ? 0 : xPaddingLeft;
-    const plotPaddingRight = xPaddingRight;
-    const xScale = chartSwapXY
-      ? (v: number) => {
-          const ratio = effectiveRangeY > 0 ? (v - effectiveMinY) / effectiveRangeY : 0;
-          return (
-            plotLeft +
-            plotPaddingLeft * innerW +
-            ratio * (1 - plotPaddingLeft - plotPaddingRight) * innerW
-          );
-        }
-      : (i: number) => {
-          const ratio = effectiveN <= 1 ? 0.5 : i / Math.max(1, effectiveN - 1);
-          return (
-            plotLeft +
-            plotPaddingLeft * innerW +
-            ratio * (1 - plotPaddingLeft - plotPaddingRight) * innerW
-          );
-        };
-
-    const yPaddingTop = paddingTop / (1 + paddingTop + paddingBottom);
-    const yPaddingBottom = paddingBottom / (1 + paddingTop + paddingBottom);
-    const plotPaddingTop = yPaddingTop;
-    const plotPaddingBottom = barNoBase && !chartSwapXY ? 0 : yPaddingBottom;
-    const yScale = chartSwapXY
-      ? (i: number) => {
-          const ratio = n > 1 ? i / (n - 1) : 0.5;
-          return (
-            singlePlotTop +
-            plotPaddingTop * singleInnerH +
-            (1 - ratio) * (1 - plotPaddingTop - plotPaddingBottom) * singleInnerH
-          );
-        }
-      : (v: number) => {
-          const ratio = effectiveRangeY > 0 ? (v - effectiveMinY) / effectiveRangeY : 0;
-          return (
-            singlePlotTop +
-            plotPaddingTop * singleInnerH +
-            (1 - ratio) * (1 - plotPaddingTop - plotPaddingBottom) * singleInnerH
-          );
-        };
-
-    return chartWrap(
-      <svg
-        ref={svgRef}
-        width={w}
-        height={h}
-        viewBox={`0 0 ${w} ${h}`}
-        className="chart-svg"
-        style={{ fontFamily: s.fontFamily, fontSize: labelFontSize }}
-        onClick={onChartClick}
-      >
-        <defs>
-          <linearGradient id="chartBarGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop
-              offset="0%"
-              stopColor={seriesColor(0, palette, chartData.yConfig)}
-              stopOpacity="0.6"
-            />
-            <stop
-              offset="100%"
-              stopColor={seriesColor(0, palette, chartData.yConfig)}
-              stopOpacity="1"
-            />
-          </linearGradient>
-          {renderFillPattern(
-            getBarFillStyle(chartData.yConfig),
-            seriesColor(0, palette, chartData.yConfig),
-            'chartBarFill-0'
-          )}
-          {viewMode === 'pie' &&
-            (() => {
-              const xValueMap = new Map<string, number>();
-              xVals.forEach((xVal) => {
-                if (!xValueMap.has(xVal)) xValueMap.set(xVal, xValueMap.size);
-              });
-              const uniqueXCount = xValueMap.size;
-              const fillStyle = getPieFillStyle(chartData.yConfig);
-              const color = seriesColor(0, palette, chartData.yConfig);
-              return Array.from({ length: uniqueXCount }, (_, i) => (
-                <g key={i}>
-                  {fillStyle === 'gradient' && (
-                    <radialGradient id={`chartPieGrad-0-${i}`}>
-                      <stop offset="0%" stopColor={color} stopOpacity="0.8" />
-                      <stop offset="100%" stopColor={color} stopOpacity="1" />
-                    </radialGradient>
-                  )}
-                  {renderFillPattern(fillStyle, color, `chartPieFill-0-${i}`)}
-                </g>
-              ));
-            })()}
-        </defs>
-        <g className="chart-content">
-          {chartTitle && (
-            <text
-              className="chart-title"
-              x={w / 2}
-              y={padding + titleFontSize}
-              textAnchor="middle"
-              style={{ fontSize: titleFontSize, ...titleStyle }}
-            >
-              {truncate(chartTitle, 40)}
-            </text>
-          )}
-          {chartShowLegend && (
-            <g className="chart-legend" style={{ fontSize: legendFontSize }}>
-              <g transform={`translate(${singleLegendX},${singleLegendY})`}>
-                <g transform={`translate(${effectiveLegendSymbolSize / 2}, 0)`}>
-                  {renderLegendSymbol(
-                    viewMode,
-                    effectiveLegendSymbolSize / 2,
-                    0,
-                    effectiveLegendSymbolSize,
-                    seriesColor(0, palette, chartData.yConfig),
-                    chartData.yConfig,
-                    viewMode === 'bar'
-                      ? 'chartBarFill-0'
-                      : viewMode === 'pie'
-                        ? 'chartPieFill-0-0'
-                        : undefined
-                  )}
-                </g>
-                <text
-                  x={effectiveLegendSymbolSize + 8}
-                  y={0}
-                  textAnchor="start"
-                  dominantBaseline="middle"
-                  className="chart-legend-label"
-                  style={legendLabelStyle}
-                >
-                  {legendLabelDisplay(singleSeriesName)}
-                </text>
-              </g>
-            </g>
-          )}
-          {chartShowGrid &&
-            (chartSwapXY
-              ? // 交换后：Y轴grid基于xVals索引，X轴grid基于yVals值
-                (() => {
-                  // Y轴grid：基于xVals索引
-                  const yGrids = xVals.map((_, i) => {
-                    const gridY = yScale(i);
-                    return (
-                      <line
-                        key={`y-${i}`}
-                        x1={plotLeft}
-                        y1={gridY}
-                        x2={plotRight}
-                        y2={gridY}
-                        stroke={chartGridColor || 'var(--text)'}
-                        strokeWidth={chartGridStrokeWidth}
-                        strokeOpacity={chartGridOpacity}
-                        strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                      />
-                    );
-                  });
-                  // X轴grid：基于yVals值范围
-                  const xGrids = gridTicks.map((tick, i) => {
-                    const gridX = xScale(effectiveMinY + tick * effectiveRangeY);
-                    return (
-                      <line
-                        key={`x-${i}`}
-                        x1={gridX}
-                        y1={singlePlotTop}
-                        x2={gridX}
-                        y2={singlePlotBottom}
-                        stroke={chartGridColor || 'var(--text)'}
-                        strokeWidth={chartGridStrokeWidth}
-                        strokeOpacity={chartGridOpacity}
-                        strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                      />
-                    );
-                  });
-                  return [...yGrids, ...xGrids];
-                })()
-              : // 未交换：Y轴grid基于yVals值，X轴grid基于索引
-                (() => {
-                  // Y轴grid：基于yVals值范围
-                  const yGrids = gridTicks.map((tick, i) => {
-                    const gridY = singlePlotTop + singleInnerH * (1 - tick);
-                    return (
-                      <line
-                        key={`y-${i}`}
-                        x1={plotLeft}
-                        y1={gridY}
-                        x2={plotRight}
-                        y2={gridY}
-                        stroke={chartGridColor || 'var(--text)'}
-                        strokeWidth={chartGridStrokeWidth}
-                        strokeOpacity={chartGridOpacity}
-                        strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                      />
-                    );
-                  });
-                  // X轴grid：基于索引，每个数据点一个grid
-                  const xGrids = effectiveXVals.map((_, i) => {
-                    const gridX = xScale(i);
-                    return (
-                      <line
-                        key={`x-${i}`}
-                        x1={gridX}
-                        y1={singlePlotTop}
-                        x2={gridX}
-                        y2={singlePlotBottom}
-                        stroke={chartGridColor || 'var(--text)'}
-                        strokeWidth={chartGridStrokeWidth}
-                        strokeOpacity={chartGridOpacity}
-                        strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
-                      />
-                    );
-                  });
-                  return [...yGrids, ...xGrids];
-                })())}
-          {/* 单系列：数据层先绘制，轴和刻度后绘制以保持正确层次（与多系列一致） */}
-          {viewMode === 'bar' &&
-            (chartSwapXY
-              ? yVals.map((val, i) => {
-                  const base = baseVals[i] ?? 0;
-                  const availableW = innerW * (1 - xPaddingLeft - xPaddingRight);
-                  const barW_swapped =
-                    ((Math.max(val, base) - Math.min(val, base)) / effectiveRangeY) * availableW;
-                  const maxBarW = availableW;
-                  const effectiveBarW =
-                    chartBarWidth > 0
-                      ? Math.min(chartBarWidth, maxBarW)
-                      : chartBarMinWidth > 0
-                        ? Math.min(Math.max(barW_swapped, chartBarMinWidth), maxBarW)
-                        : Math.min(barW_swapped, maxBarW);
-                  const x0 = xScale(Math.min(val, base));
-                  const clampedX0 = Math.max(
-                    plotLeft,
-                    Math.min(x0, plotLeft + innerW - effectiveBarW)
-                  );
-                  const y0 = yScale(i) - effectiveBarW / 2;
-                  const barH = effectiveBarW;
-                  return (
-                    <g
-                      key={i}
-                      className="chart-bar-group"
-                      data-rowindex={i}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <rect
-                        className="chart-bar"
-                        x={clampedX0}
-                        y={y0}
-                        width={Math.min(effectiveBarW, plotLeft + innerW - clampedX0)}
-                        height={barH}
-                        rx={chartBarCornerRadius}
-                        ry={chartBarCornerRadius}
-                        fill="url(#chartBarGrad)"
-                        stroke={(() => {
-                          const edgeStyle = getBarEdgeStyle(chartData.yConfig);
-                          if (edgeStyle === 'none') return undefined;
-                          const edgeWidth = getBarEdgeWidth(chartData.yConfig);
-                          return edgeWidth > 0
-                            ? seriesColor(0, palette, chartData.yConfig)
-                            : undefined;
-                        })()}
-                        strokeWidth={(() => {
-                          const edgeStyle = getBarEdgeStyle(chartData.yConfig);
-                          if (edgeStyle === 'none') return 0;
-                          return getBarEdgeWidth(chartData.yConfig);
-                        })()}
-                        strokeDasharray={(() => {
-                          const edgeStyle = getBarEdgeStyle(chartData.yConfig);
-                          return getStrokeDasharray(edgeStyle);
-                        })()}
-                      />
-                      {(() => {
-                        const showLabels = getShowDataLabels(chartData.yConfig, false);
-                        if (!showLabels) return null;
-                        const fontSize = getDataLabelFontSize(chartData.yConfig, 0);
-                        const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                        const labelDecimals = getDataLabelDecimals(chartData.yConfig, 2);
-                        const labelStyle = getDataLabelStyle(chartData.yConfig);
-                        const position = (chartData.yConfig?.dataLabelPosition || 'auto') as
-                          | 'top'
-                          | 'bottom'
-                          | 'auto';
-                        const { offsetX, textAnchor } = calculateBarHorizontalDataLabelOffset(
-                          position,
-                          clampedX0,
-                          clampedX0 + effectiveBarW,
-                          effectiveBarW,
-                          dataLabelFontSize,
-                          plotLeft,
-                          plotRight
-                        );
-                        const barCenterX = clampedX0 + effectiveBarW / 2;
-                        const barCenterY = y0 + barH / 2;
-                        return (
-                          <text
-                            className="chart-axis-label"
-                            x={barCenterX + offsetX + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
-                            y={barCenterY + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
-                            textAnchor={textAnchor}
-                            dominantBaseline="middle"
-                            style={{ fontSize: dataLabelFontSize, ...labelStyle }}
-                          >
-                            {formatDataLabel(val, labelDecimals)}
-                          </text>
-                        );
-                      })()}
-                    </g>
-                  );
-                })
-              : xVals.map((_, i) => {
-                  const val = yVals[i] ?? 0;
-                  const base = baseVals[i] ?? 0;
-                  const barTopPx = Math.min(yScale(val), yScale(base));
-                  const barBottomPx = Math.max(yScale(val), yScale(base));
-                  const barH = barBottomPx - barTopPx;
-                  const effectiveBarH =
-                    chartBarMinHeight > 0 ? Math.max(barH, chartBarMinHeight) : barH;
-                  const x0 = xScale(i) - barW / 2;
-                  const clampedX0 = Math.max(plotLeft, Math.min(x0, plotLeft + innerW - barW));
-                  const y0 = barTopPx;
-                  return (
-                    <g
-                      key={i}
-                      className="chart-bar-group"
-                      data-rowindex={i}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <rect
-                        className="chart-bar"
-                        x={clampedX0}
-                        y={y0}
-                        width={Math.min(barW, plotLeft + innerW - clampedX0)}
-                        height={effectiveBarH}
-                        rx={chartBarCornerRadius}
-                        ry={chartBarCornerRadius}
-                        {...getBarRectProps(
-                          chartData.yConfig,
-                          seriesColor(0, palette, chartData.yConfig),
-                          'chartBarGrad',
-                          'chartBarFill-0'
-                        )}
-                      />
-                      {(() => {
-                        const showLabels = getShowDataLabels(chartData.yConfig, false);
-                        if (!showLabels) return null;
-                        const fontSize = getDataLabelFontSize(chartData.yConfig, 0);
-                        const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                        const labelDecimals = getDataLabelDecimals(chartData.yConfig, 2);
-                        const labelStyle = getDataLabelStyle(chartData.yConfig);
-                        const position = (chartData.yConfig?.dataLabelPosition || 'auto') as
-                          | 'top'
-                          | 'bottom'
-                          | 'auto';
-                        const offsetY = calculateBarVerticalDataLabelOffset(
-                          position,
-                          y0,
-                          y0 + effectiveBarH,
-                          effectiveBarH,
-                          dataLabelFontSize,
-                          singlePlotTop,
-                          singlePlotBottom
-                        );
-                        return (
-                          <text
-                            className="chart-axis-label"
-                            x={clampedX0 + barW / 2 + (chartData.yConfig?.dataLabelOffsetX ?? 0)}
-                            y={y0 + offsetY + (chartData.yConfig?.dataLabelOffsetY ?? 0)}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            style={{ fontSize: dataLabelFontSize, ...labelStyle }}
-                          >
-                            {formatDataLabel(val, labelDecimals)}
-                          </text>
-                        );
-                      })()}
-                    </g>
-                  );
-                }))}
-          {viewMode === 'line' && effectiveN > 0 && (
-            <>
-              {(() => {
-                const pts = chartSwapXY
-                  ? yVals.map((val, i) => ({ x: xScale(val), y: yScale(i) }))
-                  : xVals.map((_, i) => ({ x: xScale(i), y: yScale(yVals[i] ?? 0) }));
-                const yConfig = chartData.yConfig;
-                const lineColor = seriesColor(0, palette, yConfig);
-                const lineStyle = getLineStyle(yConfig);
-                const lineWidth = getLineWidth(yConfig);
-                const lineFit = getLineFit(yConfig, false);
-                const lineFitType = getLineFitType(yConfig);
-                const lineFitDegree = getLineFitDegree(yConfig, 2);
-                const lineProps = {
-                  className: 'chart-line',
-                  fill: 'none' as const,
-                  stroke: lineColor,
-                  strokeWidth: lineWidth,
-                  strokeLinecap: 'round' as const,
-                  strokeLinejoin: 'round' as const,
-                  strokeDasharray: getStrokeDasharray(lineStyle),
-                };
-                return lineFit && effectiveN >= 2 ? (
-                  <path {...lineProps} d={generateFitLinePath(pts, lineFitType, lineFitDegree)} />
-                ) : (
-                  <polyline {...lineProps} points={pts.map((p) => `${p.x},${p.y}`).join(' ')} />
-                );
-              })()}
-              {getLineShowPoints(chartData.yConfig, true) &&
-                (chartSwapXY
-                  ? yVals.map((val, i) => ({
-                      x: xScale(val),
-                      y: yScale(i),
-                    }))
-                  : xVals.map((_, i) => ({
-                      x: xScale(i),
-                      y: yScale(yVals[i] ?? 0),
-                    }))
-                ).map((pt, idx) => (
-                  <circle
-                    key={idx}
-                    className="chart-point"
-                    cx={pt.x}
-                    cy={pt.y}
-                    r={getMarkerSize(chartData.yConfig, 4)}
-                    fill={getMarkerFillColor(
-                      seriesColor(0, palette, chartData.yConfig),
-                      chartData.yConfig
-                    )}
-                    stroke={getMarkerEdgeColor('#fff', chartData.yConfig)}
-                  />
-                ))}
-            </>
-          )}
-          {viewMode === 'scatter' &&
-            effectiveN > 0 &&
-            chartData.yConfig &&
-            (() => {
-              const config = getScatterMarkerConfig(
-                chartData.yConfig,
-                seriesColor(0, palette, chartData.yConfig)
-              );
-              return chartSwapXY
-                ? yVals.map((val, i) => {
-                    const marker = renderMarker(
-                      xScale(val),
-                      yScale(i),
-                      config.style,
-                      config.size,
-                      config.fillColor,
-                      config.edgeColor,
-                      config.edgeWidth,
-                      config.opacity,
-                      `s0-${i}`
-                    );
-                    return (
-                      <g
-                        key={i}
-                        className="chart-scatter-group"
-                        data-rowindex={i}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {marker}
-                      </g>
-                    );
-                  })
-                : xVals.map((_, i) => {
-                    const marker = renderMarker(
-                      xScale(i),
-                      yScale(yVals[i] ?? 0),
-                      config.style,
-                      config.size,
-                      config.fillColor,
-                      config.edgeColor,
-                      config.edgeWidth,
-                      config.opacity,
-                      `s0-${i}`
-                    );
-                    return (
-                      <g
-                        key={i}
-                        className="chart-scatter-group"
-                        data-rowindex={i}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {marker}
-                      </g>
-                    );
-                  });
-            })()}
-          {chartShowAxisLine &&
-            chartAxisBoxStyle !== 'none' &&
-            (() => {
-              const strokeDasharray =
-                chartAxisStrokeStyle === 'solid'
-                  ? undefined
-                  : chartAxisStrokeStyle === 'dashed'
-                    ? '5,5'
-                    : chartAxisStrokeStyle === 'dotted'
-                      ? '2,2'
-                      : chartAxisStrokeStyle === 'dashdot'
-                        ? '5,2,2,2'
-                        : undefined;
-
-              if (chartAxisBoxStyle === 'full') {
-                // 全包：绘制完整的矩形边框
-                return (
-                  <rect
-                    x={plotLeft}
-                    y={singlePlotTop}
-                    width={innerW}
-                    height={singleInnerH}
-                    fill="none"
-                    stroke={chartAxisColor || 'var(--text)'}
-                    strokeWidth={chartAxisStrokeWidth}
-                    strokeDasharray={strokeDasharray}
-                  />
-                );
-              } else {
-                // 半包：只绘制底部和左侧轴线
-                return (
-                  <>
-                    <line
-                      x1={plotLeft}
-                      y1={singlePlotTop}
-                      x2={plotLeft}
-                      y2={singlePlotBottom}
-                      stroke={chartAxisColor || 'var(--text)'}
-                      strokeWidth={chartAxisStrokeWidth}
-                      strokeDasharray={strokeDasharray}
-                    />
-                    <line
-                      x1={plotLeft}
-                      y1={singlePlotBottom}
-                      x2={plotRight}
-                      y2={singlePlotBottom}
-                      stroke={chartAxisColor || 'var(--text)'}
-                      strokeWidth={chartAxisStrokeWidth}
-                      strokeDasharray={strokeDasharray}
-                    />
-                  </>
-                );
-              }
-            })()}
-          {effectiveTickLength > 0 &&
-            (chartSwapXY
-              ? // 交换后：X轴刻度基于yVals值，Y轴刻度基于xVals索引
-                (() => {
-                  // X轴刻度：基于yVals的值范围
-                  const xTicks = gridTicks.map((tick, i) => {
-                    const tickX = xScale(effectiveMinY + tick * effectiveRangeY);
-                    return (
-                      <g key={`x-${i}`}>
-                        <line
-                          x1={tickX}
-                          y1={singlePlotBottom}
-                          x2={tickX}
-                          y2={
-                            singlePlotBottom +
-                            (isInside ? -effectiveTickLength : effectiveTickLength)
-                          }
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                        {isFull && (
-                          <line
-                            x1={tickX}
-                            y1={singlePlotTop}
-                            x2={tickX}
-                            y2={
-                              singlePlotTop +
-                              (isInside ? effectiveTickLength : -effectiveTickLength)
-                            }
-                            stroke={chartTickColor || 'var(--text)'}
-                            strokeWidth={chartAxisStrokeWidth}
-                          />
-                        )}
-                      </g>
-                    );
-                  });
-                  // Y轴刻度：基于xVals的索引
-                  const yTicks = xVals.map((_, i) => {
-                    const tickY = yScale(i);
-                    return (
-                      <g key={`y-${i}`}>
-                        <line
-                          x1={plotLeft}
-                          y1={tickY}
-                          x2={plotLeft + (isInside ? effectiveTickLength : -effectiveTickLength)}
-                          y2={tickY}
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                        {isFull && (
-                          <line
-                            x1={plotRight}
-                            y1={tickY}
-                            x2={plotRight + (isInside ? -effectiveTickLength : effectiveTickLength)}
-                            y2={tickY}
-                            stroke={chartTickColor || 'var(--text)'}
-                            strokeWidth={chartAxisStrokeWidth}
-                          />
-                        )}
-                      </g>
-                    );
-                  });
-                  return [...xTicks, ...yTicks];
-                })()
-              : // 未交换：X轴刻度基于索引（每个数据点），Y轴刻度基于yVals值
-                (() => {
-                  // X轴刻度：基于索引，每个数据点一个刻度
-                  const xTicks = effectiveXVals.map((_, i) => {
-                    const tickX = xScale(i);
-                    return (
-                      <g key={`x-${i}`}>
-                        <line
-                          x1={tickX}
-                          y1={singlePlotBottom}
-                          x2={tickX}
-                          y2={
-                            singlePlotBottom +
-                            (isInside ? -effectiveTickLength : effectiveTickLength)
-                          }
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                        {isFull && (
-                          <line
-                            x1={tickX}
-                            y1={singlePlotTop}
-                            x2={tickX}
-                            y2={
-                              singlePlotTop +
-                              (isInside ? effectiveTickLength : -effectiveTickLength)
-                            }
-                            stroke={chartTickColor || 'var(--text)'}
-                            strokeWidth={chartAxisStrokeWidth}
-                          />
-                        )}
-                      </g>
-                    );
-                  });
-                  // Y轴刻度：基于数值范围
-                  const yTicks = gridTicks.map((tick, i) => {
-                    const tickY = singlePlotTop + singleInnerH * (1 - tick);
-                    return (
-                      <g key={`y-${i}`}>
-                        <line
-                          x1={plotLeft}
-                          y1={tickY}
-                          x2={plotLeft + (isInside ? effectiveTickLength : -effectiveTickLength)}
-                          y2={tickY}
-                          stroke={chartTickColor || 'var(--text)'}
-                          strokeWidth={chartAxisStrokeWidth}
-                        />
-                        {isFull && (
-                          <line
-                            x1={plotRight}
-                            y1={tickY}
-                            x2={plotRight + (isInside ? -effectiveTickLength : effectiveTickLength)}
-                            y2={tickY}
-                            stroke={chartTickColor || 'var(--text)'}
-                            strokeWidth={chartAxisStrokeWidth}
-                          />
-                        )}
-                      </g>
-                    );
-                  });
-                  return [...xTicks, ...yTicks];
-                })())}
-          {effectiveYTitle &&
-            (yTitleOnLeft ? (
-              <text
-                x={plotLeft - axisLabelW - 6}
-                y={singlePlotTop + singleInnerH / 2}
-                textAnchor="middle"
-                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
-                className="chart-axis-title"
-                transform={`rotate(-90, ${plotLeft - axisLabelW - 6}, ${singlePlotTop + singleInnerH / 2})`}
-              >
-                {truncate(effectiveYTitle, 20)}
-              </text>
-            ) : (
-              <text
-                x={plotRight + 6 + (yTitleRightMargin - 6) / 2}
-                y={singlePlotTop + singleInnerH / 2}
-                textAnchor="middle"
-                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
-                className="chart-axis-title"
-                transform={`rotate(-90, ${plotRight + 6 + (yTitleRightMargin - 6) / 2}, ${singlePlotTop + singleInnerH / 2})`}
-              >
-                {truncate(effectiveYTitle, 20)}
-              </text>
-            ))}
-          {chartShowAxisLabels &&
-            (chartSwapXY
-              ? // 交换后：Y轴显示xVals标签，X轴显示yVals数值刻度
-                (() => {
-                  // Y轴标签：显示所有xVals
-                  const yLabels = xVals.map((xVal, i) => (
-                    <text
-                      key={`y-${i}`}
-                      className="chart-axis-label"
-                      x={plotLeft - 6}
-                      y={yScale(i)}
-                      textAnchor="end"
-                      dominantBaseline="middle"
-                      style={axisLabelStyle}
-                    >
-                      {truncate(xVal, labelTruncate)}
-                    </text>
-                  ));
-                  // X轴刻度：基于yVals的值范围
-                  const xTicks = gridTicks.map((tick, i) => (
-                    <text
-                      key={`x-${i}`}
-                      className="chart-axis-label"
-                      x={xScale(effectiveMinY + tick * effectiveRangeY)}
-                      y={labelY}
-                      textAnchor="middle"
-                      style={axisLabelStyle}
-                    >
-                      {formatAxisTick(effectiveMinY + tick * effectiveRangeY)}
-                    </text>
-                  ));
-                  return [...yLabels, ...xTicks];
-                })()
-              : // 未交换：Y轴显示数值刻度，X轴显示标签
-                (() => {
-                  // Y轴刻度：基于数值范围
-                  const yTicks = gridTicks.map((tick, i) => (
-                    <text
-                      key={`y-${i}`}
-                      className="chart-axis-label"
-                      x={plotLeft - 6}
-                      y={singlePlotTop + singleInnerH * (1 - tick)}
-                      textAnchor="end"
-                      dominantBaseline="middle"
-                      style={axisLabelStyle}
-                    >
-                      {formatAxisTick(effectiveMinY + tick * effectiveRangeY)}
-                    </text>
-                  ));
-                  // X轴标签：显示所有xVals
-                  const xLabels = effectiveXVals.map((xVal, i) => (
-                    <text
-                      key={`x-${i}`}
-                      className="chart-axis-label"
-                      x={xScale(i)}
-                      y={labelY}
-                      textAnchor="middle"
-                      style={axisLabelStyle}
-                    >
-                      {truncate(xVal, labelTruncate)}
-                    </text>
-                  ));
-                  return [...yTicks, ...xLabels];
-                })())}
-          {effectiveXTitle &&
-            (xTitleOnBottom ? (
-              <text
-                x={plotLeft + innerW / 2}
-                y={singlePlotBottom + axisLabelH + axisTitleFontSize - 2}
-                textAnchor="middle"
-                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
-                className="chart-axis-title"
-              >
-                {truncate(effectiveXTitle, 30)}
-              </text>
-            ) : (
-              <text
-                x={plotLeft + innerW / 2}
-                y={singlePlotTop - axisTitleFontSize - 2}
-                textAnchor="middle"
-                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
-                className="chart-axis-title"
-              >
-                {truncate(effectiveXTitle, 30)}
-              </text>
-            ))}
-
-          {viewMode === 'pie' &&
-            yVals.length > 0 &&
-            (() => {
-              // 按 x 值去重并累加 y 值
-              const xValueMap = new Map<
-                string,
-                { value: number; label: string; firstIndex: number }
-              >();
-              xVals.forEach((xVal, i) => {
-                const yVal = yVals[i] ?? 0;
-                if (xValueMap.has(xVal)) {
-                  const existing = xValueMap.get(xVal)!;
-                  existing.value += yVal;
-                } else {
-                  xValueMap.set(xVal, { value: yVal, label: xVal, firstIndex: i });
-                }
-              });
-              const pieData = Array.from(xValueMap.values()).filter((item) => item.value > 0);
-              const total = pieData.reduce((a, b) => a + b.value, 0) || 1;
-              const cx = plotLeft + innerW / 2;
-              const cy = singlePlotTop + singleInnerH / 2;
-              const r = Math.min(innerW, singleInnerH) / 2 - 8;
-              const innerR =
-                chartPieInnerRadius > 0 ? r * (Math.min(80, chartPieInnerRadius) / 100) : 0;
-              const startOffset = ((chartPieStartAngle % 360) + 360) % 360;
-              let acc = 0;
-              return (
-                <>
-                  {pieData.map((item, idx) => {
-                    const v = item.value;
-                    const startDeg = (acc / total) * 360 + startOffset;
-                    const sweepDeg = (v / total) * 360;
-                    acc += v;
-                    const startRad = deg2rad(startDeg);
-                    const endRad = deg2rad(startDeg + sweepDeg);
-                    const large = sweepDeg > 180 ? 1 : 0;
-                    const x1o = cx + r * Math.cos(startRad);
-                    const y1o = cy + r * Math.sin(startRad);
-                    const x2o = cx + r * Math.cos(endRad);
-                    const y2o = cy + r * Math.sin(endRad);
-                    const d =
-                      innerR <= 0
-                        ? `M ${cx} ${cy} L ${x1o} ${y1o} A ${r} ${r} 0 ${large} 1 ${x2o} ${y2o} Z`
-                        : (() => {
-                            const x1i = cx + innerR * Math.cos(startRad);
-                            const y1i = cy + innerR * Math.sin(startRad);
-                            const x2i = cx + innerR * Math.cos(endRad);
-                            const y2i = cy + innerR * Math.sin(endRad);
-                            return `M ${x1i} ${y1i} L ${x1o} ${y1o} A ${r} ${r} 0 ${large} 1 ${x2o} ${y2o} L ${x2i} ${y2i} A ${innerR} ${innerR} 0 ${large} 0 ${x1i} ${y1i} Z`;
-                          })();
-                    const fillStyle = getPieFillStyle(chartData.yConfig);
-                    const color = seriesColor(0, palette, chartData.yConfig);
-                    const edgeStyle = getPieEdgeStyle(chartData.yConfig);
-                    const edgeWidth = getPieEdgeWidth(chartData.yConfig);
-                    return (
-                      <g key={idx} data-rowindex={item.firstIndex} style={{ cursor: 'pointer' }}>
-                        <path
-                          className="chart-pie-slice"
-                          d={d}
-                          fill={
-                            fillStyle === 'gradient'
-                              ? `url(#chartPieGrad-0-${idx})`
-                              : isPatternFill(fillStyle)
-                                ? `url(#chartPieFill-0-${idx})`
-                                : color
-                          }
-                          fillOpacity={pieSliceOpacity(idx)}
-                          stroke={
-                            edgeStyle === 'none' ? undefined : edgeWidth > 0 ? color : undefined
-                          }
-                          strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
-                          strokeDasharray={getStrokeDasharray(edgeStyle)}
-                        />
-                      </g>
-                    );
-                  })}
-                  {chartPieLabelPosition !== 'none' &&
-                    chartShowAxisLabels &&
-                    pieData.map((item, idx) => {
-                      const prevSum = pieData.slice(0, idx).reduce((a, b) => a + b.value, 0);
-                      const midDeg = ((prevSum + item.value / 2) / total) * 360 + startOffset;
-                      const rad = deg2rad(midDeg);
-                      const labelRadius =
-                        chartPieLabelPosition === 'inside' ? r * 0.5 : PIE_LABEL_RATIO * r;
-                      const tx = cx + labelRadius * Math.cos(rad);
-                      const ty = cy + labelRadius * Math.sin(rad);
-                      return (
-                        <text
-                          key={idx}
-                          className="chart-pie-label"
-                          x={tx}
-                          y={ty}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          {truncate(item.label, pieLabelTruncate)}
-                        </text>
-                      );
-                    })}
-                </>
-              );
-            })()}
-        </g>
-      </svg>
-    );
-  }
 
   const { xLabels, seriesNames, data, baseData, seriesConfigs } = chartData;
   // 创建系列名称到原始索引的映射（用于查找配置）
@@ -2853,11 +1857,16 @@ export const ChartView = forwardRef<
   return chartWrap(
     <svg
       ref={svgRef}
-      width={w}
-      height={h}
       viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="xMidYMid meet"
       className="chart-svg"
-      style={{ fontFamily: s.fontFamily, fontSize: labelFontSize }}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'block',
+        fontFamily: s.fontFamily,
+        fontSize: labelFontSize,
+      }}
       onClick={onChartClick}
     >
       <defs>
@@ -2896,7 +1905,7 @@ export const ChartView = forwardRef<
             {truncate(chartTitle, 40)}
           </text>
         )}
-        {chartShowLegend && chartData.kind === 'multi' && chartData.seriesNames.length > 0 && (
+        {chartShowLegend && chartData.seriesNames.length > 0 && (
           <g className="chart-legend" style={{ fontSize: legendFontSize }}>
             {chartData.seriesNames.map((name, originalSi) => {
               const isVisible = chartSeriesVisibility[name] !== false;
@@ -3555,7 +2564,7 @@ export const ChartView = forwardRef<
                 .flat())}
 
         {viewMode === 'pie' &&
-          chartData.kind === 'multi' &&
+          chartData &&
           (() => {
             // 只计算可见系列
             const visibleSeries = chartData.seriesNames

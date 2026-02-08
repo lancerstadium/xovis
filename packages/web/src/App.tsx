@@ -72,7 +72,7 @@ export default function App() {
   const detailTriggerRef = useRef<HTMLButtonElement>(null);
   const dataPanelWrapRef = useRef<HTMLDivElement>(null);
   const dataTriggerRef = useRef<HTMLDivElement>(null);
-  const [resizeAxis, setResizeAxis] = useState<'width' | 'height' | null>(null);
+  const [detailResizing, setDetailResizing] = useState(false);
   const [detailPosition, setDetailPosition] = useState({ top: 0, right: 0 });
   const detailRightEdgePxRef = useRef(0);
   const t = getLocale(lang);
@@ -177,27 +177,21 @@ export default function App() {
     setTabGraph(activeTabId, graph);
   }, [isElectron, activeTabId, graph, setTabGraph]);
 
-  /** 详情浮窗宽度：靠右时拖左缘，右缘与按钮右缘对齐（与 detailPosition 一致）。支持鼠标与触控（统一用 clientX/clientY） */
-  const handleResizeWidth = useCallback(
+  /** 详情浮窗：左下角拖拽同时调宽高 */
+  const handleDetailResize = useCallback(
     (pos: { clientX: number; clientY: number }) => {
+      const wrap = detailWrapRef.current;
+      if (!wrap) return;
       const rightEdge = detailRightEdgePxRef.current;
+      const rect = wrap.getBoundingClientRect();
       const w = rightEdge - pos.clientX;
+      const h = Math.round(pos.clientY - rect.top);
       const maxW = Math.min(
         window.innerWidth - DETAIL_CARD_GAP * 2,
         window.innerWidth * SIDEBAR_MAX_RATIO
       );
-      set({ sidebarWidth: Math.max(SIDEBAR_MIN, Math.min(maxW, w)) });
-    },
-    [set]
-  );
-
-  const handleResizeHeight = useCallback(
-    (pos: { clientX: number; clientY: number }) => {
-      const wrap = detailWrapRef.current;
-      if (!wrap) return;
-      const top = wrap.getBoundingClientRect().top;
-      const h = Math.round(pos.clientY - top);
       set({
+        sidebarWidth: Math.max(SIDEBAR_MIN, Math.min(maxW, w)),
         sidebarHeight: Math.max(SIDEBAR_HEIGHT_MIN, Math.min(floatPanelMaxHeight(), h)),
       });
     },
@@ -205,9 +199,8 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (!resizeAxis) return;
-    const onMove = (pos: { clientX: number; clientY: number }) =>
-      resizeAxis === 'width' ? handleResizeWidth(pos) : handleResizeHeight(pos);
+    if (!detailResizing) return;
+    const onMove = (pos: { clientX: number; clientY: number }) => handleDetailResize(pos);
     const onMouseMove = (e: MouseEvent) => onMove(e);
     const onPointerMove = (e: PointerEvent) => onMove(e);
     const onTouchMove = (e: TouchEvent) => {
@@ -217,7 +210,7 @@ export default function App() {
       }
     };
     const onUp = () => {
-      setResizeAxis(null);
+      setDetailResizing(false);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.removeEventListener('pointermove', onPointerMove);
@@ -230,7 +223,7 @@ export default function App() {
     const onMouseUp = onUp;
     const onPointerUp = onUp;
     const onTouchEnd = onUp;
-    document.body.style.cursor = resizeAxis === 'width' ? 'col-resize' : 'row-resize';
+    document.body.style.cursor = 'nesw-resize';
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
@@ -248,7 +241,7 @@ export default function App() {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [resizeAxis, handleResizeWidth, handleResizeHeight]);
+  }, [detailResizing, handleDetailResize]);
 
   /* 有选中时自动打开详情；点击空白取消选中时关闭详情，仅无选中且点右上角按钮时才展示图信息 */
   useEffect(() => {
@@ -422,20 +415,6 @@ export default function App() {
             }}
           >
             <div className="detail-card-inner">
-              <div
-                className="float-panel-splitter float-panel-splitter-v"
-                role="separator"
-                aria-orientation="vertical"
-                style={{ touchAction: 'none' }}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  setResizeAxis('width');
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  setResizeAxis('width');
-                }}
-              />
               <aside className="sidebar panel-glass">
                 <div className="sidebar-content panel-content">
                   <Detail />
@@ -443,17 +422,17 @@ export default function App() {
               </aside>
             </div>
             <div
-              className="float-panel-splitter float-panel-splitter-h"
+              className="float-panel-resize-corner float-panel-resize-corner-bl"
               role="separator"
-              aria-orientation="horizontal"
+              aria-label="调整大小"
               style={{ touchAction: 'none' }}
               onMouseDown={(e) => {
                 e.preventDefault();
-                setResizeAxis('height');
+                setDetailResizing(true);
               }}
               onTouchStart={(e) => {
                 e.preventDefault();
-                setResizeAxis('height');
+                setDetailResizing(true);
               }}
             />
           </div>

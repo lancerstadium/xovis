@@ -278,11 +278,13 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   }, []);
 
   const pinchRef = useRef<{ initialDistance: number; initialZoom: number } | null>(null);
+  const isPinchingRef = useRef(false);
   const getTouchDistance = (touches: TouchList) =>
     Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY);
   const onTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length === 2) {
       e.preventDefault();
+      isPinchingRef.current = true;
       const initialDistance = getTouchDistance(e.touches);
       setZoom((z) => {
         pinchRef.current = { initialDistance, initialZoom: z };
@@ -299,12 +301,15 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     }
   }, []);
   const onTouchEnd = useCallback((e: TouchEvent) => {
-    if (e.touches.length < 2) pinchRef.current = null;
+    if (e.touches.length < 2) {
+      pinchRef.current = null;
+      isPinchingRef.current = false;
+    }
   }, []);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || isPinchingRef.current) return;
       didDrag.current = false;
       setIsDragging(true);
       panStart.current = { x: pan.x, y: pan.y, clientX: e.clientX, clientY: e.clientY };
@@ -314,7 +319,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   );
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!panStart.current) return;
+    if (isPinchingRef.current || !panStart.current) return;
     const dx = e.clientX - panStart.current.clientX;
     const dy = e.clientY - panStart.current.clientY;
     if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) didDrag.current = true;

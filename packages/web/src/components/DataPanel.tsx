@@ -88,11 +88,20 @@ function getStyleLabels(lang: Lang) {
 const DATA_PANEL_DEFAULT_WIDTH = 440;
 const DATA_PANEL_DEFAULT_HEIGHT = 320;
 const DATA_PANEL_MIN_WIDTH = 220;
-const DATA_PANEL_MAX_WIDTH = () =>
-  Math.min(Math.round(typeof window !== 'undefined' ? window.innerWidth * 0.85 : 800), 960);
 const DATA_PANEL_MIN_HEIGHT = 120;
-const DATA_PANEL_MAX_HEIGHT = () =>
-  Math.min(Math.round(typeof window !== 'undefined' ? window.innerHeight * 0.5 : 400), 520);
+/** 与 App 浮窗一致：上/下按钮行 + 间距，便于随窗口变化限制高度 */
+const FLOAT_TRIGGER_ROW = 10 + 28 + 6;
+const FLOAT_PANEL_GAP = 12;
+const DATA_PANEL_MAX_WIDTH = () =>
+  typeof window !== 'undefined'
+    ? Math.min(Math.round(window.innerWidth * 0.9), 960)
+    : 960;
+/** 与详情/设置浮窗共用同一套最大高度（--float-panel-max-height 的 JS 等价） */
+const getFloatPanelMaxHeight = () =>
+  typeof window !== 'undefined'
+    ? window.innerHeight - FLOAT_TRIGGER_ROW - FLOAT_PANEL_GAP - FLOAT_TRIGGER_ROW
+    : 400;
+const DATA_PANEL_MAX_HEIGHT = () => Math.round(getFloatPanelMaxHeight());
 
 const VIEW_MODES = ['graph', 'bar', 'pie', 'line', 'scatter'] as const;
 type ViewModeId = (typeof VIEW_MODES)[number];
@@ -993,7 +1002,6 @@ function MappingEditor({
   );
 }
 
-type DataPanelResizeEdge = 'top' | 'left' | 'right' | null;
 
 export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_, ref) {
   const { graph } = useGraphStore();
@@ -1011,6 +1019,25 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
   } = s;
   const t = getLocale(s.lang);
 
+  /** 与详情/设置浮窗一致：窗口 resize 时限制宽高不超过当前视口 */
+  useEffect(() => {
+    const onResize = () => {
+      const state = useSettingsStore.getState();
+      const maxW = DATA_PANEL_MAX_WIDTH();
+      const maxH = DATA_PANEL_MAX_HEIGHT();
+      const curW = state.dataPanelWidth ?? DATA_PANEL_DEFAULT_WIDTH;
+      const curH = state.dataPanelHeight ?? DATA_PANEL_DEFAULT_HEIGHT;
+      const newW = Math.max(DATA_PANEL_MIN_WIDTH, Math.min(maxW, curW));
+      const newH = Math.max(DATA_PANEL_MIN_HEIGHT, Math.min(maxH, curH));
+      if (newW !== curW || newH !== curH) {
+        useSettingsStore.setState({ dataPanelWidth: newW, dataPanelHeight: newH });
+      }
+    };
+    window.addEventListener('resize', onResize);
+    onResize();
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   // 切换系列可见性
   const toggleSeriesVisibility = (seriesName: string) => {
     const currentVisibility = chartSeriesVisibility[seriesName] !== false;
@@ -1024,7 +1051,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
   const [dataTab, setDataTab] = useState<'view' | 'table'>('view');
   const [sortKey, setSortKey] = useState<string>('index');
   const [sortAsc, setSortAsc] = useState(true);
-  const [resizeEdge, setResizeEdge] = useState<DataPanelResizeEdge>(null);
+  const [resizingCorner, setResizingCorner] = useState(false);
   const innerRef = useRef<HTMLDivElement>(null);
 
   const effectiveWidth = Math.max(
@@ -1037,28 +1064,19 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
   );
 
   useEffect(() => {
-    if (!resizeEdge) return;
+    if (!resizingCorner) return;
     const centerX = () => window.innerWidth / 2;
     const onMove = (pos: { clientX: number; clientY: number }) => {
-      if (resizeEdge === 'top') {
-        const inner = innerRef.current;
-        if (!inner) return;
-        const bottom = inner.getBoundingClientRect().bottom;
-        const h = bottom - pos.clientY;
-        set({
-          dataPanelHeight: Math.max(DATA_PANEL_MIN_HEIGHT, Math.min(DATA_PANEL_MAX_HEIGHT(), h)),
-        });
-      } else if (resizeEdge === 'left') {
-        const w = 2 * (centerX() - pos.clientX);
-        set({
-          dataPanelWidth: Math.max(DATA_PANEL_MIN_WIDTH, Math.min(DATA_PANEL_MAX_WIDTH(), w)),
-        });
-      } else if (resizeEdge === 'right') {
-        const w = 2 * (pos.clientX - centerX());
-        set({
-          dataPanelWidth: Math.max(DATA_PANEL_MIN_WIDTH, Math.min(DATA_PANEL_MAX_WIDTH(), w)),
-        });
-      }
+      const inner = innerRef.current;
+      if (!inner) return;
+      const rect = inner.getBoundingClientRect();
+      const w = 2 * (pos.clientX - centerX());
+      /* 数据浮窗底部贴边、向上生长：高度 = 底边 - 拖拽点 Y */
+      const h = Math.round(rect.bottom - pos.clientY);
+      set({
+        dataPanelWidth: Math.max(DATA_PANEL_MIN_WIDTH, Math.min(DATA_PANEL_MAX_WIDTH(), w)),
+        dataPanelHeight: Math.max(DATA_PANEL_MIN_HEIGHT, Math.min(DATA_PANEL_MAX_HEIGHT(), h)),
+      });
     };
     const onMouseMove = (e: MouseEvent) => onMove(e);
     const onTouchMove = (e: TouchEvent) => {
@@ -1068,7 +1086,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
       }
     };
     const onUp = () => {
-      setResizeEdge(null);
+      setResizingCorner(false);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.removeEventListener('touchmove', onTouchMove, { capture: true });
@@ -1078,7 +1096,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     };
     const onMouseUp = onUp;
     const onTouchEnd = onUp;
-    document.body.style.cursor = resizeEdge === 'top' ? 'row-resize' : 'col-resize';
+    document.body.style.cursor = 'nwse-resize';
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
@@ -1092,7 +1110,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [resizeEdge, set]);
+  }, [resizingCorner, set]);
 
   const { rows, columns } = useMemo(() => {
     if (!graph) return { rows: [] as Record<string, unknown>[], columns: [] as string[] };
@@ -1153,15 +1171,6 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
 
   if (!dataPanelOpen) return null;
 
-  const startResize = (edge: DataPanelResizeEdge) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    setResizeEdge(edge);
-  };
-  const startResizeTouch = (edge: DataPanelResizeEdge) => (e: React.TouchEvent) => {
-    e.preventDefault();
-    setResizeEdge(edge);
-  };
-
   return (
     <div ref={ref} className="data-panel-wrap">
       <div
@@ -1170,22 +1179,20 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
         style={{ width: effectiveWidth, height: effectiveHeight }}
       >
         <div
-          className="float-panel-splitter float-panel-splitter-h data-panel-splitter-top"
+          className="float-panel-resize-corner float-panel-resize-corner-tr"
           role="separator"
-          aria-orientation="horizontal"
+          aria-label="调整大小"
           style={{ touchAction: 'none' }}
-          onMouseDown={startResize('top')}
-          onTouchStart={startResizeTouch('top')}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setResizingCorner(true);
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setResizingCorner(true);
+          }}
         />
         <div className="data-panel-resizable-body">
-          <div
-            className="float-panel-splitter float-panel-splitter-v data-panel-splitter-left"
-            role="separator"
-            aria-orientation="vertical"
-            style={{ touchAction: 'none' }}
-            onMouseDown={startResize('left')}
-            onTouchStart={startResizeTouch('left')}
-          />
           <div className="view-dropdown panel-glass data-panel-inner">
             <div className="view-tabs">
               <button
@@ -1349,14 +1356,6 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
               )}
             </div>
           </div>
-          <div
-            className="float-panel-splitter float-panel-splitter-v data-panel-splitter-right"
-            role="separator"
-            aria-orientation="vertical"
-            style={{ touchAction: 'none' }}
-            onMouseDown={startResize('right')}
-            onTouchStart={startResizeTouch('right')}
-          />
         </div>
       </div>
     </div>

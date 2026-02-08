@@ -3,20 +3,13 @@ body.pwa-banner-visible .main {
   padding-top: calc(48px + env(safe-area-inset-top, 0px));
 }
 
-/* 主面板统一：全屏计算图，无顶栏，操作悬浮 */
+/* 主面板统一：全屏计算图，无顶栏，操作悬浮；min-width:0 便于窗口自由缩小 */
 .app {
   width: 100%;
   height: 100%;
+  min-width: 0;
   min-height: 100vh;
-  max-height: 100%;
   background: var(--bg);
-}
-/* 手机横屏：限制在可见视口内，避免图表溢出 */
-@supports (height: 100dvh) {
-  .app {
-    min-height: 100%;
-    max-height: 100%;
-  }
 }
 /* Electron：根与主区域背景与菜单栏统一为 --bg */
 .electron-app,
@@ -259,14 +252,7 @@ body.pwa-banner-visible .main {
   width: 100%;
   height: 100%;
   min-height: 100vh;
-  max-height: 100%;
   overflow: hidden;
-}
-@supports (height: 100dvh) {
-  .main {
-    min-height: 0;
-    max-height: 100%;
-  }
 }
 /* Electron：主区域高度 = 视口减去标题栏，覆盖注入样式，避免底部按钮被挤出 */
 .electron-app .app {
@@ -371,14 +357,17 @@ body.pwa-banner-visible .main {
   transform: translateX(-50%);
   top: auto;
 }
-/* 数据面板：唯一居中的浮窗，底部横幅、上/左/右可调，左右对称保持居中 */
+/* 数据面板：与详情/设置浮窗一致，随窗口限制宽高（复用 --float-panel-max-height、max-width） */
 .data-panel-wrap {
   position: absolute;
   left: var(--float-panel-gap);
   right: var(--float-panel-gap);
   bottom: var(--float-trigger-row-bottom);
-  max-height: 50vh;
+  max-height: var(--float-panel-max-height);
   min-height: 120px;
+  max-width: min(90vw, 960px);
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -386,11 +375,13 @@ body.pwa-banner-visible .main {
   pointer-events: none;
 }
 .data-panel-resizable {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   min-height: 0;
+  max-width: min(90vw, 960px);
   border-radius: 12px;
   overflow: hidden;
   pointer-events: auto;
@@ -818,6 +809,44 @@ body.pwa-banner-visible .main {
   }
 }
 
+/* 浮窗角把手：单角调整宽高，不占边，鼠标与触控一致 */
+.float-panel-resize-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  transition: background 0.15s;
+  z-index: 1;
+}
+.float-panel-resize-corner:hover {
+  background: color-mix(in srgb, var(--border) 50%, transparent);
+}
+.float-panel-resize-corner-br {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+  border-radius: 0 0 12px 0;
+}
+.float-panel-resize-corner-bl {
+  left: 0;
+  bottom: 0;
+  cursor: nesw-resize;
+  border-radius: 0 0 0 12px;
+}
+.float-panel-resize-corner-tr {
+  top: 0;
+  right: 0;
+  cursor: nwse-resize;
+  border-radius: 0 12px 0 0;
+}
+@media (pointer: coarse) {
+  .float-panel-resize-corner {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 /* 左右浮窗唯一外观：透明度、背景色、圆角、毛玻璃完全共用，观感无区别 */
 .panel-glass {
   position: relative;
@@ -950,7 +979,7 @@ body.pwa-banner-visible .main {
   opacity: 0.6;
 }
 
-/* 设置浮窗：外层可拖宽/拖高（右下可调），内层内容区 + 右侧/底边拉伸条 */
+/* 设置浮窗：外层可拖宽/拖高（右下可调），内层内容区 + 右下角把手 */
 .view-dropdown-wrap {
   display: flex;
   flex-direction: column;
@@ -961,6 +990,15 @@ body.pwa-banner-visible .main {
   z-index: 10;
   background: transparent;
   border-radius: 12px;
+  overflow: hidden;
+}
+.view-dropdown-wrap-inner {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   overflow: hidden;
 }
 .view-dropdown-row {

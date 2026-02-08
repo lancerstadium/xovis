@@ -82,7 +82,13 @@ export function Loader() {
     setLoading(true);
     setError(null);
     try {
-      const url = path.startsWith('http') ? path : new URL(path, window.location.origin).href;
+      const mediaBase = (window as unknown as { __XOVIS_MEDIA_BASE?: string }).__XOVIS_MEDIA_BASE;
+      const url =
+        path.startsWith('http')
+          ? path
+          : mediaBase
+            ? mediaBase.replace(/\/$/, '') + '/' + path.replace(/^\.?\//, '')
+            : path;
       const res = await fetch(url);
       if (!res.ok) throw new Error(res.statusText);
       load(await res.text(), path);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -12,7 +12,13 @@
   </head>
   <body>
     <script>
-      (function(){ if (window.electronAPI) { var h = window.electronAPI.platform === 'darwin' ? 32 : 18; document.documentElement.classList.add('electron-app'); document.documentElement.style.setProperty('--electron-title-height', h + 'px'); } })();
+      (function () {
+        if (window.electronAPI) {
+          var h = window.electronAPI.platform === 'darwin' ? 32 : 18;
+          document.documentElement.classList.add('electron-app');
+          document.documentElement.style.setProperty('--electron-title-height', h + 'px');
+        }
+      })();
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

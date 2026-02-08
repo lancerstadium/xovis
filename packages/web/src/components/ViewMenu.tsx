@@ -448,8 +448,7 @@ export function ViewMenu({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<TabId>('preset');
-  const [resizing, setResizing] = useState(false);
-  const [resizingHeight, setResizingHeight] = useState(false);
+  const [resizingCorner, setResizingCorner] = useState(false);
   const s = useSettingsStore();
   const t = getLocale(s.lang);
 
@@ -487,15 +486,16 @@ export function ViewMenu({
   }, [open, onClose]);
 
   useEffect(() => {
-    if (!resizing) return;
+    if (!resizingCorner) return;
     const VIEW_MENU_MIN = 220;
     const VIEW_MENU_MAX = Math.min(480, window.innerWidth * 0.9);
     const onMove = (pos: { clientX: number; clientY: number }) => {
       const wrap = wrapRef.current;
       if (!wrap) return;
-      const left = wrap.getBoundingClientRect().left;
-      const w = Math.max(VIEW_MENU_MIN, Math.min(VIEW_MENU_MAX, pos.clientX - left));
-      s.set({ viewMenuWidth: w });
+      const rect = wrap.getBoundingClientRect();
+      const w = Math.max(VIEW_MENU_MIN, Math.min(VIEW_MENU_MAX, pos.clientX - rect.left));
+      const h = Math.max(VIEW_MENU_HEIGHT_MIN, Math.min(VIEW_MENU_HEIGHT_MAX(), pos.clientY - rect.top));
+      s.set({ viewMenuWidth: w, viewMenuHeight: h });
     };
     const onMouseMove = (e: MouseEvent) => onMove(e);
     const onTouchMove = (e: TouchEvent) => {
@@ -505,7 +505,7 @@ export function ViewMenu({
       }
     };
     const onUp = () => {
-      setResizing(false);
+      setResizingCorner(false);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.removeEventListener('touchmove', onTouchMove, { capture: true });
@@ -515,7 +515,7 @@ export function ViewMenu({
     };
     const onMouseUp = onUp;
     const onTouchEnd = onUp;
-    document.body.style.cursor = 'col-resize';
+    document.body.style.cursor = 'nwse-resize';
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
@@ -527,48 +527,7 @@ export function ViewMenu({
       document.removeEventListener('touchmove', onTouchMove, { capture: true });
       document.removeEventListener('touchend', onTouchEnd, { capture: true });
     };
-  }, [resizing, s]);
-
-  useEffect(() => {
-    if (!resizingHeight) return;
-    const onMove = (pos: { clientX: number; clientY: number }) => {
-      const wrap = wrapRef.current;
-      if (!wrap) return;
-      const top = wrap.getBoundingClientRect().top;
-      const h = Math.max(VIEW_MENU_HEIGHT_MIN, Math.min(VIEW_MENU_HEIGHT_MAX(), pos.clientY - top));
-      s.set({ viewMenuHeight: h });
-    };
-    const onMouseMove = (e: MouseEvent) => onMove(e);
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0]) {
-        e.preventDefault();
-        onMove(e.touches[0]);
-      }
-    };
-    const onUp = () => {
-      setResizingHeight(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('touchmove', onTouchMove, { capture: true });
-      document.removeEventListener('touchend', onTouchEnd, { capture: true });
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-    const onMouseUp = onUp;
-    const onTouchEnd = onUp;
-    document.body.style.cursor = 'row-resize';
-    document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
-    document.addEventListener('touchend', onTouchEnd, { capture: true });
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('touchmove', onTouchMove, { capture: true });
-      document.removeEventListener('touchend', onTouchEnd, { capture: true });
-    };
-  }, [resizingHeight, s]);
+  }, [resizingCorner, s]);
 
   if (!open) return null;
 
@@ -592,6 +551,7 @@ export function ViewMenu({
         ...(s.viewMenuHeight > 0 ? { height: s.viewMenuHeight } : {}),
       }}
     >
+      <div className="view-dropdown-wrap-inner">
       <div className="view-dropdown-row">
         <div className="view-dropdown">
           <div className="view-tabs">
@@ -1546,35 +1506,22 @@ export function ViewMenu({
             )}
           </div>
         </div>
-        <div
-          className="view-dropdown-splitter"
-          role="separator"
-          aria-orientation="vertical"
-          style={{ touchAction: 'none' }}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setResizing(true);
-          }}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            setResizing(true);
-          }}
-        />
       </div>
       <div
-        className="view-dropdown-splitter view-dropdown-splitter-h"
+        className="float-panel-resize-corner float-panel-resize-corner-br"
         role="separator"
-        aria-orientation="horizontal"
+        aria-label="调整大小"
         style={{ touchAction: 'none' }}
         onMouseDown={(e) => {
           e.preventDefault();
-          setResizingHeight(true);
+          setResizingCorner(true);
         }}
         onTouchStart={(e) => {
           e.preventDefault();
-          setResizingHeight(true);
+          setResizingCorner(true);
         }}
       />
+      </div>
     </div>
   );
 
