@@ -90,12 +90,51 @@ const FONT_OPTIONS: {
   { name: 'Calibri', value: 'Calibri, "Segoe UI", sans-serif' },
   { name: 'PingFang SC', value: '"PingFang SC", "Microsoft YaHei", sans-serif' },
   { name: 'Microsoft YaHei', value: '"Microsoft YaHei", "PingFang SC", sans-serif' },
-  { name: 'Roboto', value: 'Roboto, sans-serif' },
-  { name: 'Open Sans', value: '"Open Sans", sans-serif' },
   { name: 'Source Han Sans', value: '"Source Han Sans SC", "PingFang SC", sans-serif' },
   { name: 'Noto Sans SC', value: '"Noto Sans SC", "PingFang SC", sans-serif' },
+  { name: 'SimSun', value: 'SimSun, "宋体", serif' },
+  { name: 'SimHei', value: 'SimHei, "黑体", sans-serif' },
+  { name: 'KaiTi', value: 'KaiTi, "楷体", serif' },
+  { name: 'FangSong', value: 'FangSong, "仿宋", serif' },
+  { name: 'DengXian', value: '"DengXian", "等线", sans-serif' },
+  { name: 'STSong', value: '"STSong", "华文宋体", SimSun, serif' },
+  { name: 'STKaiti', value: '"STKaiti", "华文楷体", KaiTi, serif' },
+  { name: 'STHeiti', value: '"STHeiti", "华文黑体", SimHei, sans-serif' },
+  { name: 'STFangsong', value: '"STFangsong", "华文仿宋", FangSong, serif' },
+  { name: 'Hiragino Sans GB', value: '"Hiragino Sans GB", "冬青黑体", "Microsoft YaHei", sans-serif' },
+  { name: 'Roboto', value: 'Roboto, sans-serif' },
+  { name: 'Open Sans', value: '"Open Sans", sans-serif' },
 ];
 const FONT_CUSTOM_VALUE = '__custom__';
+
+/** 规范化逗号旁空格，便于匹配 */
+function normalizeFontStack(s: string): string {
+  return s.replace(/\s*,\s*/g, ', ').trim();
+}
+
+/** 从 font-family 中移除一段（整段 segment）；在规范化串上操作以容忍逗号旁空格 */
+function removeFontSegment(fontFamily: string, segment: string): string {
+  const n = normalizeFontStack(fontFamily);
+  const seg = normalizeFontStack(segment);
+  const idx = n.indexOf(seg);
+  if (idx === -1) return fontFamily;
+  const rest = (n.slice(0, idx) + n.slice(idx + seg.length))
+    .replace(/,+\s*/g, ', ')
+    .replace(/^\s*,\s*|\s*,\s*$/g, '')
+    .trim();
+  return rest;
+}
+
+/** 队列：新选插到最前；已在队列则去重置顶；已是队首则收束为仅该字体 */
+function fontFamilyQueuePrepend(current: string, newSegment: string): string {
+  const cur = normalizeFontStack(current);
+  const seg = normalizeFontStack(newSegment);
+  if (!cur) return newSegment;
+  if (cur === seg) return newSegment;
+  if (cur.startsWith(seg + ',') || cur.startsWith(seg + ' ')) return newSegment;
+  const without = removeFontSegment(current, newSegment);
+  return without ? `${newSegment}, ${normalizeFontStack(without)}` : newSegment;
+}
 
 function fontOptionLabel(o: (typeof FONT_OPTIONS)[0], t: ReturnType<typeof getLocale>): string {
   return o.name ?? (o.nameKey ? t[o.nameKey] : o.value);
@@ -480,6 +519,20 @@ export function ViewMenu({
     });
   }, [open, anchorRef, resizeTick]);
 
+  /** 旋转/resize 后限制设置浮窗宽高，避免压住按钮 */
+  useEffect(() => {
+    if (!open) return;
+    const maxW = Math.min(480, window.innerWidth * 0.9);
+    const maxH = VIEW_MENU_HEIGHT_MAX();
+    const state = useSettingsStore.getState();
+    const curW = state.viewMenuWidth ?? 280;
+    const curH = state.viewMenuHeight ?? 0;
+    const updates: { viewMenuWidth?: number; viewMenuHeight?: number } = {};
+    if (curW > maxW) updates.viewMenuWidth = maxW;
+    if (curH > 0 && curH > maxH) updates.viewMenuHeight = maxH;
+    if (Object.keys(updates).length > 0) state.set(updates);
+  }, [open, resizeTick]);
+
   /** 与数据/详情浮窗一致：点击空白关闭（原 useClickOutside） */
   useEffect(() => {
     if (!open) return;
@@ -637,7 +690,14 @@ export function ViewMenu({
                           value={fontSelectValue}
                           onChange={(e) => {
                             const v = e.target.value;
-                            if (v !== FONT_CUSTOM_VALUE) s.set({ fontFamily: v });
+                            if (v === FONT_CUSTOM_VALUE) {
+                              if (!FONT_OPTIONS.some((o) => o.value === s.fontFamily)) return;
+                              s.set({ fontFamily: '' });
+                            } else {
+                              s.set({
+                                fontFamily: fontFamilyQueuePrepend(s.fontFamily || '', v),
+                              });
+                            }
                           }}
                         >
                           {FONT_OPTIONS.map((o) => (

@@ -14,7 +14,9 @@ import { getLocale } from './locale';
 import './App.css';
 
 const SIDEBAR_MIN = 200;
-const SIDEBAR_MAX_RATIO = 0.5;
+/** 与左侧设置浮窗一致：最大宽 min(480, 90% 视口)，且不超出左右边距 */
+const sidebarMaxWidth = () =>
+  Math.min(480, window.innerWidth * 0.9, window.innerWidth - DETAIL_CARD_GAP * 2);
 const SIDEBAR_HEIGHT_MIN = 120;
 /** 详情浮窗距视口间距，用于圆角浮窗排布与拖拽计算 */
 const DETAIL_CARD_GAP = 12;
@@ -116,6 +118,26 @@ export default function App() {
     const rect = dataTriggerRef.current.getBoundingClientRect();
     setDataPanelPosition({ bottom: window.innerHeight - rect.top + FLOAT_BUTTON_GAP });
   }, [dataPanelOpen, resizeTick]);
+
+  /** 旋转/resize 后限制详情浮窗宽高，避免压住按钮 */
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const maxW = sidebarMaxWidth();
+    const maxH = floatPanelMaxHeight();
+    const state = useSettingsStore.getState();
+    const updates: { sidebarWidth?: number; sidebarHeight?: number } = {};
+    if (state.sidebarWidth > maxW) updates.sidebarWidth = maxW;
+    if (state.sidebarHeight > 0 && state.sidebarHeight > maxH) updates.sidebarHeight = maxH;
+    if (Object.keys(updates).length > 0) state.set(updates);
+  }, [sidebarOpen, resizeTick]);
+
+  /** 设置「字体」同步到 body，保证全应用（含 PWA/自定义字体）生效 */
+  useEffect(() => {
+    document.body.style.fontFamily = s.fontFamily;
+    return () => {
+      document.body.style.fontFamily = '';
+    };
+  }, [s.fontFamily]);
 
   /** 浮窗统一：点击空白关闭（详情、数据、设置均用点击外部逻辑，排除面板 + 触发按钮） */
   const closeDetail = useCallback(() => set({ sidebarOpen: false }), [set]);
@@ -221,10 +243,7 @@ export default function App() {
       const rect = wrap.getBoundingClientRect();
       const w = rightEdge - pos.clientX;
       const h = Math.round(pos.clientY - rect.top);
-      const maxW = Math.min(
-        window.innerWidth - DETAIL_CARD_GAP * 2,
-        window.innerWidth * SIDEBAR_MAX_RATIO
-      );
+      const maxW = sidebarMaxWidth();
       set({
         sidebarWidth: Math.max(SIDEBAR_MIN, Math.min(maxW, w)),
         sidebarHeight: Math.max(SIDEBAR_HEIGHT_MIN, Math.min(floatPanelMaxHeight(), h)),
