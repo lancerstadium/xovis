@@ -357,9 +357,9 @@ body.pwa-banner-visible .main {
   transform: translateX(-50%);
   top: auto;
 }
-/* 数据面板：与详情/设置浮窗一致，随窗口限制宽高（复用 --float-panel-max-height、max-width） */
+/* 数据面板：与详情/设置浮窗一致，fixed 相对视口，底边在底部按钮行上方（复用 --float-panel-max-height） */
 .data-panel-wrap {
-  position: absolute;
+  position: fixed;
   left: var(--float-panel-gap);
   right: var(--float-panel-gap);
   bottom: var(--float-trigger-row-bottom);

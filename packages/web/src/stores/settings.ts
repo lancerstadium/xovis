@@ -9,7 +9,15 @@ export type ChartYColumnConfig = {
   // 通用样式
   styleType?: 'solid' | 'gradient' | 'dashed' | 'dotted' | 'dashdot' | 'double-dash';
   // 柱状图/扇形图样式
-  barFillStyle?: 'solid' | 'gradient' | 'hatched' | 'hatched-h' | 'hatched-v' | 'hatched-cross' | 'stripes' | 'pattern';
+  barFillStyle?:
+    | 'solid'
+    | 'gradient'
+    | 'hatched'
+    | 'hatched-h'
+    | 'hatched-v'
+    | 'hatched-cross'
+    | 'stripes'
+    | 'pattern';
   barEdgeStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
   barEdgeWidth?: number;
   barOpacity?: number;
@@ -52,7 +60,15 @@ export type ChartYColumnConfig = {
   scatterMarkerEdgeWidth?: number;
   scatterMarkerOpacity?: number;
   // 扇形图样式
-  pieFillStyle?: 'solid' | 'gradient' | 'hatched' | 'hatched-h' | 'hatched-v' | 'hatched-cross' | 'stripes' | 'pattern';
+  pieFillStyle?:
+    | 'solid'
+    | 'gradient'
+    | 'hatched'
+    | 'hatched-h'
+    | 'hatched-v'
+    | 'hatched-cross'
+    | 'stripes'
+    | 'pattern';
   pieEdgeStyle?: 'solid' | 'dashed' | 'none';
   pieEdgeWidth?: number;
 };

@@ -459,6 +459,17 @@ export function ViewMenu({
     top: 0,
     left: 0,
   });
+  /** 窗口/旋转变化时重新定位，避免浮窗位置错位 */
+  const [resizeTick, setResizeTick] = useState(0);
+  useEffect(() => {
+    const onResize = () => setResizeTick((t) => t + 1);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, []);
   useLayoutEffect(() => {
     if (!open || !anchorRef.current) return;
     const rect = anchorRef.current.getBoundingClientRect();
@@ -467,7 +478,7 @@ export function ViewMenu({
       top: rect.bottom + 4,
       ...(isRight ? { right: window.innerWidth - rect.right } : { left: rect.left }),
     });
-  }, [open, anchorRef]);
+  }, [open, anchorRef, resizeTick]);
 
   /** 与数据/详情浮窗一致：点击空白关闭（原 useClickOutside） */
   useEffect(() => {

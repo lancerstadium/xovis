@@ -1344,10 +1344,12 @@ export const ChartView = forwardRef<
   const legendFontSize = chartLegendFontSize > 0 ? chartLegendFontSize : labelFontSize;
   const effectiveLegendSymbolSize = chartLegendSymbolSize > 0 ? chartLegendSymbolSize : 10;
   const titleStyle: React.CSSProperties = {
+    fontFamily: s.fontFamily,
     fontWeight: chartTitleBold ? 'bold' : 'normal',
     fontStyle: chartTitleItalic ? 'italic' : 'normal',
   };
   const axisTitleStyle: React.CSSProperties = {
+    fontFamily: s.fontFamily,
     fontWeight: chartAxisTitleBold ? 'bold' : 'normal',
     fontStyle: chartAxisTitleItalic ? 'italic' : 'normal',
   };
@@ -1358,11 +1360,13 @@ export const ChartView = forwardRef<
       : labelFontSize;
 
   const axisLabelStyle: React.CSSProperties = {
+    fontFamily: s.fontFamily,
     fontWeight: chartAxisLabelBold ? 'bold' : 'normal',
     fontStyle: chartAxisLabelItalic ? 'italic' : 'normal',
     fontSize: axisLabelFontSize,
   };
   const legendLabelStyle: React.CSSProperties = {
+    fontFamily: s.fontFamily,
     fontWeight: chartLegendBold ? 'bold' : 'normal',
     fontStyle: chartLegendItalic ? 'italic' : 'normal',
   };
@@ -1486,10 +1490,7 @@ export const ChartView = forwardRef<
   const plotLeft =
     padding + (isLegendOutside && isLegendOnLeft ? legendWidth : 0) + axisLabelW + yTitleW;
   const plotTop =
-    padding +
-    titleH +
-    (isLegendOutside && isLegendOnTop ? legendHeight : 0) +
-    xTitleTopMargin;
+    padding + titleH + (isLegendOutside && isLegendOnTop ? legendHeight : 0) + xTitleTopMargin;
   const plotRight =
     w - padding - (isLegendOutside && isLegendOnRight ? legendWidth : 0) - yTitleRightMargin;
   const plotBottom =
@@ -1659,7 +1660,6 @@ export const ChartView = forwardRef<
   }
 
   const palette = operatorPalette ?? [];
-
 
   const { xLabels, seriesNames, data, baseData, seriesConfigs } = chartData;
   // 创建系列名称到原始索引的映射（用于查找配置）
@@ -1906,7 +1906,7 @@ export const ChartView = forwardRef<
           </text>
         )}
         {chartShowLegend && chartData.seriesNames.length > 0 && (
-          <g className="chart-legend" style={{ fontSize: legendFontSize }}>
+          <g className="chart-legend" style={{ fontSize: legendFontSize, fontFamily: s.fontFamily }}>
             {chartData.seriesNames.map((name, originalSi) => {
               const isVisible = chartSeriesVisibility[name] !== false;
               // 始终横向排布
@@ -2100,7 +2100,7 @@ export const ChartView = forwardRef<
                                 y={yCenter + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor={textAnchor}
                                 dominantBaseline="middle"
-                                style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                                style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
                               </text>
@@ -2185,7 +2185,7 @@ export const ChartView = forwardRef<
                                 y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                 textAnchor="middle"
                                 dominantBaseline="middle"
-                                style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                                style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
                               >
                                 {formatDataLabel(val, labelDecimals)}
                               </text>
@@ -2298,7 +2298,7 @@ export const ChartView = forwardRef<
                                   y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                   textAnchor={textAnchor}
                                   dominantBaseline="middle"
-                                  style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                                  style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
                                 >
                                   {formatDataLabel(val, labelDecimals)}
                                 </text>
@@ -2408,7 +2408,7 @@ export const ChartView = forwardRef<
                                   y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                                   textAnchor="middle"
                                   dominantBaseline="auto"
-                                  style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                                  style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
                                 >
                                   {formatDataLabel(effectiveData[idx]?.[si] ?? 0, labelDecimals)}
                                 </text>
@@ -2482,7 +2482,7 @@ export const ChartView = forwardRef<
                               y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                               textAnchor={textAnchor}
                               dominantBaseline="middle"
-                              style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                              style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
                             >
                               {formatDataLabel(displayValue, labelDecimals)}
                             </text>
@@ -2551,7 +2551,7 @@ export const ChartView = forwardRef<
                               y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
                               textAnchor="middle"
                               dominantBaseline="auto"
-                              style={{ fontSize: dataLabelFontSize, ...labelStyle }}
+                              style={{ fontSize: dataLabelFontSize, fontFamily: s.fontFamily, ...labelStyle }}
                             >
                               {formatDataLabel(val, labelDecimals)}
                             </text>
@@ -2702,6 +2702,7 @@ export const ChartView = forwardRef<
                           y={ty}
                           textAnchor="middle"
                           dominantBaseline="middle"
+                          style={{ fontFamily: s.fontFamily }}
                         >
                           {truncate(item.label, pieLabelTruncate)}
                         </text>
@@ -2814,6 +2815,7 @@ export const ChartView = forwardRef<
                           y={ty}
                           textAnchor="middle"
                           dominantBaseline="middle"
+                          style={{ fontFamily: s.fontFamily }}
                         >
                           {truncate(chartData.seriesNames[si], pieLabelTruncate)}
                         </text>

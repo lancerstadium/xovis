@@ -84,7 +84,19 @@ export default function App() {
   const detailRightEdgePxRef = useRef(0);
   const t = getLocale(lang);
 
-  /** 右上角详情浮窗：与左上角设置浮窗一致，锚定在按钮下方 */
+  /** 窗口/旋转变化时触发重新测量，保证浮窗位置正确 */
+  const [resizeTick, setResizeTick] = useState(0);
+  useEffect(() => {
+    const onResize = () => setResizeTick((t) => t + 1);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, []);
+
+  /** 右上角详情浮窗：与左上角设置浮窗一致，锚定在按钮下方；resize/旋转后重新计算 */
   useLayoutEffect(() => {
     if (!sidebarOpen || !detailTriggerRef.current) return;
     const rect = detailTriggerRef.current.getBoundingClientRect();
@@ -92,7 +104,7 @@ export default function App() {
     const right = window.innerWidth - rect.right;
     setDetailPosition({ top, right });
     detailRightEdgePxRef.current = rect.right;
-  }, [sidebarOpen]);
+  }, [sidebarOpen, resizeTick]);
 
   /** 浮窗统一：点击空白关闭（详情、数据、设置均用点击外部逻辑，排除面板 + 触发按钮） */
   const closeDetail = useCallback(() => set({ sidebarOpen: false }), [set]);
