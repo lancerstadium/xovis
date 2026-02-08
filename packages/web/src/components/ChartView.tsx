@@ -1893,7 +1893,7 @@ export const ChartView = forwardRef<
           );
         })}
       </defs>
-      <g className="chart-content">
+      <g className="chart-content" style={{ fontFamily: s.fontFamily }}>
         {chartTitle && (
           <text
             className="chart-title"

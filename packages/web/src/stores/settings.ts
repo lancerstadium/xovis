@@ -1509,15 +1509,35 @@ export interface ViewSettings {
   exportPadding: number;
 }
 
-/** 顺序：自定义 + 英文字体 + 中文字体 */
-/** 字体名中的双引号改为单引号，避免写入 HTML style 时与外层双引号冲突（含 iOS） */
+/** 组合顺序：自定义 + 英文字体 + 中文字体；剥掉各栈末尾泛用族再统一缀在最后。 */
 function normalizeFontQuotes(s: string): string {
   return s.replace(/"/g, "'");
 }
 
+const GENERIC_FAMILIES = ['serif', 'sans-serif', 'monospace'];
+
+function stripTrailingGeneric(stack: string): { rest: string; generic: string } {
+  const trimmed = stack.trim();
+  if (!trimmed) return { rest: '', generic: '' };
+  const parts = trimmed.split(',').map((p) => p.trim());
+  const last = parts[parts.length - 1];
+  if (last && GENERIC_FAMILIES.includes(last))
+    return { rest: parts.slice(0, -1).join(', '), generic: last };
+  return { rest: trimmed, generic: '' };
+}
+
 function composeFontFamily(custom: string, en: string, zh: string): string {
-  const parts = [custom.trim(), en.trim(), zh.trim()].filter(Boolean);
-  const raw = parts.length ? parts.join(', ') : '-apple-system, BlinkMacSystemFont, \'Segoe UI\', Ubuntu, sans-serif';
+  const c = custom.trim();
+  const enStripped = stripTrailingGeneric(en);
+  const zhStripped = stripTrailingGeneric(zh);
+  const fontParts = [c, enStripped.rest, zhStripped.rest].filter(Boolean);
+  const generic =
+    (zhStripped.rest ? zhStripped.generic : null) ||
+    enStripped.generic ||
+    'sans-serif';
+  const raw = fontParts.length
+    ? fontParts.join(', ') + ', ' + generic
+    : "-apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, sans-serif";
   return normalizeFontQuotes(raw);
 }
 
@@ -1672,11 +1692,16 @@ export const useSettingsStore = create<
       set: (patch) =>
         setState((s) => {
           const next = { ...s, ...patch };
+          // 字体三项任一变化时重算 fontFamily；并规范 zh/custom 引号，避免持久化后与选项不匹配
           if (
             'fontFamilyEn' in patch ||
             'fontFamilyZh' in patch ||
             'fontFamilyCustom' in patch
           ) {
+            if (typeof next.fontFamilyZh === 'string' && next.fontFamilyZh)
+              next.fontFamilyZh = normalizeFontQuotes(next.fontFamilyZh);
+            if (typeof next.fontFamilyCustom === 'string' && next.fontFamilyCustom)
+              next.fontFamilyCustom = normalizeFontQuotes(next.fontFamilyCustom);
             next.fontFamily = composeFontFamily(
               next.fontFamilyCustom ?? s.fontFamilyCustom,
               next.fontFamilyEn ?? s.fontFamilyEn,

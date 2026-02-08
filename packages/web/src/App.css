@@ -729,9 +729,7 @@ body.pwa-banner-visible .main {
 .chart-svg {
   display: block;
 }
-.chart-content {
-  font-family: inherit;
-}
+/* 不设 font-family，由 SVG 根和 chart-content 内联样式传递，避免 inherit 在部分浏览器 SVG 中从错误祖先取值 */
 .chart-title,
 .chart-axis-title {
   fill: var(--text);

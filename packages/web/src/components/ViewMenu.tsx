@@ -88,7 +88,7 @@ const FONT_OPTIONS_EN: FontOption[] = [
   { name: 'Open Sans', value: "'Open Sans', sans-serif" },
 ];
 
-/* 中文字体：多系统名用单引号避免写入 HTML style 时与外层双引号冲突；iOS 优先放前面 */
+/* 中文字体：Mac 以英文/系统名注册（ST*、* SC），故 Mac 名放前；Windows 用 SimSun/KaiTi 等，中文名「楷体」等放最后作回退 */
 const FONT_OPTIONS_ZH: FontOption[] = [
   { name: '苹方', value: "'PingFang SC', -apple-system, 'PingFangSC-Regular', 'Microsoft YaHei', sans-serif" },
   { name: '微软雅黑', value: "'Microsoft YaHei', 'PingFang SC', sans-serif" },
@@ -96,18 +96,67 @@ const FONT_OPTIONS_ZH: FontOption[] = [
   { name: 'Noto Sans SC', value: "'Noto Sans SC', 'PingFang SC', sans-serif" },
   { name: '宋体', value: "'STSong', 'Songti SC', SimSun, '宋体', serif" },
   { name: '黑体', value: "'STHeiti', 'Heiti SC', SimHei, '黑体', sans-serif" },
-  { name: '楷体', value: "'STKaiti', 'Kaiti SC', KaiTi, '楷体', serif" },
-  { name: '仿宋', value: "'STFangsong', 'Fangsong SC', FangSong, '仿宋', serif" },
-  { name: '等线', value: "'DengXian', '等线', sans-serif" },
+  { name: '楷体', value: "'STKaitiSC-Regular', 'STKaiti', 'Kaiti SC', KaiTi, 'KaiTi_GB2312', '楷体', serif" },
+  { name: '仿宋', value: "'STFangsong', 'Fangsong SC', FangSong, 'FangSong_GB2312', '仿宋', serif" },
+  { name: '等线', value: "'DengXian', 'Dengxian', '等线', 'PingFang SC', 'Microsoft YaHei', sans-serif" },
   { name: '华文宋体', value: "'STSong', '华文宋体', 'Songti SC', SimSun, '宋体', serif" },
-  { name: '华文楷体', value: "'STKaiti', '华文楷体', 'Kaiti SC', KaiTi, '楷体', serif" },
+  { name: '华文楷体', value: "'STKaiti', '华文楷体', 'Kaiti SC', KaiTi, 'KaiTi_GB2312', '楷体', serif" },
   { name: '华文黑体', value: "'STHeiti', '华文黑体', 'Heiti SC', SimHei, '黑体', sans-serif" },
-  { name: '华文仿宋', value: "'STFangsong', '华文仿宋', 'Fangsong SC', FangSong, '仿宋', serif" },
+  { name: '华文仿宋', value: "'STFangsong', '华文仿宋', 'Fangsong SC', FangSong, 'FangSong_GB2312', '仿宋', serif" },
   { name: '冬青黑体', value: "'Hiragino Sans GB', '冬青黑体', 'Hiragino Sans', 'Microsoft YaHei', sans-serif" },
 ];
 
 function fontOptionLabel(o: FontOption, t: ReturnType<typeof getLocale>): string {
   return o.name ?? (o.nameKey ? t[o.nameKey] : o.value);
+}
+
+/** 与 store 一致：双引号改单引号，使持久化 value 能与当前选项匹配 */
+function normalizeFontQuotesForMatch(s: string): string {
+  return s.replace(/"/g, "'");
+}
+
+const GENERIC_FAMILIES_ZH = ['serif', 'sans-serif', 'monospace'];
+
+/** 剥掉末尾泛用族，只保留具体字体名（用于按「字体集合」匹配，顺序无关） */
+function fontStackRest(stack: string): string {
+  const t = stack.trim();
+  if (!t) return '';
+  const parts = t.split(',').map((p) => p.trim());
+  const last = parts[parts.length - 1];
+  if (last && GENERIC_FAMILIES_ZH.includes(last)) return parts.slice(0, -1).join(', ');
+  return t;
+}
+
+/** rest 解析为字体名集合（用于子集匹配） */
+function fontStackNameSet(rest: string): Set<string> {
+  return new Set(
+    rest
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+  );
+}
+
+/** 中文字体用索引作为 select value；兼容旧持久化：完整 value 匹配，或存储的字体集合是某选项的子集/一致时匹配 */
+function getZhFontSelectIndex(stored: string, options: FontOption[]): number {
+  if (!stored) return -1;
+  const normalized = normalizeFontQuotesForMatch(stored);
+  let i = options.findIndex((o) => o.value === normalized || o.value === stored);
+  if (i >= 0) return i;
+  const storedRest = fontStackRest(normalized);
+  if (!storedRest) return -1;
+  const storedSet = fontStackNameSet(storedRest);
+  if (storedSet.size === 0) return -1;
+  i = options.findIndex((o) => {
+    const oRest = fontStackRest(normalizeFontQuotesForMatch(o.value));
+    const oSet = fontStackNameSet(oRest);
+    if (oSet.size === 0) return false;
+    if (storedSet.size === oSet.size && [...storedSet].every((f) => oSet.has(f))) return true;
+    if (storedSet.size <= oSet.size && [...storedSet].every((f) => oSet.has(f))) return true;
+    if (oSet.size <= storedSet.size && [...oSet].every((f) => storedSet.has(f))) return true;
+    return false;
+  });
+  return i >= 0 ? i : -1;
 }
 
 const TENSOR_ROLE_KEYS: (keyof ReturnType<typeof getLocale>)[] = [
@@ -666,12 +715,19 @@ export function ViewMenu({
                     <PanelOptionRow label={t.settingsFontZh}>
                       <select
                         className="view-input"
-                        value={s.fontFamilyZh}
-                        onChange={(e) => s.set({ fontFamilyZh: e.target.value })}
+                        value={(() => {
+                          const idx = getZhFontSelectIndex(s.fontFamilyZh, FONT_OPTIONS_ZH);
+                          return idx < 0 ? '' : String(idx);
+                        })()}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const fontZh = v === '' ? '' : FONT_OPTIONS_ZH[Number(v)]?.value ?? '';
+                          s.set({ fontFamilyZh: fontZh });
+                        }}
                       >
                         <option value="">{t.settingsFontZhNone}</option>
-                        {FONT_OPTIONS_ZH.map((o) => (
-                          <option key={o.value} value={o.value}>
+                        {FONT_OPTIONS_ZH.map((o, i) => (
+                          <option key={i} value={i}>
                             {fontOptionLabel(o, t)}
                           </option>
                         ))}
