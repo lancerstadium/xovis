@@ -8,6 +8,8 @@ export const locale: Record<
   Lang,
   {
     appTitle: string;
+    pwaInstallPrompt: string;
+    pwaInstallDismiss: string;
     navGraph: string;
     navSettings: string;
     navData: string;
@@ -374,6 +376,8 @@ export const locale: Record<
 > = {
   zh: {
     appTitle: 'xovis',
+    pwaInstallPrompt: '安装应用',
+    pwaInstallDismiss: '暂不',
     navGraph: '计算图',
     navSettings: '设置',
     navData: '数据',
@@ -739,6 +743,8 @@ export const locale: Record<
   },
   en: {
     appTitle: 'xovis',
+    pwaInstallPrompt: 'Install app',
+    pwaInstallDismiss: 'Not now',
     navGraph: 'Graph',
     navSettings: 'Settings',
     navData: 'Data',

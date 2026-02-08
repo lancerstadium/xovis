@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Loader, CanvasPanel, Detail, ViewMenu, ElectronTitleBar } from './components';
+import { Loader, CanvasPanel, Detail, ViewMenu, ElectronTitleBar, PwaInstallBanner } from './components';
 import { DataPanel } from './components/DataPanel';
 import type { CanvasPanelHandle } from './components/CanvasPanel';
 import { useSettingsStore, useGraphStore, useElectronTabsStore } from './stores';
@@ -145,8 +145,8 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement.style;
     root.setProperty('--float-trigger-row', `${FLOAT_TRIGGER_ROW}px`);
-    root.setProperty('--float-trigger-row-bottom', `${FLOAT_TRIGGER_ROW}px`);
     root.setProperty('--float-panel-gap', `${DETAIL_CARD_GAP}px`);
+    // --float-trigger-row-bottom 由 index.css 设置（含 safe-area-inset-bottom，避免 iPhone 底部圆角遮挡）
     root.setProperty(
       '--float-panel-max-height',
       'calc(100vh - var(--float-trigger-row) - var(--float-panel-gap) - var(--float-trigger-row-bottom))'
@@ -222,6 +222,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <PwaInstallBanner />
       <ElectronTitleBar />
       <main className="main">
         {/* 画布：计算图或图表（与数据面板视图互斥），可导出 SVG */}

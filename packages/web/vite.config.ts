@@ -28,18 +28,14 @@ export default defineConfig({
               background_color: '#1a1a1a',
               display: 'standalone',
               start_url: basePath,
-              icons: [
-                { src: `${basePath}favicon.svg`, type: 'image/svg+xml', sizes: 'any', purpose: 'any' },
-                {
-                  src: `${basePath}favicon-app.svg`,
-                  type: 'image/svg+xml',
-                  sizes: 'any',
-                  purpose: 'maskable',
-                },
-              ],
+              // icons 由 pwaAssets 从 favicon.svg 生成 192/512 PNG，安装时显示 logo
+            },
+            pwaAssets: {
+              image: 'public/favicon.svg',
+              overrideManifestIcons: true,
             },
             workbox: {
-              globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
+              globPatterns: ['**/*.{js,css,html,ico,svg,woff2,json}'],
               navigateFallback: `${basePath}index.html`,
             },
           }),

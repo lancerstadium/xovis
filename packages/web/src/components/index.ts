@@ -6,3 +6,4 @@ export { Detail } from './Detail';
 export { ViewMenu } from './ViewMenu';
 export { DataPanel } from './DataPanel';
 export { ElectronTitleBar } from './ElectronTitleBar';
+export { PwaInstallBanner } from './PwaInstallBanner';

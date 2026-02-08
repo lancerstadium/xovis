@@ -1,3 +1,8 @@
+/* PWA 安装横幅显示时为主区域留出顶部空间 */
+body.pwa-banner-visible .main {
+  padding-top: calc(48px + env(safe-area-inset-top, 0px));
+}
+
 /* 主面板统一：全屏计算图，无顶栏，操作悬浮 */
 .app {
   width: 100%;
@@ -327,26 +332,26 @@
   opacity: 1;
 }
 .floating-trigger-tl {
-  top: 10px;
-  left: 10px;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: calc(10px + env(safe-area-inset-left, 0px));
 }
 .floating-trigger-tr {
-  top: 10px;
-  right: 10px;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: calc(10px + env(safe-area-inset-right, 0px));
 }
 .toolbar-bl {
-  bottom: 10px;
-  left: 10px;
+  bottom: calc(10px + var(--safe-area-inset-bottom, 0px));
+  left: calc(10px + env(safe-area-inset-left, 0px));
   top: auto;
 }
 .toolbar-right {
-  bottom: 10px;
-  right: 10px;
+  bottom: calc(10px + var(--safe-area-inset-bottom, 0px));
+  right: calc(10px + env(safe-area-inset-right, 0px));
   left: auto;
   top: auto;
 }
 .toolbar-bc {
-  bottom: 10px;
+  bottom: calc(10px + var(--safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   top: auto;
