@@ -18,19 +18,18 @@
           document.documentElement.classList.add('electron-app');
           document.documentElement.style.setProperty('--electron-title-height', h + 'px');
         }
-        // PWA 首屏视口未稳定时会出现白底遮挡，旋转后重算即正常；此处用实际视口同步根高度并监听 orientationchange/resize
+        // 首屏高度由 CSS 100dvh 控制，避免 iOS 首次进入时脚本拿到错误视口导致色块；此处仅同步 --viewport-height-px 供 JS 用，不写 html 的 height
         function setViewportHeight() {
           var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-          document.documentElement.style.setProperty('--viewport-height-px', h + 'px');
-          document.documentElement.style.height = h + 'px';
-          document.documentElement.style.minHeight = h + 'px';
+          if (h > 0) document.documentElement.style.setProperty('--viewport-height-px', h + 'px');
         }
         setViewportHeight();
         setTimeout(setViewportHeight, 0);
         setTimeout(setViewportHeight, 150);
-        window.addEventListener('orientationchange', function () {
-          setTimeout(setViewportHeight, 100);
-        });
+        setTimeout(setViewportHeight, 400);
+        setTimeout(setViewportHeight, 700);
+        if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(setViewportHeight);
+        window.addEventListener('orientationchange', function () { setTimeout(setViewportHeight, 100); });
         window.addEventListener('resize', setViewportHeight);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', setViewportHeight);
