@@ -1275,11 +1275,8 @@ export const ChartView = forwardRef<
 
   // 仅使用已选中的 Y 列（key 非空），避免添加空 slot 未选中时影响图表数据与坐标轴
   const selectedYKeys = useMemo(() => chartYKeys.filter((yc) => yc.key), [chartYKeys]);
-  // 只序列化 key 列表，确保添加空 slot 时 key 不变
-  const chartYKeysKey = useMemo(
-    () => JSON.stringify(selectedYKeys.map((yc) => yc.key)),
-    [selectedYKeys]
-  );
+  // 序列化完整 Y 列配置，使数据面板内任意配置变更时 chartData 会重建（柱状/折线/散点/扇形等全部生效）
+  const chartYKeysKey = useMemo(() => JSON.stringify(selectedYKeys), [selectedYKeys]);
   const chartData = useMemo(() => {
     if (!graph) return null;
     const rows = getOperatorRows(graph);
