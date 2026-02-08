@@ -89,17 +89,16 @@ const DATA_PANEL_DEFAULT_WIDTH = 440;
 const DATA_PANEL_DEFAULT_HEIGHT = 320;
 const DATA_PANEL_MIN_WIDTH = 220;
 const DATA_PANEL_MIN_HEIGHT = 120;
-/** 与 App 浮窗一致：上/下按钮行 + 间距，便于随窗口变化限制高度 */
-const FLOAT_TRIGGER_ROW = 10 + 28 + 6;
+/** 与 App 浮窗一致：上/下按钮行 + 间距；触控设备用 36px 与 CSS --float-trigger-row 一致 */
+const getFloatTriggerRowPx = () =>
+  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? 36 : 44;
 const FLOAT_PANEL_GAP = 12;
 const DATA_PANEL_MAX_WIDTH = () =>
-  typeof window !== 'undefined'
-    ? Math.min(Math.round(window.innerWidth * 0.9), 960)
-    : 960;
+  typeof window !== 'undefined' ? Math.min(Math.round(window.innerWidth * 0.9), 960) : 960;
 /** 与详情/设置浮窗共用同一套最大高度（--float-panel-max-height 的 JS 等价） */
 const getFloatPanelMaxHeight = () =>
   typeof window !== 'undefined'
-    ? window.innerHeight - FLOAT_TRIGGER_ROW - FLOAT_PANEL_GAP - FLOAT_TRIGGER_ROW
+    ? window.innerHeight - getFloatTriggerRowPx() - FLOAT_PANEL_GAP - getFloatTriggerRowPx()
     : 400;
 const DATA_PANEL_MAX_HEIGHT = () => Math.round(getFloatPanelMaxHeight());
 
@@ -749,10 +748,10 @@ function YColumnConfigRow({
                     }
                   >
                     {styleLabels.barFillStyles.map((s) => (
-                        <option key={s.value} value={s.value}>
-                          {s.label}
-                        </option>
-                      ))}
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1001,7 +1000,6 @@ function MappingEditor({
     </div>
   );
 }
-
 
 export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_, ref) {
   const { graph } = useGraphStore();

@@ -3,6 +3,8 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --float-trigger-row: 44px;
   --float-trigger-row-bottom: calc(44px + var(--safe-area-inset-bottom));
+  /** 顶部/底部按钮离视口边缘距离，对称 */
+  --float-trigger-inset: 10px;
   --float-panel-gap: 12px;
   --float-panel-max-height: calc(
     100vh - var(--float-trigger-row) - var(--float-panel-gap) - var(--float-trigger-row-bottom)
@@ -26,6 +28,13 @@
   --tensor-fill: #f8fafc;
   --tensor-stroke: #94a3b8;
   --edge-stroke: #94a3b8;
+}
+@media (pointer: coarse) {
+  :root {
+    --float-trigger-row: 36px;
+    --float-trigger-row-bottom: calc(36px + var(--safe-area-inset-bottom));
+    --float-trigger-inset: 6px;
+  }
 }
 [data-theme='dark'] {
   --bg: #18181b;
@@ -67,7 +76,7 @@ html {
     min-height: 100dvh;
   }
 }
-/* body 仅用 100% 继承 html，避免 PWA 首屏 100dvh 偏小导致底部大片留白 */
+/* body 仅用 100% 继承 html；PWA 首屏由 index.html 内脚本同步 --viewport-height-px 与 html 高度，避免白底遮挡 */
 body {
   position: fixed;
   inset: 0;
@@ -75,6 +84,7 @@ body {
   height: 100%;
   min-width: 0;
   min-height: 100vh;
+  min-height: var(--viewport-height-px, 100vh);
   overflow: hidden;
   overscroll-behavior: none;
   font-family:
@@ -88,6 +98,7 @@ body {
 #root {
   height: 100%;
   min-height: 100vh;
+  min-height: var(--viewport-height-px, 100vh);
   width: 100%;
   min-width: 0;
   overflow: hidden;

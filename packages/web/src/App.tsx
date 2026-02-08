@@ -1,5 +1,12 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
-import { Loader, CanvasPanel, Detail, ViewMenu, ElectronTitleBar, PwaInstallBanner } from './components';
+import {
+  Loader,
+  CanvasPanel,
+  Detail,
+  ViewMenu,
+  ElectronTitleBar,
+  PwaInstallBanner,
+} from './components';
 import { DataPanel } from './components/DataPanel';
 import type { CanvasPanelHandle } from './components/CanvasPanel';
 import { useSettingsStore, useGraphStore, useElectronTabsStore } from './stores';
@@ -156,9 +163,11 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement.style;
-    root.setProperty('--float-trigger-row', `${FLOAT_TRIGGER_ROW}px`);
+    const isCoarse =
+      typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+    const rowPx = isCoarse ? 36 : FLOAT_TRIGGER_ROW;
+    root.setProperty('--float-trigger-row', `${rowPx}px`);
     root.setProperty('--float-panel-gap', `${DETAIL_CARD_GAP}px`);
-    // --float-trigger-row-bottom 由 index.css 设置（含 safe-area-inset-bottom，避免 iPhone 底部圆角遮挡）
     root.setProperty(
       '--float-panel-max-height',
       'calc(100vh - var(--float-trigger-row) - var(--float-panel-gap) - var(--float-trigger-row-bottom))'
@@ -741,14 +750,30 @@ function ExportSvgButton({
             ?.replace(/\.[^.]+$/, '')
         : `chart-${viewMode}`) || 'export';
 
-    const vscodeSave = (typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_SAVE?: (p: { type: string; format?: string; content?: string; suggestedName?: string }) => void }).__XOVIS_VSCODE_SAVE);
+    const vscodeSave =
+      typeof window !== 'undefined' &&
+      (
+        window as unknown as {
+          __XOVIS_VSCODE_SAVE?: (p: {
+            type: string;
+            format?: string;
+            content?: string;
+            suggestedName?: string;
+          }) => void;
+        }
+      ).__XOVIS_VSCODE_SAVE;
 
     // SVG格式直接导出
     if (exportFormat === 'svg') {
       const serialized = new XMLSerializer().serializeToString(svg);
       const withDeclaration = `<?xml version="1.0" encoding="UTF-8"?>\n${serialized}`;
       if (vscodeSave) {
-        vscodeSave({ type: 'save', format: 'svg', content: withDeclaration, suggestedName: `${baseName}.svg` });
+        vscodeSave({
+          type: 'save',
+          format: 'svg',
+          content: withDeclaration,
+          suggestedName: `${baseName}.svg`,
+        });
         return;
       }
       const blob = new Blob([withDeclaration], { type: 'image/svg+xml;charset=utf-8' });
@@ -803,7 +828,12 @@ function ExportSvgButton({
 
         if (vscodeSave) {
           const dataUrl = pdf.output('datauristring');
-          vscodeSave({ type: 'save', format: 'pdf', content: dataUrl, suggestedName: `${baseName}.pdf` });
+          vscodeSave({
+            type: 'save',
+            format: 'pdf',
+            content: dataUrl,
+            suggestedName: `${baseName}.pdf`,
+          });
           return;
         }
         pdf.save(`${baseName}.pdf`);
@@ -876,7 +906,12 @@ function ExportSvgButton({
           pdf.addImage(imgData, 'PNG', 0, 0, widthMm, heightMm);
           if (vscodeSave) {
             const dataUrl = pdf.output('datauristring');
-            vscodeSave({ type: 'save', format: 'pdf', content: dataUrl, suggestedName: `${baseName}.pdf` });
+            vscodeSave({
+              type: 'save',
+              format: 'pdf',
+              content: dataUrl,
+              suggestedName: `${baseName}.pdf`,
+            });
           } else {
             pdf.save(`${baseName}.pdf`);
           }
@@ -982,7 +1017,12 @@ function ExportSvgButton({
             const reader = new FileReader();
             reader.onload = () => {
               const dataUrl = reader.result as string;
-              vscodeSave({ type: 'save', format: exportFormat, content: dataUrl, suggestedName: filename });
+              vscodeSave({
+                type: 'save',
+                format: exportFormat,
+                content: dataUrl,
+                suggestedName: filename,
+              });
             };
             reader.readAsDataURL(blob);
             return;

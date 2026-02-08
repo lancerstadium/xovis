@@ -139,6 +139,17 @@ body.pwa-banner-visible .main {
 .btn.icon-btn svg {
   display: block;
 }
+@media (pointer: coarse) {
+  .toolbar-bl .btn.icon-btn,
+  .toolbar-bl .icon-btn,
+  .toolbar-bc .btn.icon-btn,
+  .toolbar-bc .icon-btn,
+  .toolbar-right .btn.icon-btn,
+  .toolbar-right .icon-btn {
+    width: 24px;
+    height: 24px;
+  }
+}
 
 /* 左下角工具栏：与其它 floating-trigger 一致 */
 .loader-combo {
@@ -333,26 +344,26 @@ body.pwa-banner-visible .main {
   opacity: 1;
 }
 .floating-trigger-tl {
-  top: calc(10px + env(safe-area-inset-top, 0px));
-  left: calc(10px + env(safe-area-inset-left, 0px));
+  top: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-top, 0px));
+  left: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-left, 0px));
 }
 .floating-trigger-tr {
-  top: calc(10px + env(safe-area-inset-top, 0px));
-  right: calc(10px + env(safe-area-inset-right, 0px));
+  top: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-top, 0px));
+  right: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-right, 0px));
 }
 .toolbar-bl {
-  bottom: calc(10px + var(--safe-area-inset-bottom, 0px));
-  left: calc(10px + env(safe-area-inset-left, 0px));
+  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  left: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-left, 0px));
   top: auto;
 }
 .toolbar-right {
-  bottom: calc(10px + var(--safe-area-inset-bottom, 0px));
-  right: calc(10px + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  right: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-right, 0px));
   left: auto;
   top: auto;
 }
 .toolbar-bc {
-  bottom: calc(10px + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   top: auto;
@@ -663,7 +674,9 @@ body.pwa-banner-visible .main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .chart-style-expand-btn:hover {
   background: color-mix(in srgb, var(--accent) 24%, transparent);
