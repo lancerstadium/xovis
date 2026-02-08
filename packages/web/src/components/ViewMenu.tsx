@@ -87,22 +87,22 @@ const FONT_OPTIONS_EN: FontOption[] = [
   { name: 'Open Sans', value: '"Open Sans", sans-serif' },
 ];
 
-/* 中文字体：同一字体在 Windows/Mac 名称不同，用 font stack 列出多系统名称以便匹配 */
+/* 中文字体：同一字体在 Windows/Mac/iOS 名称不同，列出多系统名称以便匹配；iOS 常用 ST* / -apple-system */
 const FONT_OPTIONS_ZH: FontOption[] = [
-  { name: '苹方', value: '"PingFang SC", "Microsoft YaHei", sans-serif' },
+  { name: '苹方', value: '-apple-system, "PingFang SC", "PingFangSC-Regular", "Microsoft YaHei", sans-serif' },
   { name: '微软雅黑', value: '"Microsoft YaHei", "PingFang SC", sans-serif' },
   { name: '思源黑体', value: '"Source Han Sans SC", "PingFang SC", sans-serif' },
   { name: 'Noto Sans SC', value: '"Noto Sans SC", "PingFang SC", sans-serif' },
-  { name: '宋体', value: 'SimSun, "宋体", "Songti SC", serif' },
-  { name: '黑体', value: 'SimHei, "黑体", "Heiti SC", sans-serif' },
-  { name: '楷体', value: 'KaiTi, "楷体", "Kaiti SC", serif' },
-  { name: '仿宋', value: 'FangSong, "仿宋", "Fangsong SC", serif' },
+  { name: '宋体', value: 'SimSun, "宋体", "STSong", "Songti SC", serif' },
+  { name: '黑体', value: 'SimHei, "黑体", "STHeiti", "Heiti SC", sans-serif' },
+  { name: '楷体', value: 'KaiTi, "楷体", "STKaiti", "Kaiti SC", serif' },
+  { name: '仿宋', value: 'FangSong, "仿宋", "STFangsong", "Fangsong SC", serif' },
   { name: '等线', value: '"DengXian", "等线", sans-serif' },
-  { name: '华文宋体', value: '"STSong", "华文宋体", SimSun, "宋体", serif' },
-  { name: '华文楷体', value: '"STKaiti", "华文楷体", KaiTi, "楷体", serif' },
-  { name: '华文黑体', value: '"STHeiti", "华文黑体", SimHei, "黑体", sans-serif' },
-  { name: '华文仿宋', value: '"STFangsong", "华文仿宋", FangSong, "仿宋", serif' },
-  { name: '冬青黑体', value: '"Hiragino Sans GB", "冬青黑体", "Microsoft YaHei", sans-serif' },
+  { name: '华文宋体', value: '"STSong", "华文宋体", "Songti SC", SimSun, "宋体", serif' },
+  { name: '华文楷体', value: '"STKaiti", "华文楷体", "Kaiti SC", KaiTi, "楷体", serif' },
+  { name: '华文黑体', value: '"STHeiti", "华文黑体", "Heiti SC", SimHei, "黑体", sans-serif' },
+  { name: '华文仿宋', value: '"STFangsong", "华文仿宋", "Fangsong SC", FangSong, "仿宋", serif' },
+  { name: '冬青黑体', value: '"Hiragino Sans GB", "冬青黑体", "Hiragino Sans", "Microsoft YaHei", sans-serif' },
 ];
 
 function fontOptionLabel(o: FontOption, t: ReturnType<typeof getLocale>): string {
