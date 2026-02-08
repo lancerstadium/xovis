@@ -1,5 +1,5 @@
 /* 学术风预设初值，由 store 覆盖；浮窗高度=视口减上/下按钮行与间距，App.tsx 同步写入。
- * iOS 首进色块成因：首帧 env(safe-area-inset-*) 有时未生效(为 0)，固定栏被状态栏/Home 条遮挡；旋转后 resize 重算即正常。对策：index 首帧从 localStorage 恢复主题、触屏下固定栏用 max(inset, 最小 44/34px) 保底。 */
+ * iOS 首进色块成因：首帧 env(safe-area-inset-*) 有时未生效(为 0)，固定栏被状态栏/Home 条遮挡；旋转后 resize 重算即正常。对策：index 首帧从 localStorage 恢复主题、触屏下固定栏用 max(inset, 最小 34px) 上下对称保底。 */
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   /** 横屏时左右安全区可能一大一小，取较大值使左右按钮视觉对称 */
@@ -73,13 +73,25 @@ html {
   overscroll-behavior: none;
   background: var(--bg);
 }
+/* 显式用一层填满底部安全区，避免该区域露出浏览器/系统默认色块；z-index:-1 保证始终在按钮下层 */
+html::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--bg);
+  pointer-events: none;
+  z-index: -1;
+}
 @supports (height: 100dvh) {
   html {
     height: 100dvh;
     min-height: 100dvh;
   }
 }
-/* body 不覆盖底部安全区，该区域由 html 背景填充，避免系统绘制异色块 */
+/* body 不覆盖底部安全区，该区域由 html::after 填充 */
 body {
   position: fixed;
   top: 0;
@@ -99,11 +111,15 @@ body {
   color: var(--text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  z-index: 1;
 }
 /* 触屏/PWA 首帧 safe-area 常为 0，用最小保留使首屏即正确；首帧后脚本触发 resize 促浏览器重算 */
 @media (pointer: coarse), (display-mode: standalone) {
+  html::after {
+    height: max(env(safe-area-inset-bottom, 0px), 34px);
+  }
   body {
-    bottom: max(env(safe-area-inset-bottom, 0px), 44px);
+    bottom: max(env(safe-area-inset-bottom, 0px), 34px);
   }
 }
 #root {
