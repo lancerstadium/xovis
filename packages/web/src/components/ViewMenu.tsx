@@ -70,22 +70,22 @@ const COLOR_LABELS: Record<ColorKey, keyof ReturnType<typeof getLocale>> = {
 /** 字体项：name 直接显示，nameKey 用 locale；value 为 font stack */
 type FontOption = { name?: string; nameKey?: keyof ReturnType<typeof getLocale>; value: string };
 
-/* 带空格的字体名用单引号，避免写入 HTML style 时与外层双引号冲突 */
+/* 带空格的字体名用单引号，避免写入 HTML style 时与外层双引号冲突；value 统一用双引号包裹便于书写 */
 const FONT_OPTIONS_EN: FontOption[] = [
-  { nameKey: 'settingsFontSystem', value: '-apple-system, BlinkMacSystemFont, \'Segoe UI\', Ubuntu, sans-serif' },
-  { nameKey: 'settingsFontSans', value: 'system-ui, \'Segoe UI\', Roboto, sans-serif' },
-  { nameKey: 'settingsFontMono', value: 'ui-monospace, \'Cascadia Code\', Consolas, monospace' },
-  { name: 'Times New Roman', value: '\'Times New Roman\', Times, serif' },
+  { nameKey: 'settingsFontSystem', value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, sans-serif" },
+  { nameKey: 'settingsFontSans', value: "system-ui, 'Segoe UI', Roboto, sans-serif" },
+  { nameKey: 'settingsFontMono', value: "ui-monospace, 'Cascadia Code', Consolas, monospace" },
+  { name: 'Times New Roman', value: "'Times New Roman', Times, serif" },
   { name: 'Arial', value: 'Arial, Helvetica, sans-serif' },
   { name: 'Georgia', value: 'Georgia, serif' },
   { name: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
-  { name: 'Segoe UI', value: '\'Segoe UI\', Tahoma, sans-serif' },
-  { name: 'Consolas', value: 'Consolas, \'Courier New\', monospace' },
-  { name: 'Courier New', value: '\'Courier New\', Courier, monospace' },
+  { name: 'Segoe UI', value: "'Segoe UI', Tahoma, sans-serif" },
+  { name: 'Consolas', value: "Consolas, 'Courier New', monospace" },
+  { name: 'Courier New', value: "'Courier New', Courier, monospace" },
   { name: 'Tahoma', value: 'Tahoma, Geneva, sans-serif' },
-  { name: 'Calibri', value: 'Calibri, \'Segoe UI\', sans-serif' },
+  { name: 'Calibri', value: "Calibri, 'Segoe UI', sans-serif" },
   { name: 'Roboto', value: 'Roboto, sans-serif' },
-  { name: 'Open Sans', value: '\'Open Sans\', sans-serif' },
+  { name: 'Open Sans', value: "'Open Sans', sans-serif" },
 ];
 
 /* 中文字体：多系统名用单引号避免写入 HTML style 时与外层双引号冲突；iOS 优先放前面 */
