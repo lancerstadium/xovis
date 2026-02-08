@@ -332,42 +332,30 @@ body.pwa-banner-visible .main {
 [data-silent='true'] .floating-trigger.icon-btn:focus-visible {
   opacity: 1;
 }
-/* iOS PWA 首帧时 env(safe-area-inset-*) 有时未生效(为 0)，固定栏会落在状态栏/Home 条下被遮挡；触屏下上下对称最小 inset 34px */
 .floating-trigger-tl {
-  top: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-top, 0px));
+  top: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-top-used, 0px));
   left: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-h, 0px));
 }
 .floating-trigger-tr {
-  top: calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-top, 0px));
+  top: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-top-used, 0px));
   right: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-h, 0px));
 }
 .toolbar-bl {
-  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom-used, 0px));
   left: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-h, 0px));
   top: auto;
 }
 .toolbar-right {
-  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom-used, 0px));
   right: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-h, 0px));
   left: auto;
   top: auto;
 }
 .toolbar-bc {
-  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px));
+  bottom: calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom-used, 0px));
   left: 50%;
   transform: translateX(-50%);
   top: auto;
-}
-@media (pointer: coarse) {
-  .floating-trigger-tl,
-  .floating-trigger-tr {
-    top: max(calc(var(--float-trigger-inset, 10px) + env(safe-area-inset-top, 0px)), 34px);
-  }
-  .toolbar-bl,
-  .toolbar-right,
-  .toolbar-bc {
-    bottom: max(calc(var(--float-trigger-inset, 10px) + var(--safe-area-inset-bottom, 0px)), 34px);
-  }
 }
 /* 数据面板：与详情/设置浮窗一致，随窗口限制宽高（复用 --float-panel-max-height、max-width） */
 .data-panel-wrap {
