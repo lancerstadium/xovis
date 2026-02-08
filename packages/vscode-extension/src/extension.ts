@@ -18,16 +18,11 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
     editorPanel.reveal(column);
     return;
   }
-  editorPanel = vscode.window.createWebviewPanel(
-    'xovis.panel',
-    'xovis',
-    column,
-    {
-      enableScripts: true,
-      retainContextWhenHidden: true,
-      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
-    }
-  );
+  editorPanel = vscode.window.createWebviewPanel('xovis.panel', 'xovis', column, {
+    enableScripts: true,
+    retainContextWhenHidden: true,
+    localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+  });
   const imagesDir = vscode.Uri.joinPath(extensionUri, 'images');
   editorPanel.iconPath = {
     light: vscode.Uri.joinPath(imagesDir, 'favicon-raw-light.svg'),
@@ -44,7 +39,14 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
   const themeSub = vscode.window.onDidChangeActiveColorTheme(updateFavicon);
 
   editorPanel.webview.onDidReceiveMessage(
-    async (message: { type: string; uri?: string; format?: string; content?: string; suggestedName?: string; fileName?: string }) => {
+    async (message: {
+      type: string;
+      uri?: string;
+      format?: string;
+      content?: string;
+      suggestedName?: string;
+      fileName?: string;
+    }) => {
       if (message.type === 'requestLoadFile') {
         const uris = await vscode.window.showOpenDialog({
           canSelectMany: false,
@@ -109,11 +111,6 @@ function openOrRevealPanel(extensionUri: vscode.Uri): void {
   });
 }
 
-function getFaviconForTheme(): string {
-  const kind = vscode.window.activeColorTheme?.kind ?? vscode.ColorThemeKind.Dark;
-  return kind === vscode.ColorThemeKind.Light ? 'favicon-app.svg' : 'favicon-dark.svg';
-}
-
 function getHtmlForWebview(
   webview: vscode.Webview,
   extensionUri: vscode.Uri,
@@ -134,7 +131,10 @@ function getHtmlForWebview(
     .replace(/href="\.\//g, `href="${baseSlash}`);
   const faviconName = 'favicon-raw.svg';
   html = html.replace(/favicon\.svg/g, faviconName);
-  html = html.replace(/<link[^>]*rel=["']icon["'][^>]*>/i, `<link rel="icon" type="image/svg+xml" href="${baseSlash}${faviconName}">`);
+  html = html.replace(
+    /<link[^>]*rel=["']icon["'][^>]*>/i,
+    `<link rel="icon" type="image/svg+xml" href="${baseSlash}${faviconName}">`
+  );
 
   const csp = [
     `default-src ${webview.cspSource}`,
@@ -151,7 +151,10 @@ function getHtmlForWebview(
   const dropScript = `<script>document.addEventListener('dragover',function(e){e.preventDefault();},{passive:false});document.addEventListener('drop',function(e){e.preventDefault();},{passive:false});</script>`;
   const themeScript = `<script>window.addEventListener('message', function(e){if(e.data&&e.data.type==='theme'&&e.data.favicon){var l=document.querySelector('link[rel="icon"]');if(l&&window.__XOVIS_MEDIA_BASE)l.href=window.__XOVIS_MEDIA_BASE+e.data.favicon;}});</script>`;
   html = html.replace('<head>', '<head>\n' + baseTag);
-  html = html.replace('</head>', `${cspMeta}\n${vscodeFillStyle}\n${initialScript}\n${dropScript}\n${themeScript}\n</head>`);
+  html = html.replace(
+    '</head>',
+    `${cspMeta}\n${vscodeFillStyle}\n${initialScript}\n${dropScript}\n${themeScript}\n</head>`
+  );
   return html;
 }
 

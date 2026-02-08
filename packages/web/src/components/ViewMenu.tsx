@@ -914,6 +914,60 @@ export function ViewMenu({
                     defaultVal={0}
                     onChange={(n) => s.set({ chartAxisTitleFontSize: n })}
                   />
+                  <NumRow
+                    label={t.settingsChartAxisLabelMaxFontSize}
+                    value={s.chartAxisLabelMaxFontSize}
+                    min={0}
+                    max={24}
+                    defaultVal={0}
+                    onChange={(n) => s.set({ chartAxisLabelMaxFontSize: n })}
+                  />
+                  <Row label={t.settingsChartYTitlePosition}>
+                    <select
+                      className="view-input"
+                      value={s.chartYTitlePosition}
+                      onChange={(e) =>
+                        s.set({ chartYTitlePosition: e.target.value as 'left' | 'right' })
+                      }
+                    >
+                      <option value="left">{t.settingsChartYTitlePositionLeft}</option>
+                      <option value="right">{t.settingsChartYTitlePositionRight}</option>
+                    </select>
+                  </Row>
+                  <Row label={t.settingsChartXTitlePosition}>
+                    <select
+                      className="view-input"
+                      value={s.chartXTitlePosition}
+                      onChange={(e) =>
+                        s.set({ chartXTitlePosition: e.target.value as 'top' | 'bottom' })
+                      }
+                    >
+                      <option value="top">{t.settingsChartXTitlePositionTop}</option>
+                      <option value="bottom">{t.settingsChartXTitlePositionBottom}</option>
+                    </select>
+                  </Row>
+                  <div className="panel-check-list">
+                    <PanelCheck
+                      label={t.settingsChartTitleBold}
+                      checked={s.chartTitleBold}
+                      onChange={(v) => s.set({ chartTitleBold: v })}
+                    />
+                    <PanelCheck
+                      label={t.settingsChartTitleItalic}
+                      checked={s.chartTitleItalic}
+                      onChange={(v) => s.set({ chartTitleItalic: v })}
+                    />
+                    <PanelCheck
+                      label={t.settingsChartAxisTitleBold}
+                      checked={s.chartAxisTitleBold}
+                      onChange={(v) => s.set({ chartAxisTitleBold: v })}
+                    />
+                    <PanelCheck
+                      label={t.settingsChartAxisTitleItalic}
+                      checked={s.chartAxisTitleItalic}
+                      onChange={(v) => s.set({ chartAxisTitleItalic: v })}
+                    />
+                  </div>
                 </Section>
                 <Section title={t.settingsSectionChartDataLabels}>
                   <div style={{ padding: '8px 0', color: 'var(--text2)', fontSize: '12px' }}></div>

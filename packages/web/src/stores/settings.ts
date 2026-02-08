@@ -1317,6 +1317,20 @@ export interface ViewSettings {
   chartTitleFontSize: number;
   /** 图表：轴标题字号（0=沿用标签字号） */
   chartAxisTitleFontSize: number;
+  /** 图表：标题加粗 */
+  chartTitleBold: boolean;
+  /** 图表：标题斜体 */
+  chartTitleItalic: boolean;
+  /** 图表：轴小标题加粗 */
+  chartAxisTitleBold: boolean;
+  /** 图表：轴小标题斜体 */
+  chartAxisTitleItalic: boolean;
+  /** 图表：坐标轴刻度标签最大字号（0=不限制，避免与小标题重合） */
+  chartAxisLabelMaxFontSize: number;
+  /** 图表：Y 轴小标题位置（左/右） */
+  chartYTitlePosition: 'left' | 'right';
+  /** 图表：X 轴小标题位置（上/下） */
+  chartXTitlePosition: 'top' | 'bottom';
   /** 图表：显示坐标轴线 */
   chartShowAxisLine: boolean;
   /** 图表：坐标轴线宽 */
@@ -1509,6 +1523,13 @@ const defaults: ViewSettings = {
   chartYTitle: '',
   chartTitleFontSize: 0,
   chartAxisTitleFontSize: 0,
+  chartTitleBold: false,
+  chartTitleItalic: false,
+  chartAxisTitleBold: false,
+  chartAxisTitleItalic: false,
+  chartAxisLabelMaxFontSize: 0,
+  chartYTitlePosition: 'left',
+  chartXTitlePosition: 'bottom',
   chartShowAxisLine: true,
   chartAxisStrokeWidth: 1,
   chartShowAxisLabels: true,
@@ -1676,6 +1697,13 @@ export const useSettingsStore = create<
         if (out.chartYTitle == null) out.chartYTitle = '';
         if (out.chartTitleFontSize == null) out.chartTitleFontSize = 0;
         if (out.chartAxisTitleFontSize == null) out.chartAxisTitleFontSize = 0;
+        if (out.chartTitleBold == null) out.chartTitleBold = false;
+        if (out.chartTitleItalic == null) out.chartTitleItalic = false;
+        if (out.chartAxisTitleBold == null) out.chartAxisTitleBold = false;
+        if (out.chartAxisTitleItalic == null) out.chartAxisTitleItalic = false;
+        if (out.chartAxisLabelMaxFontSize == null) out.chartAxisLabelMaxFontSize = 0;
+        if (out.chartYTitlePosition == null) out.chartYTitlePosition = 'left';
+        if (out.chartXTitlePosition == null) out.chartXTitlePosition = 'bottom';
         if (out.chartShowAxisLine == null) out.chartShowAxisLine = true;
         if (out.chartAxisStrokeWidth == null) out.chartAxisStrokeWidth = 1;
         if (out.chartShowAxisLabels == null) out.chartShowAxisLabels = true;

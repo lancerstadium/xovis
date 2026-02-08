@@ -139,6 +139,17 @@ export const locale: Record<
     settingsChartYTitle: string;
     settingsChartTitleFontSize: string;
     settingsChartAxisTitleFontSize: string;
+    settingsChartTitleBold: string;
+    settingsChartTitleItalic: string;
+    settingsChartAxisTitleBold: string;
+    settingsChartAxisTitleItalic: string;
+    settingsChartAxisLabelMaxFontSize: string;
+    settingsChartYTitlePosition: string;
+    settingsChartXTitlePosition: string;
+    settingsChartYTitlePositionLeft: string;
+    settingsChartYTitlePositionRight: string;
+    settingsChartXTitlePositionTop: string;
+    settingsChartXTitlePositionBottom: string;
     settingsChartShowAxisLine: string;
     settingsChartAxisStrokeWidth: string;
     settingsChartAxisBoxStyle: string;
@@ -500,6 +511,17 @@ export const locale: Record<
     settingsChartYTitle: 'Y 轴标题',
     settingsChartTitleFontSize: '标题字号',
     settingsChartAxisTitleFontSize: '轴标题字号',
+    settingsChartTitleBold: '标题加粗',
+    settingsChartTitleItalic: '标题斜体',
+    settingsChartAxisTitleBold: '小标题加粗',
+    settingsChartAxisTitleItalic: '小标题斜体',
+    settingsChartAxisLabelMaxFontSize: '轴刻度标签最大字号',
+    settingsChartYTitlePosition: 'Y 轴小标题位置',
+    settingsChartXTitlePosition: 'X 轴小标题位置',
+    settingsChartYTitlePositionLeft: '左侧',
+    settingsChartYTitlePositionRight: '右侧',
+    settingsChartXTitlePositionTop: '上方',
+    settingsChartXTitlePositionBottom: '下方',
     settingsChartShowAxisLine: '坐标轴线',
     settingsChartAxisStrokeWidth: '轴线宽',
     settingsChartShowAxisLabels: '轴标签',
@@ -854,6 +876,17 @@ export const locale: Record<
     settingsChartYTitle: 'Y axis title',
     settingsChartTitleFontSize: 'Title font size',
     settingsChartAxisTitleFontSize: 'Axis title font size',
+    settingsChartTitleBold: 'Title bold',
+    settingsChartTitleItalic: 'Title italic',
+    settingsChartAxisTitleBold: 'Axis title bold',
+    settingsChartAxisTitleItalic: 'Axis title italic',
+    settingsChartAxisLabelMaxFontSize: 'Axis label max font size',
+    settingsChartYTitlePosition: 'Y axis title position',
+    settingsChartXTitlePosition: 'X axis title position',
+    settingsChartYTitlePositionLeft: 'Left',
+    settingsChartYTitlePositionRight: 'Right',
+    settingsChartXTitlePositionTop: 'Top',
+    settingsChartXTitlePositionBottom: 'Bottom',
     settingsChartShowAxisLine: 'Axis line',
     settingsChartAxisStrokeWidth: 'Axis stroke width',
     settingsChartShowAxisLabels: 'Axis labels',

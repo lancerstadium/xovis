@@ -1090,6 +1090,13 @@ export const ChartView = forwardRef<
     chartYTitle,
     chartTitleFontSize,
     chartAxisTitleFontSize,
+    chartTitleBold,
+    chartTitleItalic,
+    chartAxisTitleBold,
+    chartAxisTitleItalic,
+    chartAxisLabelMaxFontSize,
+    chartYTitlePosition,
+    chartXTitlePosition,
     chartShowAxisLine,
     chartAxisStrokeWidth,
     chartAxisBoxStyle,
@@ -1314,10 +1321,24 @@ export const ChartView = forwardRef<
   const axisTitleFontSize = chartAxisTitleFontSize > 0 ? chartAxisTitleFontSize : labelFontSize;
   const legendFontSize = chartLegendFontSize > 0 ? chartLegendFontSize : labelFontSize;
   const effectiveLegendSymbolSize = chartLegendSymbolSize > 0 ? chartLegendSymbolSize : 10;
+  const titleStyle: React.CSSProperties = {
+    fontWeight: chartTitleBold ? 'bold' : 'normal',
+    fontStyle: chartTitleItalic ? 'italic' : 'normal',
+  };
+  const axisTitleStyle: React.CSSProperties = {
+    fontWeight: chartAxisTitleBold ? 'bold' : 'normal',
+    fontStyle: chartAxisTitleItalic ? 'italic' : 'normal',
+  };
+  // 坐标轴刻度标签字号：可设最大，避免与小标题重合
+  const axisLabelFontSize =
+    chartAxisLabelMaxFontSize > 0
+      ? Math.min(labelFontSize, chartAxisLabelMaxFontSize)
+      : labelFontSize;
 
   const axisLabelStyle: React.CSSProperties = {
     fontWeight: chartAxisLabelBold ? 'bold' : 'normal',
     fontStyle: chartAxisLabelItalic ? 'italic' : 'normal',
+    fontSize: axisLabelFontSize,
   };
   const legendLabelStyle: React.CSSProperties = {
     fontWeight: chartLegendBold ? 'bold' : 'normal',
@@ -1381,10 +1402,19 @@ export const ChartView = forwardRef<
   // 如果交换X/Y轴，则交换坐标轴标题
   const effectiveXTitle = chartSwapXY ? chartYTitle : chartXTitle;
   const effectiveYTitle = chartSwapXY ? chartXTitle : chartYTitle;
-  const xTitleH = effectiveXTitle ? axisTitleFontSize + 4 : 0;
-  const yTitleW = effectiveYTitle ? axisTitleFontSize + 12 : 0;
-  const axisLabelH = chartShowAxisLabels ? labelFontSize + 6 : 0;
-  const axisLabelW = chartShowAxisLabels ? 28 : 0;
+  const xTitleOnBottom = effectiveXTitle && chartXTitlePosition === 'bottom';
+  const xTitleOnTop = effectiveXTitle && chartXTitlePosition === 'top';
+  const yTitleOnLeft = effectiveYTitle && chartYTitlePosition === 'left';
+  const yTitleOnRight = effectiveYTitle && chartYTitlePosition === 'right';
+  const xTitleH = xTitleOnBottom ? axisTitleFontSize + 4 : 0;
+  const xTitleTopMargin = xTitleOnTop ? axisTitleFontSize + 4 : 0;
+  const yTitleW = yTitleOnLeft ? axisTitleFontSize + 12 : 0;
+  const yTitleRightMargin = yTitleOnRight ? axisTitleFontSize + 12 : 0;
+  const axisLabelGap = 6;
+  const axisLabelH = chartShowAxisLabels ? axisLabelFontSize + 6 + axisLabelGap : 0;
+  const axisLabelW = chartShowAxisLabels
+    ? Math.max(28, Math.ceil(axisLabelFontSize * 2.2)) + axisLabelGap
+    : 0;
 
   // 先计算一个临时的 innerW 用于计算图例高度（使用 legendWidth 的初始值）
   const tempInnerW = Math.max(
@@ -1393,6 +1423,7 @@ export const ChartView = forwardRef<
       padding * 2 -
       axisLabelW -
       yTitleW -
+      yTitleRightMargin -
       (isLegendOutside && isLegendOnLeft ? legendWidth : 0) -
       (isLegendOutside && isLegendOnRight ? legendWidth : 0)
   );
@@ -1434,8 +1465,13 @@ export const ChartView = forwardRef<
 
   const plotLeft =
     padding + (isLegendOutside && isLegendOnLeft ? legendWidth : 0) + axisLabelW + yTitleW;
-  const plotTop = padding + titleH + (isLegendOutside && isLegendOnTop ? legendHeight : 0);
-  const plotRight = w - padding - (isLegendOutside && isLegendOnRight ? legendWidth : 0);
+  const plotTop =
+    padding +
+    titleH +
+    (isLegendOutside && isLegendOnTop ? legendHeight : 0) +
+    xTitleTopMargin;
+  const plotRight =
+    w - padding - (isLegendOutside && isLegendOnRight ? legendWidth : 0) - yTitleRightMargin;
   const plotBottom =
     h - padding - axisLabelH - xTitleH - (isLegendOutside && isLegendOnBottom ? legendHeight : 0);
   const innerW = Math.max(0, plotRight - plotLeft);
@@ -1608,7 +1644,8 @@ export const ChartView = forwardRef<
       (chartLegendPosition === 'bottom' ||
         chartLegendPosition === 'bottom-left' ||
         chartLegendPosition === 'bottom-right');
-    const singlePlotTop = padding + titleH + (singleIsLegendOnTop ? singleLegendH : 0);
+    const singlePlotTop =
+      padding + titleH + (singleIsLegendOnTop ? singleLegendH : 0) + xTitleTopMargin;
     const singlePlotBottom =
       h - padding - axisLabelH - xTitleH - (singleIsLegendOnBottom ? singleLegendH : 0);
     const singleInnerH = Math.max(0, singlePlotBottom - singlePlotTop);
@@ -1802,7 +1839,7 @@ export const ChartView = forwardRef<
               x={w / 2}
               y={padding + titleFontSize}
               textAnchor="middle"
-              style={{ fontSize: titleFontSize }}
+              style={{ fontSize: titleFontSize, ...titleStyle }}
             >
               {truncate(chartTitle, 40)}
             </text>
@@ -2369,18 +2406,30 @@ export const ChartView = forwardRef<
                   });
                   return [...xTicks, ...yTicks];
                 })())}
-          {effectiveYTitle && (
-            <text
-              x={plotLeft - axisLabelW - 6}
-              y={singlePlotTop + singleInnerH / 2}
-              textAnchor="middle"
-              style={{ fontSize: axisTitleFontSize }}
-              className="chart-axis-title"
-              transform={`rotate(-90, ${plotLeft - axisLabelW - 6}, ${singlePlotTop + singleInnerH / 2})`}
-            >
-              {truncate(effectiveYTitle, 20)}
-            </text>
-          )}
+          {effectiveYTitle &&
+            (yTitleOnLeft ? (
+              <text
+                x={plotLeft - axisLabelW - 6}
+                y={singlePlotTop + singleInnerH / 2}
+                textAnchor="middle"
+                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+                className="chart-axis-title"
+                transform={`rotate(-90, ${plotLeft - axisLabelW - 6}, ${singlePlotTop + singleInnerH / 2})`}
+              >
+                {truncate(effectiveYTitle, 20)}
+              </text>
+            ) : (
+              <text
+                x={plotRight + 6 + (yTitleRightMargin - 6) / 2}
+                y={singlePlotTop + singleInnerH / 2}
+                textAnchor="middle"
+                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+                className="chart-axis-title"
+                transform={`rotate(-90, ${plotRight + 6 + (yTitleRightMargin - 6) / 2}, ${singlePlotTop + singleInnerH / 2})`}
+              >
+                {truncate(effectiveYTitle, 20)}
+              </text>
+            ))}
           {chartShowAxisLabels &&
             (chartSwapXY
               ? // 交换后：Y轴显示xVals标签，X轴显示yVals数值刻度
@@ -2445,17 +2494,28 @@ export const ChartView = forwardRef<
                   ));
                   return [...yTicks, ...xLabels];
                 })())}
-          {effectiveXTitle && (
-            <text
-              x={plotLeft + innerW / 2}
-              y={singlePlotBottom + axisLabelH + axisTitleFontSize - 2}
-              textAnchor="middle"
-              style={{ fontSize: axisTitleFontSize }}
-              className="chart-axis-title"
-            >
-              {truncate(effectiveXTitle, 30)}
-            </text>
-          )}
+          {effectiveXTitle &&
+            (xTitleOnBottom ? (
+              <text
+                x={plotLeft + innerW / 2}
+                y={singlePlotBottom + axisLabelH + axisTitleFontSize - 2}
+                textAnchor="middle"
+                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+                className="chart-axis-title"
+              >
+                {truncate(effectiveXTitle, 30)}
+              </text>
+            ) : (
+              <text
+                x={plotLeft + innerW / 2}
+                y={singlePlotTop - axisTitleFontSize - 2}
+                textAnchor="middle"
+                style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+                className="chart-axis-title"
+              >
+                {truncate(effectiveXTitle, 30)}
+              </text>
+            ))}
 
           {viewMode === 'pie' &&
             yVals.length > 0 &&
@@ -2798,7 +2858,7 @@ export const ChartView = forwardRef<
             x={w / 2}
             y={padding + titleFontSize}
             textAnchor="middle"
-            style={{ fontSize: titleFontSize }}
+            style={{ fontSize: titleFontSize, ...titleStyle }}
           >
             {truncate(chartTitle, 40)}
           </text>
@@ -3890,18 +3950,30 @@ export const ChartView = forwardRef<
                 });
                 return [...xTicks, ...yTicks];
               })())}
-        {effectiveYTitle && (
-          <text
-            x={plotLeft - axisLabelW - 6}
-            y={plotTop + innerH / 2}
-            textAnchor="middle"
-            style={{ fontSize: axisTitleFontSize }}
-            className="chart-axis-title"
-            transform={`rotate(-90, ${plotLeft - axisLabelW - 6}, ${plotTop + innerH / 2})`}
-          >
-            {truncate(effectiveYTitle, 20)}
-          </text>
-        )}
+        {effectiveYTitle &&
+          (yTitleOnLeft ? (
+            <text
+              x={plotLeft - axisLabelW - 6}
+              y={plotTop + innerH / 2}
+              textAnchor="middle"
+              style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+              className="chart-axis-title"
+              transform={`rotate(-90, ${plotLeft - axisLabelW - 6}, ${plotTop + innerH / 2})`}
+            >
+              {truncate(effectiveYTitle, 20)}
+            </text>
+          ) : (
+            <text
+              x={plotRight + 6 + (yTitleRightMargin - 6) / 2}
+              y={plotTop + innerH / 2}
+              textAnchor="middle"
+              style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+              className="chart-axis-title"
+              transform={`rotate(-90, ${plotRight + 6 + (yTitleRightMargin - 6) / 2}, ${plotTop + innerH / 2})`}
+            >
+              {truncate(effectiveYTitle, 20)}
+            </text>
+          ))}
         {chartShowAxisLabels &&
           (chartSwapXY
             ? // 交换后：Y轴显示xLabels标签，X轴显示data数值刻度
@@ -3966,17 +4038,28 @@ export const ChartView = forwardRef<
                 ));
                 return [...yTicks, ...xLabels];
               })())}
-        {effectiveXTitle && (
-          <text
-            x={plotLeft + innerW / 2}
-            y={plotBottom + axisLabelH + axisTitleFontSize - 2}
-            textAnchor="middle"
-            style={{ fontSize: axisTitleFontSize }}
-            className="chart-axis-title"
-          >
-            {truncate(effectiveXTitle, 30)}
-          </text>
-        )}
+        {effectiveXTitle &&
+          (xTitleOnBottom ? (
+            <text
+              x={plotLeft + innerW / 2}
+              y={plotBottom + axisLabelH + axisTitleFontSize - 2}
+              textAnchor="middle"
+              style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+              className="chart-axis-title"
+            >
+              {truncate(effectiveXTitle, 30)}
+            </text>
+          ) : (
+            <text
+              x={plotLeft + innerW / 2}
+              y={plotTop - axisTitleFontSize - 2}
+              textAnchor="middle"
+              style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+              className="chart-axis-title"
+            >
+              {truncate(effectiveXTitle, 30)}
+            </text>
+          ))}
       </g>
     </svg>
   );
