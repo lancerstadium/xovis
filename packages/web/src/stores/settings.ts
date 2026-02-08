@@ -1510,12 +1510,18 @@ export interface ViewSettings {
 }
 
 /** 顺序：自定义 + 英文字体 + 中文字体 */
-function composeFontFamily(custom: string, en: string, zh: string): string {
-  const parts = [custom.trim(), en.trim(), zh.trim()].filter(Boolean);
-  return parts.length ? parts.join(', ') : '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif';
+/** 字体名中的双引号改为单引号，避免写入 HTML style 时与外层双引号冲突（含 iOS） */
+function normalizeFontQuotes(s: string): string {
+  return s.replace(/"/g, "'");
 }
 
-const DEFAULT_FONT_EN = '-apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif';
+function composeFontFamily(custom: string, en: string, zh: string): string {
+  const parts = [custom.trim(), en.trim(), zh.trim()].filter(Boolean);
+  const raw = parts.length ? parts.join(', ') : '-apple-system, BlinkMacSystemFont, \'Segoe UI\', Ubuntu, sans-serif';
+  return normalizeFontQuotes(raw);
+}
+
+const DEFAULT_FONT_EN = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, sans-serif";
 
 const defaults: ViewSettings = {
   lang: 'zh',
