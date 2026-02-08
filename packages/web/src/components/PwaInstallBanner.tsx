@@ -4,6 +4,16 @@ import { useSettingsStore } from '../stores';
 
 const PWA_DISMISS_KEY = 'xovis-pwa-install-dismissed';
 
+const isIos =
+  typeof navigator !== 'undefined' &&
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' &&
+      (navigator as unknown as { maxTouchPoints: number }).maxTouchPoints > 1));
+
+const isHarmony =
+  typeof navigator !== 'undefined' &&
+  /HarmonyOS|HMSCore|HUAWEI|Honor/i.test(navigator.userAgent);
+
 export function PwaInstallBanner() {
   const lang = useSettingsStore((s) => s.lang);
   const t = getLocale(lang);
@@ -22,6 +32,11 @@ export function PwaInstallBanner() {
       setShow(true);
     };
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
+
+    if (isIos || isHarmony) {
+      setShow(true);
+    }
+
     return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
   }, []);
 
@@ -71,24 +86,33 @@ export function PwaInstallBanner() {
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
       }}
     >
-      <span>xovis · {t.pwaInstallPrompt}</span>
+      <span>
+        xovis ·{' '}
+        {installPrompt
+          ? t.pwaInstallPrompt
+          : isHarmony
+            ? t.pwaInstallHarmonyHint
+            : t.pwaInstallIosHint}
+      </span>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button
-          type="button"
-          className="btn"
-          onClick={onInstall}
-          style={{
-            padding: '4px 12px',
-            background: 'var(--accent)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontSize: 12,
-          }}
-        >
-          {t.pwaInstallPrompt}
-        </button>
+        {installPrompt != null && (
+          <button
+            type="button"
+            className="btn"
+            onClick={onInstall}
+            style={{
+              padding: '4px 12px',
+              background: 'var(--accent)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontSize: 12,
+            }}
+          >
+            {t.pwaInstallPrompt}
+          </button>
+        )}
         <button
           type="button"
           className="btn"

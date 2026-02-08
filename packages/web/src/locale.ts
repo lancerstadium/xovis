@@ -10,6 +10,8 @@ export const locale: Record<
     appTitle: string;
     pwaInstallPrompt: string;
     pwaInstallDismiss: string;
+    pwaInstallIosHint: string;
+    pwaInstallHarmonyHint: string;
     navGraph: string;
     navSettings: string;
     navData: string;
@@ -378,6 +380,8 @@ export const locale: Record<
     appTitle: 'xovis',
     pwaInstallPrompt: '安装应用',
     pwaInstallDismiss: '暂不',
+    pwaInstallIosHint: '请使用 Safari：分享 → 添加到主屏幕',
+    pwaInstallHarmonyHint: '请使用浏览器：右下角 ⋮ → 添加至桌面',
     navGraph: '计算图',
     navSettings: '设置',
     navData: '数据',
@@ -745,6 +749,8 @@ export const locale: Record<
     appTitle: 'xovis',
     pwaInstallPrompt: 'Install app',
     pwaInstallDismiss: 'Not now',
+    pwaInstallIosHint: 'Use Safari: Share → Add to Home Screen',
+    pwaInstallHarmonyHint: 'Use browser menu: ⋮ → Add to desktop',
     navGraph: 'Graph',
     navSettings: 'Settings',
     navData: 'Data',

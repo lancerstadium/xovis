@@ -2,6 +2,8 @@
  * iOS 首进色块成因：首帧 env(safe-area-inset-*) 有时未生效(为 0)，固定栏被状态栏/Home 条遮挡；旋转后 resize 重算即正常。对策：index 首帧从 localStorage 恢复主题、触屏下固定栏用 max(inset, 最小 44/34px) 保底。 */
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  /** 横屏时左右安全区可能一大一小，取较大值使左右按钮视觉对称 */
+  --safe-area-inset-h: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   --float-trigger-row: 44px;
   /** 底部行高 = 与顶部同一行高 + 安全区，不单独写死 */
   --float-trigger-row-bottom: calc(var(--float-trigger-row) + var(--safe-area-inset-bottom));
