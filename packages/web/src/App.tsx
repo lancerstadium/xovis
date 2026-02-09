@@ -70,7 +70,8 @@ const CSS_VAR_MAP: Record<string, string> = {
 export default function App() {
   const s = useSettingsStore();
   const { theme, lang, sidebarWidth, sidebarHeight, sidebarOpen, dataPanelOpen, set } = s;
-  const { graph, selected, setGraph } = useGraphStore();
+  const { graph, selected, setGraph, graphLoading, setGraphLoading } = useGraphStore();
+  const viewMode = s.viewMode;
   const activeTabId = useElectronTabsStore((state) => state.activeId);
   const setTabGraph = useElectronTabsStore((state) => state.setTabGraph);
   const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
@@ -161,6 +162,19 @@ export default function App() {
     return () => document.removeEventListener('mousedown', fn);
   }, [dataPanelOpen, closeDataPanel]);
 
+  // Ctrl+F 打开/关闭详情面板（搜索）
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        const open = useSettingsStore.getState().sidebarOpen;
+        useSettingsStore.setState({ sidebarOpen: !open });
+      }
+    };
+    document.addEventListener('keydown', fn);
+    return () => document.removeEventListener('keydown', fn);
+  }, []);
+
   useEffect(() => {
     const mode = theme.startsWith('light') ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', mode);
@@ -225,6 +239,11 @@ export default function App() {
     if (!isElectron || !activeTabId) return;
     setTabGraph(activeTabId, graph);
   }, [isElectron, activeTabId, graph, setTabGraph]);
+
+  /** 非计算图视图时若处于加载状态则清除，避免 loading 常驻 */
+  useEffect(() => {
+    if (viewMode !== 'graph' && graphLoading) setGraphLoading(false);
+  }, [viewMode, graphLoading, setGraphLoading]);
 
   /** 详情浮窗：左下角拖拽同时调宽高 */
   const handleDetailResize = useCallback(
@@ -302,6 +321,43 @@ export default function App() {
         {/* 画布：计算图或图表（与数据面板视图互斥），可导出 SVG */}
         <div className="target target-full">
           <CanvasPanel ref={canvasPanelRef} />
+          {graphLoading && graph && viewMode === 'graph' && (
+            <div
+              className="graph-loading-overlay"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                background: 'var(--bg-target)',
+                color: 'var(--text2)',
+                pointerEvents: 'auto',
+                zIndex: 10,
+              }}
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <span
+                className="graph-loading-logo"
+                style={{
+                  color: 'var(--text2)',
+                  opacity: 0.6,
+                  width: 48,
+                  height: 48,
+                  display: 'inline-block',
+                  background: 'currentColor',
+                  mask: `url(${import.meta.env.BASE_URL || '/'}favicon-raw.svg) center / contain no-repeat`,
+                  WebkitMask: `url(${import.meta.env.BASE_URL || '/'}favicon-raw.svg) center / contain no-repeat`,
+                }}
+                aria-hidden
+              />
+              <div className="graph-loading-bar" role="progressbar" aria-label={t.loadLoading} />
+              <span style={{ fontSize: 12, opacity: 0.8 }}>{t.loadLoading}</span>
+            </div>
+          )}
         </div>
 
         {/* 左下角：导入 + 导出 SVG */}

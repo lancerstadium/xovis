@@ -24,7 +24,7 @@ export function Loader() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [examplesOpen, setExamplesOpen] = useState(false);
-  const { setGraph } = useGraphStore();
+  const { setGraph, setGraphLoading } = useGraphStore();
   const { lang, set, viewMode } = useSettingsStore();
   const t = getLocale(lang);
 
@@ -38,6 +38,7 @@ export function Loader() {
         setActive(sameTab.id);
         setGraph(sameTab.graph ?? null);
         setError(null);
+        setGraphLoading(false);
         return;
       }
     }
@@ -58,6 +59,7 @@ export function Loader() {
     } else {
       setError(result.error);
       setGraph(null);
+      setGraphLoading(false);
     }
   };
 
@@ -66,10 +68,12 @@ export function Loader() {
     if (!file) return;
     setLoading(true);
     setError(null);
+    setGraphLoading(true);
     try {
       load(await file.text(), file.name);
     } catch {
       setError(t.loadError);
+      setGraphLoading(false);
     } finally {
       setLoading(false);
       if (inputRef.current) inputRef.current.value = '';
@@ -81,19 +85,20 @@ export function Loader() {
     setExamplesOpen(false);
     setLoading(true);
     setError(null);
+    setGraphLoading(true);
     try {
       const mediaBase = (window as unknown as { __XOVIS_MEDIA_BASE?: string }).__XOVIS_MEDIA_BASE;
-      const url =
-        path.startsWith('http')
-          ? path
-          : mediaBase
-            ? mediaBase.replace(/\/$/, '') + '/' + path.replace(/^\.?\//, '')
-            : path;
+      const url = path.startsWith('http')
+        ? path
+        : mediaBase
+          ? mediaBase.replace(/\/$/, '') + '/' + path.replace(/^\.?\//, '')
+          : path;
       const res = await fetch(url);
       if (!res.ok) throw new Error(res.statusText);
       load(await res.text(), path);
     } catch {
       setError(t.loadError);
+      setGraphLoading(false);
     } finally {
       setLoading(false);
     }
@@ -102,7 +107,10 @@ export function Loader() {
   const openFileDialog = () => {
     setExamplesOpen(false);
     if (loading) return;
-    const vscodeRequestLoad = typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void }).__XOVIS_VSCODE_REQUEST_LOAD;
+    const vscodeRequestLoad =
+      typeof window !== 'undefined' &&
+      (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void })
+        .__XOVIS_VSCODE_REQUEST_LOAD;
     if (vscodeRequestLoad) {
       vscodeRequestLoad();
       return;

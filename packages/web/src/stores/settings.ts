@@ -1319,6 +1319,8 @@ export interface ViewSettings {
   graphHeatStrokeWidthMultiplier: number;
   /** 图表 X 轴/分类列（展平 metadata 键） */
   chartXKey: string;
+  /** 图表 X 轴列显示别名（可选） */
+  chartXAlias: string;
   /** 图表 Y 轴/数值列（可多列，每列一个系列，包含颜色和样式配置） */
   chartYKeys: ChartYColumnConfig[];
   /** 图表：柱状图组内间距（同组柱子之间） */
@@ -1592,6 +1594,7 @@ const defaults: ViewSettings = {
   graphHeatTargetKey: '',
   graphHeatStrokeWidthMultiplier: 1.8,
   chartXKey: '',
+  chartXAlias: '',
   chartYKeys: [],
   chartBarGapInner: 0,
   chartBarGapOuter: 8,
@@ -1816,6 +1819,7 @@ export const useSettingsStore = create<
         );
         if (out.viewMode == null) out.viewMode = 'graph';
         if (out.chartXKey == null) out.chartXKey = '';
+        if (out.chartXAlias == null) out.chartXAlias = '';
         if (out.chartYKeys == null) {
           const legacy = s as { chartYKey?: string; chartSeriesKey?: string };
           out.chartYKeys = legacy.chartYKey ? [{ key: legacy.chartYKey }] : [];

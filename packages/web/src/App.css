@@ -297,6 +297,28 @@ body.pwa-banner-visible .main {
   pointer-events: auto;
 }
 
+/* 大图加载层：与初始空状态一致，logo 下为小进度条 */
+.graph-loading-bar {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text2) 25%, transparent);
+  overflow: hidden;
+}
+.graph-loading-bar::after {
+  content: '';
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: graph-loading-shift 0.9s ease-in-out infinite;
+}
+@keyframes graph-loading-shift {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
 /* 浮层入口：左上/右上/左下/右下统一；按钮统一透明度，静默时悬停显示 */
 .floating-trigger {
   position: absolute;
@@ -649,6 +671,19 @@ body.pwa-banner-visible .main {
   flex: 1;
   min-width: 0;
 }
+.chart-mapping-label-with-alias {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-mapping-label-with-alias .chart-config-alias {
+  width: 4.5em;
+  min-width: 4em;
+  max-width: 5.5em;
+  padding: 2px 5px;
+  font-size: inherit;
+  flex-shrink: 0;
+}
 .chart-mapping-remove {
   flex-shrink: 0;
   width: 22px;
@@ -728,6 +763,10 @@ body.pwa-banner-visible .main {
 .chart-config-select.view-input {
   min-width: 80px;
   max-width: 160px;
+}
+.chart-config-alias.view-input {
+  height: 22px;
+  line-height: 1;
 }
 
 /* 图表视图：空态 / 容器 / 标签统一主题色与字号 */
@@ -999,6 +1038,55 @@ body.pwa-banner-visible .main {
   line-height: 1.4;
   color: var(--text2);
   opacity: 0.6;
+}
+.detail-search-bar {
+  flex-shrink: 0;
+  padding: 8px 0 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.detail-search-bar .view-input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.detail-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-search-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.detail-search-item:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--border);
+}
+.detail-search-item-type {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+}
+.detail-search-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 设置浮窗：外层可拖宽/拖高（右下可调），内层内容区 + 右下角把手 */

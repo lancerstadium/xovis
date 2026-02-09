@@ -73,6 +73,8 @@ export const locale: Record<
     detailTitle: string;
     detailClose: string;
     detailEmptyHint: string;
+    detailSearchPlaceholder: string;
+    detailSearchNoResults: string;
     detailNode: string;
     detailEdge: string;
     detailId: string;
@@ -470,6 +472,8 @@ export const locale: Record<
     detailTitle: '详情',
     detailClose: '关闭详情',
     detailEmptyHint: '请上传文件显示详细信息',
+    detailSearchPlaceholder: '搜索 id / name…',
+    detailSearchNoResults: '无匹配',
     detailNode: '节点',
     detailEdge: '边',
     detailId: 'ID',
@@ -866,6 +870,8 @@ export const locale: Record<
     detailTitle: 'Detail',
     detailClose: 'Close detail',
     detailEmptyHint: 'Please upload a file to show details',
+    detailSearchPlaceholder: 'Search id / name…',
+    detailSearchNoResults: 'No matches',
     detailNode: 'Node',
     detailEdge: 'Edge',
     detailId: 'ID',
@@ -880,8 +886,8 @@ export const locale: Record<
     detailGraph: 'Graph',
     detailOperators: 'Operators',
     detailTensors: 'Tensors',
-    detailInputs: '输入',
-    detailOutputs: '输出',
+    detailInputs: 'Input',
+    detailOutputs: 'Output',
     settingsTitle: 'Settings',
     settingsTheme: 'Theme',
     settingsThemeMode: 'Light/Dark',

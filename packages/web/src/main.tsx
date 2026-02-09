@@ -52,8 +52,12 @@ function handleVscodeUpdate(e: MessageEvent) {
     import('./stores').then(({ useGraphStore }) =>
       import('./utils/loadFile').then(({ loadFile }) => {
         const result = loadFile(d.text);
-        if (result.success) useGraphStore.getState().setGraph(result.graph);
-        else useGraphStore.getState().setGraph(null);
+        if (result.success) {
+          useGraphStore.getState().setGraphLoading(true);
+          useGraphStore.getState().setGraph(result.graph);
+        } else {
+          useGraphStore.getState().setGraph(null);
+        }
       })
     );
     return;
@@ -63,6 +67,7 @@ function handleVscodeUpdate(e: MessageEvent) {
       import('./utils/loadFile').then(({ loadFile }) => {
         const result = loadFile(d.content, d.fileName);
         if (result.success) {
+          useGraphStore.getState().setGraphLoading(true);
           useGraphStore.getState().setGraph(result.graph);
           if (result.source === 'csv') useSettingsStore.getState().set({ viewMode: 'bar' });
         } else {
@@ -86,8 +91,12 @@ if (typeof window !== 'undefined') {
       import('./stores').then(({ useGraphStore }) =>
         import('./utils/loadFile').then(({ loadFile }) => {
           const result = loadFile(initial);
-          if (result.success) useGraphStore.getState().setGraph(result.graph);
-          else useGraphStore.getState().setGraph(null);
+          if (result.success) {
+            useGraphStore.getState().setGraphLoading(true);
+            useGraphStore.getState().setGraph(result.graph);
+          } else {
+            useGraphStore.getState().setGraph(null);
+          }
         })
       );
     }

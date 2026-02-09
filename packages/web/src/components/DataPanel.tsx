@@ -376,10 +376,21 @@ function YColumnConfigRow({
   return (
     <>
       <div className="panel-row chart-mapping-row">
-        <span className="panel-row-label">
-          {isSingle
-            ? t.dataPanelYAxis
-            : t.dataPanelYAxisWithIndex.replace('{index}', String(index + 1))}
+        <span className="panel-row-label chart-mapping-label-with-alias">
+          <span>
+            {isSingle
+              ? t.dataPanelYAxis
+              : t.dataPanelYAxisWithIndex.replace('{index}', String(index + 1))}
+          </span>
+          <input
+            type="text"
+            className="view-input chart-config-alias"
+            placeholder={t.dataPanelAlias}
+            value={config.alias ?? ''}
+            onChange={(e) => onChange({ ...config, alias: e.target.value.trim() || undefined })}
+            aria-label={t.dataPanelAlias}
+            title={t.dataPanelAlias}
+          />
         </span>
         <div className="panel-row-value chart-mapping-value">
           <select
@@ -395,16 +406,6 @@ function YColumnConfigRow({
               </option>
             ))}
           </select>
-          <input
-            type="text"
-            className="view-input chart-config-alias"
-            placeholder={t.dataPanelAlias}
-            value={config.alias ?? ''}
-            onChange={(e) => onChange({ ...config, alias: e.target.value.trim() || undefined })}
-            aria-label={t.dataPanelAlias}
-            title={t.dataPanelAlias}
-            style={{ minWidth: '4em', flex: '1 1 60px' }}
-          />
           {!isCorrelation && (
             <input
               type="color"
@@ -972,6 +973,7 @@ function YColumnConfigRow({
 /** 数据映射：固定一个 X 列 + 多个 Y 列（可添加/移除，支持颜色和样式配置） */
 function MappingEditor({
   chartXKey,
+  chartXAlias,
   chartYKeys,
   columns,
   set,
@@ -981,9 +983,10 @@ function MappingEditor({
   toggleSeriesVisibility,
 }: {
   chartXKey: string;
+  chartXAlias: string;
   chartYKeys: ChartYColumnConfig[];
   columns: string[];
-  set: (v: { chartXKey?: string; chartYKeys?: ChartYColumnConfig[] }) => void;
+  set: (v: { chartXKey?: string; chartXAlias?: string; chartYKeys?: ChartYColumnConfig[] }) => void;
   t: ReturnType<typeof getLocale>;
   chartType: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation';
   chartSeriesVisibility: Record<string, boolean>;
@@ -996,14 +999,38 @@ function MappingEditor({
     set({ chartYKeys: ySlots.map((y, j) => (j === i ? config : y)) });
   };
   const removeYAt = (i: number) => set({ chartYKeys: ySlots.filter((_, j) => j !== i) });
+  const options = columns.filter((c) => c !== 'index');
   return (
     <div className="chart-mapping-editor">
-      <MappingRow
-        roleLabel={t.chartXAxis}
-        value={chartXKey}
-        columns={columns}
-        onChange={(v) => set({ chartXKey: v })}
-      />
+      <div className="panel-row chart-mapping-row">
+        <span className="panel-row-label chart-mapping-label-with-alias">
+          <span>{t.chartXAxis}</span>
+          <input
+            type="text"
+            className="view-input chart-config-alias"
+            placeholder={t.dataPanelAlias}
+            value={chartXAlias ?? ''}
+            onChange={(e) => set({ chartXAlias: e.target.value.trim() || '' })}
+            aria-label={t.dataPanelAlias}
+            title={t.dataPanelAlias}
+          />
+        </span>
+        <div className="panel-row-value chart-mapping-value">
+          <select
+            className="view-input chart-config-select"
+            value={chartXKey}
+            onChange={(e) => set({ chartXKey: e.target.value })}
+            aria-label={t.chartXAxis}
+          >
+            <option value="">—</option>
+            {options.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       <div className="chart-mapping-y-block">
         <span className="chart-mapping-y-block-label">{t.chartYColumnsLabel}</span>
         <div className="chart-mapping-y-rows">
@@ -1053,6 +1080,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     viewMode,
     set,
     chartXKey,
+    chartXAlias,
     chartYKeys = [],
     dataPanelHiddenColumns,
     dataPanelWidth,
@@ -1320,6 +1348,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                         <h3 className="chart-panel-section-title">{t.chartDataMapping}</h3>
                         <MappingEditor
                           chartXKey={chartXKey}
+                          chartXAlias={chartXAlias ?? ''}
                           chartYKeys={chartYKeys}
                           columns={selectedColumns}
                           set={set}

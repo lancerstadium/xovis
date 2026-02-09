@@ -152,7 +152,7 @@ function hash(s: string): number {
   return Math.abs(h);
 }
 
-function useLayout(graph: Graph | null) {
+function useLayout(graph: Graph | null, layoutKey: number = 0) {
   const {
     nodeWidth,
     nodeHeight,
@@ -246,6 +246,7 @@ function useLayout(graph: Graph | null) {
     return { nodes, edges };
   }, [
     graph,
+    layoutKey,
     nodeWidth,
     nodeHeight,
     nodeGap,
@@ -270,7 +271,8 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const emptyLogoRef = useRef<HTMLSpanElement>(null);
-  const { graph, selected, setSelected, setGraph } = useGraphStore();
+  const { graph, selected, setSelected, setGraph, setGraphLoading, centerOnId, setCenterOnId } =
+    useGraphStore();
   const s = useSettingsStore();
   const t = getLocale(s.lang);
   const {
@@ -280,12 +282,48 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     chartCorrelationColorStart,
     chartCorrelationColorEnd,
   } = s;
-  const { nodes: layoutNodes, edges: layoutEdges } = useLayout(graph);
+  const [layoutKey, setLayoutKey] = useState(0);
+  const graphRef = useRef(graph);
+  graphRef.current = graph;
+  useEffect(() => {
+    if (!graph?.nodes?.length) return;
+    setLayoutKey((k) => k + 1);
+    let raf2: number | null = null;
+    let rafReady: number | null = null;
+    const raf1 = requestAnimationFrame(() => {
+      setLayoutKey((k) => k + 1);
+      // 大图时首帧布局可能仍用默认设置，多一帧延迟再算一次以保证 nodeLabelShowAttrs 等已就绪
+      if (graph.nodes.length > 50) {
+        raf2 = requestAnimationFrame(() => {
+          setLayoutKey((k) => k + 1);
+          // 最后一帧布局提交后再等一帧渲染（含属性），再通知加载完毕
+          rafReady = requestAnimationFrame(() => {
+            if (useGraphStore.getState().graph === graphRef.current) {
+              useGraphStore.getState().setGraphLoading(false);
+            }
+          });
+        });
+      } else {
+        rafReady = requestAnimationFrame(() => {
+          if (useGraphStore.getState().graph === graphRef.current) {
+            useGraphStore.getState().setGraphLoading(false);
+          }
+        });
+      }
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2 != null) cancelAnimationFrame(raf2);
+      if (rafReady != null) cancelAnimationFrame(rafReady);
+    };
+  }, [graph]);
+  const { nodes: layoutNodes, edges: layoutEdges } = useLayout(graph, layoutKey);
 
   /** 热分析：节点 id -> 归一化后的线条颜色（仅算子节点） */
   const nodeHeatColorMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (!graph?.nodes?.length || !graphHeatAnalysisEnabled || !graphHeatTargetKey?.trim()) return map;
+    if (!graph?.nodes?.length || !graphHeatAnalysisEnabled || !graphHeatTargetKey?.trim())
+      return map;
     const rows = getOperatorRows({ nodes: graph.nodes });
     const key = graphHeatTargetKey.trim();
     const values = rows
@@ -427,12 +465,18 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
       if (!file) {
         const uriList = e.dataTransfer.getData?.('text/uri-list');
         const fileUri = uriList?.trim().split(/\r?\n/)[0];
-        const requestLoadUri = typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD_URI?: (uri: string) => void }).__XOVIS_VSCODE_REQUEST_LOAD_URI;
+        const requestLoadUri =
+          typeof window !== 'undefined' &&
+          (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD_URI?: (uri: string) => void })
+            .__XOVIS_VSCODE_REQUEST_LOAD_URI;
         if (fileUri?.startsWith('file://') && requestLoadUri) {
           requestLoadUri(fileUri);
           return;
         }
-        const vscodeRequestLoad = (typeof window !== 'undefined' && (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void }).__XOVIS_VSCODE_REQUEST_LOAD);
+        const vscodeRequestLoad =
+          typeof window !== 'undefined' &&
+          (window as unknown as { __XOVIS_VSCODE_REQUEST_LOAD?: () => void })
+            .__XOVIS_VSCODE_REQUEST_LOAD;
         if (vscodeRequestLoad) vscodeRequestLoad();
         return;
       }
@@ -443,6 +487,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
       try {
         const result = loadFile(await file.text(), file.name);
         if (result.success) {
+          setGraphLoading(true);
           setGraph(result.graph);
           setDropError(null);
           if (typeof window !== 'undefined' && window.electronAPI && file.name) {
@@ -462,7 +507,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
         setDropError(err instanceof Error ? err.message : t.loadError);
       }
     },
-    [setGraph, s, t.loadError]
+    [setGraph, setGraphLoading, s, t.loadError]
   );
 
   useImperativeHandle(ref, () => ({ resetView, getSvgElement: () => svgRef.current }), [resetView]);
@@ -487,6 +532,83 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   useEffect(() => {
     setDropOver(false);
   }, [graph]);
+
+  // 详情搜索点击后居中并放大：任意计算图下聚焦项都占视口同一比例（不因图大而变小）
+  const FOCUS_VIEW_FRACTION = 0.65; // 聚焦项在视口短边上的占比
+  const FOCUS_ZOOM_MIN = 0.2;
+  const FOCUS_ZOOM_MAX = 80; // 大图时需较大 zoom 才能让单节点占满比例，不压死
+  useEffect(() => {
+    if (!centerOnId || !containerRef.current || !graph) return;
+    let nx = 0;
+    let ny = 0;
+    let sizeInGraph = 80; // 边的默认“尺寸”（无 bbox 时）
+    const node = layoutNodes.find((n: LayoutNode) => n.id === centerOnId);
+    if (node) {
+      nx = node.x + node.width / 2;
+      ny = node.y + node.height / 2;
+      sizeInGraph = Math.max(node.width, node.height, 20);
+    } else {
+      const edge = layoutEdges.find((e: LayoutEdge) => e.id === centerOnId);
+      if (edge?.points?.length) {
+        const pts = edge.points;
+        const mid = pts[Math.floor(pts.length / 2)] ?? pts[0];
+        nx = mid.x;
+        ny = mid.y;
+        let ex0 = pts[0].x,
+          ey0 = pts[0].y,
+          ex1 = ex0,
+          ey1 = ey0;
+        pts.forEach((p) => {
+          ex0 = Math.min(ex0, p.x);
+          ey0 = Math.min(ey0, p.y);
+          ex1 = Math.max(ex1, p.x);
+          ey1 = Math.max(ey1, p.y);
+        });
+        sizeInGraph = Math.max(ex1 - ex0, ey1 - ey0, 40);
+      } else {
+        setCenterOnId(null);
+        return;
+      }
+    }
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    layoutNodes.forEach((n: LayoutNode) => {
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x + n.width);
+      maxY = Math.max(maxY, n.y + n.height);
+    });
+    layoutEdges.forEach((e: LayoutEdge) => {
+      e.points.forEach((p) => {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+      });
+    });
+    const pad = 24;
+    const vw = Math.max(0, maxX - minX) + pad * 2;
+    const vh = Math.max(0, maxY - minY) + pad * 2;
+    const vminX = minX - pad;
+    const vminY = minY - pad;
+    const rect = containerRef.current.getBoundingClientRect();
+    const innerW = Math.max(1, rect.width - 16);
+    const innerH = Math.max(1, rect.height - 16);
+    const scale = Math.min(innerW / vw, innerH / vh) || 1;
+    const targetPixels = Math.min(innerW, innerH) * FOCUS_VIEW_FRACTION;
+    const zoomRaw = targetPixels / (sizeInGraph * scale) || 1;
+    const zoom = Math.max(FOCUS_ZOOM_MIN, Math.min(FOCUS_ZOOM_MAX, zoomRaw));
+    // viewBox 中心映射到内层 div 中心；transformOrigin 50% 50% 时 pan 应为 (center - p) * zoom
+    const cx = innerW / 2;
+    const cy = innerH / 2;
+    const px = (nx - vminX - vw / 2) * scale + cx;
+    const py = (ny - vminY - vh / 2) * scale + cy;
+    setZoom(zoom);
+    setPan({ x: (cx - px) * zoom, y: (cy - py) * zoom });
+    setCenterOnId(null);
+  }, [centerOnId, graph, layoutNodes, layoutEdges, setCenterOnId]);
 
   useEffect(() => {
     if (graph != null) return;
@@ -757,10 +879,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                   const srcColor = nodeHeatColorMap.get(ge.source);
                   const tgtColor = nodeHeatColorMap.get(ge.target);
                   const edgeUseGradient =
-                    graphHeatAnalysisEnabled &&
-                    srcColor &&
-                    tgtColor &&
-                    srcColor !== tgtColor;
+                    graphHeatAnalysisEnabled && srcColor && tgtColor && srcColor !== tgtColor;
                   const edgeStroke = isEdgeSelected(e.id)
                     ? 'var(--accent)'
                     : edgeUseGradient
@@ -825,10 +944,11 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                     isTensor && graph ? graph.tensors[node.metadata?.tensorIndex as number] : null;
                   const fill =
                     isTensor && tensor ? tensorColorByRole(tensor.name) : opColor(node.name);
-                  const heatStroke = !isTensor && graphHeatAnalysisEnabled ? nodeHeatColorMap.get(node.id) : null;
+                  const heatStroke =
+                    !isTensor && graphHeatAnalysisEnabled ? nodeHeatColorMap.get(node.id) : null;
                   const stroke = isTensor
                     ? 'var(--tensor-stroke)'
-                    : heatStroke ?? 'var(--node-stroke)';
+                    : (heatStroke ?? 'var(--node-stroke)');
                   const rx = isTensor ? Math.min(nodeRx, pos.height / 2) : nodeRx;
                   const sel = isNodeSelected(pos.id);
                   const showAttrs = s.nodeLabelShowAttrs;
@@ -894,7 +1014,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                             ry={rx}
                             fill="none"
                             stroke={sel ? 'var(--accent)' : stroke}
-                            strokeWidth={sel ? 2 : (heatStroke ? heatNodeStrokeW : nodeStrokeW)}
+                            strokeWidth={sel ? 2 : heatStroke ? heatNodeStrokeW : nodeStrokeW}
                             filter={s.nodeShadowBlur > 0 ? 'url(#node-shadow)' : undefined}
                           />
                           <text
@@ -954,7 +1074,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                             ry={rx}
                             fill={fill}
                             stroke={sel ? 'var(--accent)' : stroke}
-                            strokeWidth={sel ? 2 : (heatStroke ? heatNodeStrokeW : nodeStrokeW)}
+                            strokeWidth={sel ? 2 : heatStroke ? heatNodeStrokeW : nodeStrokeW}
                             filter={s.nodeShadowBlur > 0 ? 'url(#node-shadow)' : undefined}
                           />
                           <text

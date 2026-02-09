@@ -347,7 +347,11 @@ function gaussElimination(A: number[][], b: number[]): number[] {
 function correlationPearson(x: number[], y: number[]): number {
   const n = x.length;
   if (n < 2) return 0;
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0,
+    sumY2 = 0;
   for (let i = 0; i < n; i++) {
     sumX += x[i];
     sumY += y[i];
@@ -385,10 +389,12 @@ function correlationSpearman(x: number[], y: number[]): number {
 function correlationKendall(x: number[], y: number[]): number {
   const n = x.length;
   if (n < 2) return 0;
-  let concordant = 0, discordant = 0;
+  let concordant = 0,
+    discordant = 0;
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      const dx = x[j] - x[i], dy = y[j] - y[i];
+      const dx = x[j] - x[i],
+        dy = y[j] - y[i];
       const sign = dx * dy;
       if (sign > 0) concordant++;
       else if (sign < 0) discordant++;
@@ -404,7 +410,12 @@ function correlationMatrix(
   method: 'pearson' | 'spearman' | 'kendall'
 ): number[][] {
   const n = columns.length;
-  const fn = method === 'pearson' ? correlationPearson : method === 'spearman' ? correlationSpearman : correlationKendall;
+  const fn =
+    method === 'pearson'
+      ? correlationPearson
+      : method === 'spearman'
+        ? correlationSpearman
+        : correlationKendall;
   // 只使用「所有列在该行均为有限值」的行，保证两两列按同一行对齐计算，避免错行导致全 1 或错误相关
   const validRows: number[][] = [];
   for (let r = 0; r < rows.length; r++) {
@@ -412,7 +423,10 @@ function correlationMatrix(
     const vals = columns.map((col) => Number(row[col]));
     if (vals.every((v) => Number.isFinite(v))) validRows.push(vals);
   }
-  if (validRows.length < 2) return Array(n).fill(null).map(() => Array(n).fill(0));
+  if (validRows.length < 2)
+    return Array(n)
+      .fill(null)
+      .map(() => Array(n).fill(0));
   const data = columns.map((_, colIdx) => validRows.map((row) => row[colIdx]));
   const mat: number[][] = [];
   for (let i = 0; i < n; i++) {
@@ -1176,10 +1190,11 @@ export const ChartView = forwardRef<
 >(function ChartView({ viewMode }, ref) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { graph, setSelected, setGraph } = useGraphStore();
+  const { graph, setSelected, setGraph, setGraphLoading } = useGraphStore();
   const s = useSettingsStore();
   const {
     chartXKey,
+    chartXAlias,
     chartYKeys = [],
     chartBarGapInner,
     chartBarGapOuter,
@@ -1399,6 +1414,7 @@ export const ChartView = forwardRef<
       try {
         const result = loadFile(await file.text(), file.name);
         if (result.success) {
+          setGraphLoading(true);
           setGraph(result.graph);
           setDropError(null);
           if (typeof window !== 'undefined' && window.electronAPI && file.name) {
@@ -1414,7 +1430,7 @@ export const ChartView = forwardRef<
         setDropError(err instanceof Error ? err.message : t.loadError);
       }
     },
-    [setGraph, t.loadError]
+    [setGraph, setGraphLoading, t.loadError]
   );
 
   useImperativeHandle(ref, () => ({ getSvgElement: () => svgRef.current, resetView }), [resetView]);
@@ -1504,7 +1520,7 @@ export const ChartView = forwardRef<
   const seriesDisplayNames = useMemo(
     () =>
       chartDataSafe.seriesNames.map(
-        (name, i) => (chartDataSafe.seriesConfigs[i]?.alias?.trim() || name)
+        (name, i) => chartDataSafe.seriesConfigs[i]?.alias?.trim() || name
       ),
     [chartDataSafe.seriesNames, chartDataSafe.seriesConfigs]
   );
@@ -1568,9 +1584,10 @@ export const ChartView = forwardRef<
       : 0;
   const legendWidth = chartLegendWidth > 0 ? chartLegendWidth : autoLegendWidth;
   const titleH = chartTitle ? titleFontSize + 8 : 0;
-  // 如果交换X/Y轴，则交换坐标轴标题
-  const effectiveXTitle = chartSwapXY ? chartYTitle : chartXTitle;
-  const effectiveYTitle = chartSwapXY ? chartXTitle : chartYTitle;
+  // 如果交换X/Y轴，则交换坐标轴标题；X 轴无自定义标题时可用 chartXAlias
+  const xDisplayTitle = chartXTitle || chartXAlias || '';
+  const effectiveXTitle = chartSwapXY ? chartYTitle : xDisplayTitle;
+  const effectiveYTitle = chartSwapXY ? xDisplayTitle : chartYTitle;
   const xTitleOnBottom = effectiveXTitle && chartXTitlePosition === 'bottom';
   const xTitleOnTop = effectiveXTitle && chartXTitlePosition === 'top';
   const yTitleOnLeft = effectiveYTitle && chartYTitlePosition === 'left';
@@ -1776,9 +1793,7 @@ export const ChartView = forwardRef<
 
   const yKeysValid = chartYKeys.filter((yc) => yc.key).length > 0;
   const hasMapping =
-    viewMode === 'correlation'
-      ? !!correlationData
-      : !!chartXKey && yKeysValid && chartData;
+    viewMode === 'correlation' ? !!correlationData : !!chartXKey && yKeysValid && chartData;
   if (!graph || !hasMapping) {
     return (
       <div
@@ -2155,10 +2170,9 @@ export const ChartView = forwardRef<
               <>
                 {correlationData!.map((row, i) =>
                   row.map((v, j) => {
-                    const fill =
-                      chartCorrelationFill
-                        ? lerpHexColor(layout.startColor, layout.endColor, correlationToT(v))
-                        : 'transparent';
+                    const fill = chartCorrelationFill
+                      ? lerpHexColor(layout.startColor, layout.endColor, correlationToT(v))
+                      : 'transparent';
                     return (
                       <g key={`${i}-${j}`}>
                         <rect
@@ -2177,7 +2191,10 @@ export const ChartView = forwardRef<
                             textAnchor="middle"
                             dominantBaseline="central"
                             style={{
-                              fontSize: Math.max(8, (chartDataLabelFontSize || labelFontSize) * 0.85),
+                              fontSize: Math.max(
+                                8,
+                                (chartDataLabelFontSize || labelFontSize) * 0.85
+                              ),
                               fill: chartAxisColor || 'var(--text)',
                               fontFamily: s.fontFamily,
                               fontWeight: chartDataLabelBold ? 'bold' : 'normal',
@@ -2196,301 +2213,502 @@ export const ChartView = forwardRef<
           })()
         ) : (
           <>
-        {chartShowLegend && chartDataSafe.seriesNames.length > 0 && (
-          <g
-            className="chart-legend"
-            style={{ fontSize: legendFontSize, fontFamily: s.fontFamily }}
-          >
-            {chartDataSafe.seriesNames.map((name, originalSi) => {
-              const isVisible = chartSeriesVisibility[name] !== false;
-              // 始终横向排布
-              const row = Math.floor(originalSi / legendCols);
-              const col = originalSi % legendCols;
-              const lx = legendX + col * maxLegendItemW;
-              const ly = legendY + row * legendItemH;
-              const symbolX = 0;
-              return (
-                <g key={originalSi} transform={`translate(${lx},${ly})`}>
-                  {/* 系列图例符号 */}
-                  <g
-                    transform={`translate(${symbolX + effectiveLegendSymbolSize / 2}, 0)`}
-                    opacity={isVisible ? 1 : 0.3}
-                  >
-                    {renderLegendSymbol(
-                      viewMode,
-                      effectiveLegendSymbolSize / 2,
-                      0,
-                      effectiveLegendSymbolSize,
-                      seriesColor(originalSi, palette, chartDataSafe.seriesConfigs[originalSi]),
-                      chartDataSafe.seriesConfigs[originalSi],
-                      viewMode === 'bar'
-                        ? `chartBarFill-${originalSi}`
-                        : viewMode === 'pie'
-                          ? `chartPieFill-${originalSi}`
-                          : undefined
-                    )}
-                  </g>
-                  {/* 系列名称 */}
-                  <text
-                    fontFamily={s.fontFamily}
-                    x={symbolX + effectiveLegendSymbolSize + 8}
-                    y={0}
-                    textAnchor="start"
-                    dominantBaseline="middle"
-                    className="chart-legend-label"
-                    style={{ ...legendLabelStyle, opacity: isVisible ? 1 : 0.5 }}
-                  >
-                    {legendLabelDisplay(seriesDisplayNames[originalSi])}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
-        )}
+            {chartShowLegend && chartDataSafe.seriesNames.length > 0 && (
+              <g
+                className="chart-legend"
+                style={{ fontSize: legendFontSize, fontFamily: s.fontFamily }}
+              >
+                {chartDataSafe.seriesNames.map((name, originalSi) => {
+                  const isVisible = chartSeriesVisibility[name] !== false;
+                  // 始终横向排布
+                  const row = Math.floor(originalSi / legendCols);
+                  const col = originalSi % legendCols;
+                  const lx = legendX + col * maxLegendItemW;
+                  const ly = legendY + row * legendItemH;
+                  const symbolX = 0;
+                  return (
+                    <g key={originalSi} transform={`translate(${lx},${ly})`}>
+                      {/* 系列图例符号 */}
+                      <g
+                        transform={`translate(${symbolX + effectiveLegendSymbolSize / 2}, 0)`}
+                        opacity={isVisible ? 1 : 0.3}
+                      >
+                        {renderLegendSymbol(
+                          viewMode,
+                          effectiveLegendSymbolSize / 2,
+                          0,
+                          effectiveLegendSymbolSize,
+                          seriesColor(originalSi, palette, chartDataSafe.seriesConfigs[originalSi]),
+                          chartDataSafe.seriesConfigs[originalSi],
+                          viewMode === 'bar'
+                            ? `chartBarFill-${originalSi}`
+                            : viewMode === 'pie'
+                              ? `chartPieFill-${originalSi}`
+                              : undefined
+                        )}
+                      </g>
+                      {/* 系列名称 */}
+                      <text
+                        fontFamily={s.fontFamily}
+                        x={symbolX + effectiveLegendSymbolSize + 8}
+                        y={0}
+                        textAnchor="start"
+                        dominantBaseline="middle"
+                        className="chart-legend-label"
+                        style={{ ...legendLabelStyle, opacity: isVisible ? 1 : 0.5 }}
+                      >
+                        {legendLabelDisplay(seriesDisplayNames[originalSi])}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            )}
 
-        {viewMode === 'bar' &&
-          (chartSwapXY
-            ? effectiveData.map((seriesData, si) => {
-                const origIdx = visibleSeriesIndices[si];
-                const seriesConfig = seriesConfigs[origIdx];
-                return (
-                  <g key={si} className="chart-bar-group">
-                    {seriesData.map((val, i) => {
-                      const base = effectiveBaseData[si]?.[i] ?? 0;
-                      const barLeft = Math.min(xScale(val), xScale(base));
-                      const barRight = Math.max(xScale(val), xScale(base));
-                      const barLength = barRight - barLeft;
-                      const yCenter = getBarCenterYSwapped(i, si);
-                      const y0 = yCenter - barThicknessSwapped / 2;
-                      const x0 = barLeft;
-                      const clampedX0 = Math.max(
-                        plotLeft,
-                        Math.min(x0, plotLeft + innerW - barLength)
-                      );
-                      return (
-                        <g
-                          key={i}
-                          data-xindex={i}
-                          data-seriesindex={origIdx}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <rect
-                            className="chart-bar"
-                            x={clampedX0}
-                            y={y0}
-                            width={Math.min(barLength, plotLeft + innerW - clampedX0)}
-                            height={barThicknessSwapped}
-                            rx={chartBarCornerRadius}
-                            ry={chartBarCornerRadius}
-                            {...getBarRectProps(
-                              seriesConfig,
-                              seriesColor(origIdx, palette, seriesConfig),
-                              `chartBarGrad-${origIdx}`,
-                              `chartBarFill-${origIdx}`
-                            )}
-                          />
-                          {(() => {
-                            const showLabels = getShowDataLabels(seriesConfig, false);
-                            if (!showLabels) return null;
-                            const fontSize = getDataLabelFontSize(seriesConfig, 0);
-                            const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                            const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
-                            const labelStyle = getDataLabelStyle(seriesConfig);
-                            const position = (seriesConfig?.dataLabelPosition || 'auto') as
-                              | 'top'
-                              | 'bottom'
-                              | 'auto';
-                            const barCenterX = (barLeft + barRight) / 2;
-                            const { offsetX, textAnchor } = calculateBarHorizontalDataLabelOffset(
-                              position,
-                              barLeft,
-                              barRight,
-                              barLength,
-                              dataLabelFontSize,
-                              plotLeft,
-                              plotRight
-                            );
-                            return (
-                              <text
-                                fontFamily={s.fontFamily}
-                                className="chart-axis-label"
-                                x={barCenterX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                                y={yCenter + (seriesConfig?.dataLabelOffsetY ?? 0)}
-                                textAnchor={textAnchor}
-                                dominantBaseline="middle"
-                                style={{
-                                  fontSize: dataLabelFontSize,
-                                  fontFamily: s.fontFamily,
-                                  ...labelStyle,
-                                }}
-                              >
-                                {formatDataLabel(val, labelDecimals)}
-                              </text>
-                            );
-                          })()}
-                        </g>
-                      );
-                    })}
-                  </g>
-                );
-              })
-            : effectiveXLabels.map((_, i) => {
-                const tickX = xScale(i);
-                const groupLeft = tickX - groupW / 2;
-                const totalBarsWidth = effectiveSeriesCount * barW + totalBarGapInner;
-                const actualGroupLeft =
-                  totalBarsWidth <= groupW ? groupLeft + (groupW - totalBarsWidth) / 2 : groupLeft;
-                return (
-                  <g key={i} className="chart-bar-group">
-                    {effectiveSeriesNames.map((_seriesDisplayName, si) => {
-                      const origIdx = chartSwapXY ? visibleSeriesIndices[i] : visibleSeriesIndices[si];
-                      const val = effectiveData[i]?.[si] ?? 0;
-                      const base = effectiveBaseData[i]?.[si] ?? 0;
-                      const barTopPx = Math.min(yScale(val), yScale(base));
-                      const barBottomPx = Math.max(yScale(val), yScale(base));
-                      const barH = barBottomPx - barTopPx;
-                      const effectiveBarH =
-                        chartBarMinHeight > 0 ? Math.max(barH, chartBarMinHeight) : barH;
-                      const x0 = actualGroupLeft + si * (barW + chartBarGapInner);
-                      const clampedX0 = Math.max(
-                        groupLeft,
-                        Math.min(x0, groupLeft + groupW - barW)
-                      );
-                      const y0 = barTopPx;
-                      const seriesConfig = seriesConfigs[origIdx];
-                      return (
-                        <g
-                          key={si}
-                          data-xindex={i}
-                          data-seriesindex={origIdx}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <rect
-                            className="chart-bar"
-                            x={clampedX0}
-                            y={y0}
-                            width={Math.min(barW, groupLeft + groupW - clampedX0)} // 确保宽度不超出组边界
-                            height={effectiveBarH}
-                            rx={chartBarCornerRadius}
-                            ry={chartBarCornerRadius}
-                            {...getBarRectProps(
-                              seriesConfig,
-                              seriesColor(origIdx, palette, seriesConfig),
-                              `chartBarGrad-${origIdx}`,
-                              `chartBarFill-${origIdx}`
-                            )}
-                          />
-                          {(() => {
-                            const showLabels = getShowDataLabels(seriesConfig, false);
-                            if (!showLabels) return null;
-                            const fontSize = getDataLabelFontSize(seriesConfig, 0);
-                            const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                            const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
-                            const labelStyle = getDataLabelStyle(seriesConfig);
-                            const position = (seriesConfig?.dataLabelPosition || 'auto') as
-                              | 'top'
-                              | 'bottom'
-                              | 'auto';
-                            const offsetY = calculateBarVerticalDataLabelOffset(
-                              position,
-                              y0,
-                              y0 + effectiveBarH,
-                              effectiveBarH,
-                              dataLabelFontSize,
-                              plotTop,
-                              plotBottom
-                            );
-                            return (
-                              <text
-                                fontFamily={s.fontFamily}
-                                className="chart-axis-label"
-                                x={clampedX0 + barW / 2 + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                                y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                style={{
-                                  fontSize: dataLabelFontSize,
-                                  fontFamily: s.fontFamily,
-                                  ...labelStyle,
-                                }}
-                              >
-                                {formatDataLabel(val, labelDecimals)}
-                              </text>
-                            );
-                          })()}
-                        </g>
-                      );
-                    })}
-                  </g>
-                );
-              }))}
+            {viewMode === 'bar' &&
+              (chartSwapXY
+                ? effectiveData.map((seriesData, si) => {
+                    const origIdx = visibleSeriesIndices[si];
+                    const seriesConfig = seriesConfigs[origIdx];
+                    return (
+                      <g key={si} className="chart-bar-group">
+                        {seriesData.map((val, i) => {
+                          const base = effectiveBaseData[si]?.[i] ?? 0;
+                          const barLeft = Math.min(xScale(val), xScale(base));
+                          const barRight = Math.max(xScale(val), xScale(base));
+                          const barLength = barRight - barLeft;
+                          const yCenter = getBarCenterYSwapped(i, si);
+                          const y0 = yCenter - barThicknessSwapped / 2;
+                          const x0 = barLeft;
+                          const clampedX0 = Math.max(
+                            plotLeft,
+                            Math.min(x0, plotLeft + innerW - barLength)
+                          );
+                          return (
+                            <g
+                              key={i}
+                              data-xindex={i}
+                              data-seriesindex={origIdx}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <rect
+                                className="chart-bar"
+                                x={clampedX0}
+                                y={y0}
+                                width={Math.min(barLength, plotLeft + innerW - clampedX0)}
+                                height={barThicknessSwapped}
+                                rx={chartBarCornerRadius}
+                                ry={chartBarCornerRadius}
+                                {...getBarRectProps(
+                                  seriesConfig,
+                                  seriesColor(origIdx, palette, seriesConfig),
+                                  `chartBarGrad-${origIdx}`,
+                                  `chartBarFill-${origIdx}`
+                                )}
+                              />
+                              {(() => {
+                                const showLabels = getShowDataLabels(seriesConfig, false);
+                                if (!showLabels) return null;
+                                const fontSize = getDataLabelFontSize(seriesConfig, 0);
+                                const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
+                                const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
+                                const labelStyle = getDataLabelStyle(seriesConfig);
+                                const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                  | 'top'
+                                  | 'bottom'
+                                  | 'auto';
+                                const barCenterX = (barLeft + barRight) / 2;
+                                const { offsetX, textAnchor } =
+                                  calculateBarHorizontalDataLabelOffset(
+                                    position,
+                                    barLeft,
+                                    barRight,
+                                    barLength,
+                                    dataLabelFontSize,
+                                    plotLeft,
+                                    plotRight
+                                  );
+                                return (
+                                  <text
+                                    fontFamily={s.fontFamily}
+                                    className="chart-axis-label"
+                                    x={barCenterX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                    y={yCenter + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                    textAnchor={textAnchor}
+                                    dominantBaseline="middle"
+                                    style={{
+                                      fontSize: dataLabelFontSize,
+                                      fontFamily: s.fontFamily,
+                                      ...labelStyle,
+                                    }}
+                                  >
+                                    {formatDataLabel(val, labelDecimals)}
+                                  </text>
+                                );
+                              })()}
+                            </g>
+                          );
+                        })}
+                      </g>
+                    );
+                  })
+                : effectiveXLabels.map((_, i) => {
+                    const tickX = xScale(i);
+                    const groupLeft = tickX - groupW / 2;
+                    const totalBarsWidth = effectiveSeriesCount * barW + totalBarGapInner;
+                    const actualGroupLeft =
+                      totalBarsWidth <= groupW
+                        ? groupLeft + (groupW - totalBarsWidth) / 2
+                        : groupLeft;
+                    return (
+                      <g key={i} className="chart-bar-group">
+                        {effectiveSeriesNames.map((_seriesDisplayName, si) => {
+                          const origIdx = chartSwapXY
+                            ? visibleSeriesIndices[i]
+                            : visibleSeriesIndices[si];
+                          const val = effectiveData[i]?.[si] ?? 0;
+                          const base = effectiveBaseData[i]?.[si] ?? 0;
+                          const barTopPx = Math.min(yScale(val), yScale(base));
+                          const barBottomPx = Math.max(yScale(val), yScale(base));
+                          const barH = barBottomPx - barTopPx;
+                          const effectiveBarH =
+                            chartBarMinHeight > 0 ? Math.max(barH, chartBarMinHeight) : barH;
+                          const x0 = actualGroupLeft + si * (barW + chartBarGapInner);
+                          const clampedX0 = Math.max(
+                            groupLeft,
+                            Math.min(x0, groupLeft + groupW - barW)
+                          );
+                          const y0 = barTopPx;
+                          const seriesConfig = seriesConfigs[origIdx];
+                          return (
+                            <g
+                              key={si}
+                              data-xindex={i}
+                              data-seriesindex={origIdx}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <rect
+                                className="chart-bar"
+                                x={clampedX0}
+                                y={y0}
+                                width={Math.min(barW, groupLeft + groupW - clampedX0)} // 确保宽度不超出组边界
+                                height={effectiveBarH}
+                                rx={chartBarCornerRadius}
+                                ry={chartBarCornerRadius}
+                                {...getBarRectProps(
+                                  seriesConfig,
+                                  seriesColor(origIdx, palette, seriesConfig),
+                                  `chartBarGrad-${origIdx}`,
+                                  `chartBarFill-${origIdx}`
+                                )}
+                              />
+                              {(() => {
+                                const showLabels = getShowDataLabels(seriesConfig, false);
+                                if (!showLabels) return null;
+                                const fontSize = getDataLabelFontSize(seriesConfig, 0);
+                                const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
+                                const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
+                                const labelStyle = getDataLabelStyle(seriesConfig);
+                                const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                  | 'top'
+                                  | 'bottom'
+                                  | 'auto';
+                                const offsetY = calculateBarVerticalDataLabelOffset(
+                                  position,
+                                  y0,
+                                  y0 + effectiveBarH,
+                                  effectiveBarH,
+                                  dataLabelFontSize,
+                                  plotTop,
+                                  plotBottom
+                                );
+                                return (
+                                  <text
+                                    fontFamily={s.fontFamily}
+                                    className="chart-axis-label"
+                                    x={clampedX0 + barW / 2 + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                    y={y0 + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    style={{
+                                      fontSize: dataLabelFontSize,
+                                      fontFamily: s.fontFamily,
+                                      ...labelStyle,
+                                    }}
+                                  >
+                                    {formatDataLabel(val, labelDecimals)}
+                                  </text>
+                                );
+                              })()}
+                            </g>
+                          );
+                        })}
+                      </g>
+                    );
+                  }))}
 
-        {viewMode === 'line' &&
-          (chartSwapXY
-            ? effectiveData.map((seriesData, si) => {
-                const origIdx = visibleSeriesIndices[si];
-                const seriesConfig = seriesConfigs[origIdx];
-                const pts = seriesData.map((val, idx) => ({
-                  x: xScale(val),
-                  y: yScale(idx),
-                }));
-                const lineWidth = getLineWidth(seriesConfig);
-                const lineStyle = getLineStyle(seriesConfig);
-                const lineFit = getLineFit(seriesConfig, false);
-                const lineFitType = getLineFitType(seriesConfig);
-                const lineFitDegree = getLineFitDegree(seriesConfig, 2);
-                return (
-                  <g key={si}>
-                    {lineFit && pts.length >= 2 ? (
-                      <path
-                        className="chart-line"
-                        d={generateFitLinePath(pts, lineFitType, lineFitDegree)}
-                        fill="none"
-                        stroke={seriesColor(origIdx, palette, seriesConfig)}
-                        strokeWidth={lineWidth}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray={getStrokeDasharray(lineStyle)}
-                      />
-                    ) : (
-                      <polyline
-                        className="chart-line"
-                        points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
-                        fill="none"
-                        stroke={seriesColor(origIdx, palette, seriesConfig)}
-                        strokeWidth={lineWidth}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray={getStrokeDasharray(lineStyle)}
-                      />
-                    )}
-                    {(() => {
-                      const showPoints = getLineShowPoints(seriesConfig, true);
-                      const config = showPoints
-                        ? getLineMarkerConfig(
-                            seriesConfig,
-                            seriesColor(origIdx, palette, seriesConfig)
-                          )
-                        : null;
-                      const markerSize = config?.size ?? 4;
-                      return seriesData.map((val, idx) => {
-                        const marker =
-                          showPoints && config
-                            ? renderMarker(
-                                xScale(val),
-                                yScale(idx),
-                                config.style,
-                                config.size,
-                                config.fillColor,
-                                config.edgeColor,
-                                1,
-                                1,
-                                `${idx}-${si}-${config.configKey}`
+            {viewMode === 'line' &&
+              (chartSwapXY
+                ? effectiveData.map((seriesData, si) => {
+                    const origIdx = visibleSeriesIndices[si];
+                    const seriesConfig = seriesConfigs[origIdx];
+                    const pts = seriesData.map((val, idx) => ({
+                      x: xScale(val),
+                      y: yScale(idx),
+                    }));
+                    const lineWidth = getLineWidth(seriesConfig);
+                    const lineStyle = getLineStyle(seriesConfig);
+                    const lineFit = getLineFit(seriesConfig, false);
+                    const lineFitType = getLineFitType(seriesConfig);
+                    const lineFitDegree = getLineFitDegree(seriesConfig, 2);
+                    return (
+                      <g key={si}>
+                        {lineFit && pts.length >= 2 ? (
+                          <path
+                            className="chart-line"
+                            d={generateFitLinePath(pts, lineFitType, lineFitDegree)}
+                            fill="none"
+                            stroke={seriesColor(origIdx, palette, seriesConfig)}
+                            strokeWidth={lineWidth}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeDasharray={getStrokeDasharray(lineStyle)}
+                          />
+                        ) : (
+                          <polyline
+                            className="chart-line"
+                            points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
+                            fill="none"
+                            stroke={seriesColor(origIdx, palette, seriesConfig)}
+                            strokeWidth={lineWidth}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeDasharray={getStrokeDasharray(lineStyle)}
+                          />
+                        )}
+                        {(() => {
+                          const showPoints = getLineShowPoints(seriesConfig, true);
+                          const config = showPoints
+                            ? getLineMarkerConfig(
+                                seriesConfig,
+                                seriesColor(origIdx, palette, seriesConfig)
                               )
                             : null;
+                          const markerSize = config?.size ?? 4;
+                          return seriesData.map((val, idx) => {
+                            const marker =
+                              showPoints && config
+                                ? renderMarker(
+                                    xScale(val),
+                                    yScale(idx),
+                                    config.style,
+                                    config.size,
+                                    config.fillColor,
+                                    config.edgeColor,
+                                    1,
+                                    1,
+                                    `${idx}-${si}-${config.configKey}`
+                                  )
+                                : null;
+                            return (
+                              <g
+                                key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
+                                data-xindex={idx}
+                                data-seriesindex={origIdx}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                {marker}
+                                {(() => {
+                                  const showLabels = getShowDataLabels(seriesConfig, false);
+                                  if (!showLabels) return null;
+                                  const fontSize = getDataLabelFontSize(seriesConfig, 0);
+                                  const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
+                                  const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
+                                  const labelStyle = getDataLabelStyle(seriesConfig);
+                                  const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                    | 'top'
+                                    | 'bottom'
+                                    | 'auto';
+                                  const pointX = xScale(val);
+                                  const pointY = yScale(idx);
+                                  const { offsetX, offsetY, textAnchor } =
+                                    calculateHorizontalDataLabelOffset(
+                                      position,
+                                      pointX,
+                                      markerSize,
+                                      dataLabelFontSize,
+                                      plotLeft,
+                                      plotRight
+                                    );
+                                  return (
+                                    <text
+                                      fontFamily={s.fontFamily}
+                                      className="chart-axis-label"
+                                      x={pointX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                      y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                      textAnchor={textAnchor}
+                                      dominantBaseline="middle"
+                                      style={{
+                                        fontSize: dataLabelFontSize,
+                                        fontFamily: s.fontFamily,
+                                        ...labelStyle,
+                                      }}
+                                    >
+                                      {formatDataLabel(val, labelDecimals)}
+                                    </text>
+                                  );
+                                })()}
+                              </g>
+                            );
+                          });
+                        })()}
+                      </g>
+                    );
+                  })
+                : effectiveSeriesNames.map((_name, si) => {
+                    const origIdx = visibleSeriesIndices[si];
+                    const seriesConfig = seriesConfigs[origIdx];
+                    const pts = effectiveXLabels.map((_, idx) => ({
+                      x: xScale(idx),
+                      y: yScale(effectiveData[idx]?.[si] ?? 0),
+                    }));
+                    const lineWidth = getLineWidth(seriesConfig);
+                    const lineStyle = getLineStyle(seriesConfig);
+                    const lineFit = getLineFit(seriesConfig, false);
+                    const lineFitType = getLineFitType(seriesConfig);
+                    const lineFitDegree = getLineFitDegree(seriesConfig, 2);
+                    return (
+                      <g key={si}>
+                        {lineFit && pts.length >= 2 ? (
+                          <path
+                            className="chart-line"
+                            d={generateFitLinePath(pts, lineFitType, lineFitDegree)}
+                            fill="none"
+                            stroke={seriesColor(origIdx, palette, seriesConfig)}
+                            strokeWidth={lineWidth}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeDasharray={getStrokeDasharray(lineStyle)}
+                          />
+                        ) : (
+                          <polyline
+                            className="chart-line"
+                            points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
+                            fill="none"
+                            stroke={seriesColor(origIdx, palette, seriesConfig)}
+                            strokeWidth={lineWidth}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeDasharray={getStrokeDasharray(lineStyle)}
+                          />
+                        )}
+                        {(() => {
+                          const showPoints = getLineShowPoints(seriesConfig, true);
+                          const config = showPoints
+                            ? getLineMarkerConfig(
+                                seriesConfig,
+                                seriesColor(origIdx, palette, seriesConfig)
+                              )
+                            : null;
+                          const markerSize = config?.size ?? 4; // 默认标记大小，用于数据标签位置计算
+                          return effectiveXLabels.map((_, idx) => {
+                            const marker =
+                              showPoints && config
+                                ? renderMarker(
+                                    xScale(idx),
+                                    yScale(effectiveData[idx]?.[si] ?? 0),
+                                    config.style,
+                                    config.size,
+                                    config.fillColor,
+                                    config.edgeColor,
+                                    1,
+                                    1,
+                                    `${idx}-${si}-${config.configKey}`
+                                  )
+                                : null;
+                            return (
+                              <g
+                                key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
+                                data-xindex={idx}
+                                data-seriesindex={origIdx}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                {marker}
+                                {(() => {
+                                  const showLabels = getShowDataLabels(seriesConfig, false);
+                                  if (!showLabels) return null;
+                                  const fontSize = getDataLabelFontSize(seriesConfig, 0);
+                                  const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
+                                  const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
+                                  const labelStyle = getDataLabelStyle(seriesConfig);
+                                  const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                    | 'top'
+                                    | 'bottom'
+                                    | 'auto';
+                                  const pointX = xScale(idx);
+                                  const pointY = yScale(effectiveData[idx]?.[si] ?? 0);
+                                  const offsetY = calculateVerticalDataLabelOffset(
+                                    position,
+                                    pointY,
+                                    markerSize,
+                                    dataLabelFontSize,
+                                    plotTop,
+                                    plotBottom
+                                  );
+                                  return (
+                                    <text
+                                      fontFamily={s.fontFamily}
+                                      className="chart-axis-label"
+                                      x={pointX + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                      y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                      textAnchor="middle"
+                                      dominantBaseline="auto"
+                                      style={{
+                                        fontSize: dataLabelFontSize,
+                                        fontFamily: s.fontFamily,
+                                        ...labelStyle,
+                                      }}
+                                    >
+                                      {formatDataLabel(
+                                        effectiveData[idx]?.[si] ?? 0,
+                                        labelDecimals
+                                      )}
+                                    </text>
+                                  );
+                                })()}
+                              </g>
+                            );
+                          });
+                        })()}
+                      </g>
+                    );
+                  }))}
+
+            {viewMode === 'scatter' &&
+              (chartSwapXY
+                ? effectiveData
+                    .map((seriesData, si) => {
+                      const origIdx = visibleSeriesIndices[si];
+                      const seriesConfig = seriesConfigs[origIdx];
+                      return seriesData.map((val, idx) => {
+                        const config = getScatterMarkerConfig(
+                          seriesConfig,
+                          seriesColor(origIdx, palette, seriesConfig)
+                        );
+                        const marker = renderMarker(
+                          xScale(val),
+                          yScale(idx),
+                          config.style,
+                          config.size,
+                          config.fillColor,
+                          config.edgeColor,
+                          config.edgeWidth,
+                          config.opacity,
+                          `${idx}-${si}-${config.configKey}`
+                        );
                         return (
                           <g
-                            key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
+                            key={`scatter-${idx}-${si}-${config.configKey}`}
                             data-xindex={idx}
                             data-seriesindex={origIdx}
                             style={{ cursor: 'pointer' }}
@@ -2513,11 +2731,12 @@ export const ChartView = forwardRef<
                                 calculateHorizontalDataLabelOffset(
                                   position,
                                   pointX,
-                                  markerSize,
+                                  config.size,
                                   dataLabelFontSize,
                                   plotLeft,
                                   plotRight
                                 );
+                              const displayValue = val;
                               return (
                                 <text
                                   fontFamily={s.fontFamily}
@@ -2532,585 +2751,404 @@ export const ChartView = forwardRef<
                                     ...labelStyle,
                                   }}
                                 >
-                                  {formatDataLabel(val, labelDecimals)}
+                                  {formatDataLabel(displayValue, labelDecimals)}
                                 </text>
                               );
                             })()}
                           </g>
                         );
                       });
-                    })()}
-                  </g>
-                );
-              })
-            : effectiveSeriesNames.map((_name, si) => {
-                const origIdx = visibleSeriesIndices[si];
-                const seriesConfig = seriesConfigs[origIdx];
-                const pts = effectiveXLabels.map((_, idx) => ({
-                  x: xScale(idx),
-                  y: yScale(effectiveData[idx]?.[si] ?? 0),
-                }));
-                const lineWidth = getLineWidth(seriesConfig);
-                const lineStyle = getLineStyle(seriesConfig);
-                const lineFit = getLineFit(seriesConfig, false);
-                const lineFitType = getLineFitType(seriesConfig);
-                const lineFitDegree = getLineFitDegree(seriesConfig, 2);
-                return (
-                  <g key={si}>
-                    {lineFit && pts.length >= 2 ? (
-                      <path
-                        className="chart-line"
-                        d={generateFitLinePath(pts, lineFitType, lineFitDegree)}
-                        fill="none"
-                        stroke={seriesColor(origIdx, palette, seriesConfig)}
-                        strokeWidth={lineWidth}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray={getStrokeDasharray(lineStyle)}
-                      />
-                    ) : (
-                      <polyline
-                        className="chart-line"
-                        points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
-                        fill="none"
-                        stroke={seriesColor(origIdx, palette, seriesConfig)}
-                        strokeWidth={lineWidth}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray={getStrokeDasharray(lineStyle)}
-                      />
-                    )}
-                    {(() => {
-                      const showPoints = getLineShowPoints(seriesConfig, true);
-                      const config = showPoints
-                        ? getLineMarkerConfig(
+                    })
+                    .filter((item) => item !== null)
+                    .flat()
+                : (() => {
+                    const nSeries = chartSwapXY
+                      ? effectiveXLabels.length
+                      : effectiveSeriesNames.length;
+                    const fitPaths = Array.from({ length: nSeries }, (_, seriesIdx) => {
+                      const origIdx = visibleSeriesIndices[seriesIdx];
+                      const seriesConfig = seriesConfigs[origIdx];
+                      const pts = chartSwapXY
+                        ? effectiveSeriesNames.map((_, idx) => ({
+                            x: xScale(idx),
+                            y: yScale(effectiveData[seriesIdx]?.[idx] ?? 0),
+                          }))
+                        : effectiveXLabels.map((_, idx) => ({
+                            x: xScale(idx),
+                            y: yScale(effectiveData[idx]?.[seriesIdx] ?? 0),
+                          }));
+                      const lineFit = getLineFit(seriesConfig, false);
+                      if (!lineFit || pts.length < 2) return null;
+                      const lineWidth = getLineWidth(seriesConfig);
+                      const lineStyle = getLineStyle(seriesConfig);
+                      return (
+                        <path
+                          key={`scatter-fit-${seriesIdx}`}
+                          className="chart-line"
+                          d={generateFitLinePath(
+                            pts,
+                            getLineFitType(seriesConfig),
+                            getLineFitDegree(seriesConfig, 2)
+                          )}
+                          fill="none"
+                          stroke={seriesColor(origIdx, palette, seriesConfig)}
+                          strokeWidth={lineWidth}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeDasharray={getStrokeDasharray(lineStyle)}
+                        />
+                      );
+                    }).filter(Boolean);
+                    const markers = effectiveXLabels
+                      .map((_, xi) =>
+                        effectiveSeriesNames.map((_name, si) => {
+                          const origIdx = chartSwapXY
+                            ? visibleSeriesIndices[xi]
+                            : visibleSeriesIndices[si];
+                          const val = effectiveData[xi]?.[si] ?? 0;
+                          const seriesConfig = seriesConfigs[origIdx];
+                          const config = getScatterMarkerConfig(
                             seriesConfig,
                             seriesColor(origIdx, palette, seriesConfig)
-                          )
-                        : null;
-                      const markerSize = config?.size ?? 4; // 默认标记大小，用于数据标签位置计算
-                      return effectiveXLabels.map((_, idx) => {
-                        const marker =
-                          showPoints && config
-                            ? renderMarker(
-                                xScale(idx),
-                                yScale(effectiveData[idx]?.[si] ?? 0),
-                                config.style,
-                                config.size,
-                                config.fillColor,
-                                config.edgeColor,
-                                1,
-                                1,
-                                `${idx}-${si}-${config.configKey}`
-                              )
-                            : null;
+                          );
+                          const marker = renderMarker(
+                            xScale(xi),
+                            yScale(val),
+                            config.style,
+                            config.size,
+                            config.fillColor,
+                            config.edgeColor,
+                            config.edgeWidth,
+                            config.opacity,
+                            `${xi}-${si}-${config.configKey}`
+                          );
+                          return (
+                            <g
+                              key={`scatter-${xi}-${si}-${config.configKey}`}
+                              data-xindex={xi}
+                              data-seriesindex={origIdx}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              {marker}
+                              {(() => {
+                                const showLabels = getShowDataLabels(seriesConfig, false);
+                                if (!showLabels) return null;
+                                const fontSize = getDataLabelFontSize(seriesConfig, 0);
+                                const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
+                                const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
+                                const labelStyle = getDataLabelStyle(seriesConfig);
+                                const position = (seriesConfig?.dataLabelPosition || 'auto') as
+                                  | 'top'
+                                  | 'bottom'
+                                  | 'auto';
+                                const pointX = xScale(xi);
+                                const pointY = yScale(val);
+                                const offsetY = calculateVerticalDataLabelOffset(
+                                  position,
+                                  pointY,
+                                  config.size,
+                                  dataLabelFontSize,
+                                  plotTop,
+                                  plotBottom
+                                );
+                                return (
+                                  <text
+                                    fontFamily={s.fontFamily}
+                                    className="chart-axis-label"
+                                    x={pointX + (seriesConfig?.dataLabelOffsetX ?? 0)}
+                                    y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                                    textAnchor="middle"
+                                    dominantBaseline="auto"
+                                    style={{
+                                      fontSize: dataLabelFontSize,
+                                      fontFamily: s.fontFamily,
+                                      ...labelStyle,
+                                    }}
+                                  >
+                                    {formatDataLabel(val, labelDecimals)}
+                                  </text>
+                                );
+                              })()}
+                            </g>
+                          );
+                        })
+                      )
+                      .flat();
+                    return [...fitPaths, ...markers];
+                  })())}
+
+            {viewMode === 'pie' &&
+              chartDataSafe &&
+              (() => {
+                // 只计算可见系列
+                const visibleSeries = chartDataSafe.seriesNames
+                  .map((name, si) => ({ name, si }))
+                  .filter(({ name }) => chartSeriesVisibility[name] !== false);
+
+                // 如果只选中一个系列，显示该系列在不同 x 值下的分布（按 x 去重）
+                if (visibleSeries.length === 1) {
+                  const { si } = visibleSeries[0];
+                  const xValueMap = new Map<
+                    string,
+                    { value: number; label: string; firstIndex: number }
+                  >();
+                  xLabels.forEach((xLabel, xi) => {
+                    const yVal = data[xi]?.[si] ?? 0;
+                    if (yVal > 0) {
+                      if (xValueMap.has(xLabel)) {
+                        const existing = xValueMap.get(xLabel)!;
+                        existing.value += yVal;
+                      } else {
+                        xValueMap.set(xLabel, { value: yVal, label: xLabel, firstIndex: xi });
+                      }
+                    }
+                  });
+                  const pieData = Array.from(xValueMap.values()).filter((item) => item.value > 0);
+                  const total = pieData.reduce((a, b) => a + b.value, 0) || 1;
+                  const cx = plotLeft + innerW / 2;
+                  const cy = plotTop + innerH / 2;
+                  const r = Math.min(innerW, innerH) / 2 - 8;
+                  const innerR =
+                    chartPieInnerRadius > 0 ? r * (Math.min(80, chartPieInnerRadius) / 100) : 0;
+                  const startOffset = ((chartPieStartAngle % 360) + 360) % 360;
+                  let acc = 0;
+                  const seriesConfig = chartDataSafe.seriesConfigs[si];
+                  const fillStyle = getPieFillStyle(seriesConfig);
+                  const color = seriesColor(si, palette, seriesConfig);
+                  return (
+                    <>
+                      {/* 生成渐变和图案定义 */}
+                      {pieData.map((_, idx) => (
+                        <g key={`def-${idx}`}>
+                          {fillStyle === 'gradient' && (
+                            <radialGradient id={`chartPieGrad-${si}-${idx}`}>
+                              <stop offset="0%" stopColor={color} stopOpacity="0.8" />
+                              <stop offset="100%" stopColor={color} stopOpacity="1" />
+                            </radialGradient>
+                          )}
+                          {renderFillPattern(fillStyle, color, `chartPieFill-${si}-${idx}`)}
+                        </g>
+                      ))}
+                      {/* 渲染扇形切片 */}
+                      {pieData.map((item, idx) => {
+                        const v = item.value;
+                        const sliceDeg = (v / total) * 360;
+                        const startDeg = acc + startOffset;
+                        const endDeg = startDeg + sliceDeg;
+                        acc += sliceDeg;
+                        const startRad = deg2rad(startDeg);
+                        const endRad = deg2rad(endDeg);
+                        const largeArc = sliceDeg > 180 ? 1 : 0;
+                        const x1 = cx + r * Math.cos(startRad);
+                        const y1 = cy + r * Math.sin(startRad);
+                        const x2 = cx + r * Math.cos(endRad);
+                        const y2 = cy + r * Math.sin(endRad);
+                        const edgeStyle = getPieEdgeStyle(seriesConfig);
+                        const edgeWidth = getPieEdgeWidth(seriesConfig);
+                        const edgeColor = color;
+                        if (innerR > 0) {
+                          const x3 = cx + innerR * Math.cos(endRad);
+                          const y3 = cy + innerR * Math.sin(endRad);
+                          const x4 = cx + innerR * Math.cos(startRad);
+                          const y4 = cy + innerR * Math.sin(startRad);
+                          return (
+                            <g key={idx}>
+                              <path
+                                d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`}
+                                fill={
+                                  fillStyle === 'gradient'
+                                    ? `url(#chartPieGrad-${si}-${idx})`
+                                    : isPatternFill(fillStyle)
+                                      ? `url(#chartPieFill-${si}-${idx})`
+                                      : color
+                                }
+                                fillOpacity={pieSliceOpacity(si)}
+                                stroke={
+                                  edgeStyle === 'none'
+                                    ? undefined
+                                    : edgeWidth > 0
+                                      ? edgeColor
+                                      : undefined
+                                }
+                                strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
+                                strokeDasharray={getStrokeDasharray(edgeStyle)}
+                              />
+                            </g>
+                          );
+                        }
                         return (
-                          <g
-                            key={`marker-${idx}-${si}-${config?.configKey ?? `default-${idx}-${si}`}`}
-                            data-xindex={idx}
-                            data-seriesindex={origIdx}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            {marker}
-                            {(() => {
-                              const showLabels = getShowDataLabels(seriesConfig, false);
-                              if (!showLabels) return null;
-                              const fontSize = getDataLabelFontSize(seriesConfig, 0);
-                              const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                              const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
-                              const labelStyle = getDataLabelStyle(seriesConfig);
-                              const position = (seriesConfig?.dataLabelPosition || 'auto') as
-                                | 'top'
-                                | 'bottom'
-                                | 'auto';
-                              const pointX = xScale(idx);
-                              const pointY = yScale(effectiveData[idx]?.[si] ?? 0);
-                              const offsetY = calculateVerticalDataLabelOffset(
-                                position,
-                                pointY,
-                                markerSize,
-                                dataLabelFontSize,
-                                plotTop,
-                                plotBottom
-                              );
-                              return (
-                                <text
-                                  fontFamily={s.fontFamily}
-                                  className="chart-axis-label"
-                                  x={pointX + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                                  y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
-                                  textAnchor="middle"
-                                  dominantBaseline="auto"
-                                  style={{
-                                    fontSize: dataLabelFontSize,
-                                    fontFamily: s.fontFamily,
-                                    ...labelStyle,
-                                  }}
-                                >
-                                  {formatDataLabel(effectiveData[idx]?.[si] ?? 0, labelDecimals)}
-                                </text>
-                              );
-                            })()}
+                          <g key={idx}>
+                            <path
+                              d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                              fill={
+                                fillStyle === 'gradient'
+                                  ? `url(#chartPieGrad-${si})`
+                                  : isPatternFill(fillStyle)
+                                    ? `url(#chartPieFill-${si})`
+                                    : color
+                              }
+                              fillOpacity={pieSliceOpacity(si)}
+                              stroke={
+                                edgeStyle === 'none'
+                                  ? undefined
+                                  : edgeWidth > 0
+                                    ? edgeColor
+                                    : undefined
+                              }
+                              strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
+                              strokeDasharray={getStrokeDasharray(edgeStyle)}
+                            />
                           </g>
                         );
-                      });
-                    })()}
-                  </g>
-                );
-              }))}
-
-        {viewMode === 'scatter' &&
-          (chartSwapXY
-            ? effectiveData
-                .map((seriesData, si) => {
-                  const origIdx = visibleSeriesIndices[si];
-                  const seriesConfig = seriesConfigs[origIdx];
-                  return seriesData.map((val, idx) => {
-                    const config = getScatterMarkerConfig(
-                      seriesConfig,
-                      seriesColor(origIdx, palette, seriesConfig)
-                    );
-                    const marker = renderMarker(
-                      xScale(val),
-                      yScale(idx),
-                      config.style,
-                      config.size,
-                      config.fillColor,
-                      config.edgeColor,
-                      config.edgeWidth,
-                      config.opacity,
-                      `${idx}-${si}-${config.configKey}`
-                    );
-                    return (
-                      <g
-                        key={`scatter-${idx}-${si}-${config.configKey}`}
-                        data-xindex={idx}
-                        data-seriesindex={origIdx}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {marker}
-                        {(() => {
-                          const showLabels = getShowDataLabels(seriesConfig, false);
-                          if (!showLabels) return null;
-                          const fontSize = getDataLabelFontSize(seriesConfig, 0);
-                          const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                          const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
-                          const labelStyle = getDataLabelStyle(seriesConfig);
-                          const position = (seriesConfig?.dataLabelPosition || 'auto') as
-                            | 'top'
-                            | 'bottom'
-                            | 'auto';
-                          const pointX = xScale(val);
-                          const pointY = yScale(idx);
-                          const { offsetX, offsetY, textAnchor } =
-                            calculateHorizontalDataLabelOffset(
-                              position,
-                              pointX,
-                              config.size,
-                              dataLabelFontSize,
-                              plotLeft,
-                              plotRight
-                            );
-                          const displayValue = val;
+                      })}
+                      {chartPieLabelPosition !== 'none' &&
+                        chartShowAxisLabels &&
+                        pieData.map((item, idx) => {
+                          const v = item.value;
+                          const prevSum = pieData.slice(0, idx).reduce((a, b) => a + b.value, 0);
+                          const midDeg = ((prevSum + v / 2) / total) * 360 + startOffset;
+                          const rad = deg2rad(midDeg);
+                          const labelRadius =
+                            chartPieLabelPosition === 'inside' ? r * 0.5 : PIE_LABEL_RATIO * r;
+                          const tx = cx + labelRadius * Math.cos(rad);
+                          const ty = cy + labelRadius * Math.sin(rad);
                           return (
                             <text
+                              key={idx}
                               fontFamily={s.fontFamily}
-                              className="chart-axis-label"
-                              x={pointX + offsetX + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                              y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
-                              textAnchor={textAnchor}
-                              dominantBaseline="middle"
-                              style={{
-                                fontSize: dataLabelFontSize,
-                                fontFamily: s.fontFamily,
-                                ...labelStyle,
-                              }}
-                            >
-                              {formatDataLabel(displayValue, labelDecimals)}
-                            </text>
-                          );
-                        })()}
-                      </g>
-                    );
-                  });
-                })
-                .filter((item) => item !== null)
-                .flat()
-            : (() => {
-                const nSeries = chartSwapXY ? effectiveXLabels.length : effectiveSeriesNames.length;
-                const fitPaths = Array.from({ length: nSeries }, (_, seriesIdx) => {
-                  const origIdx = visibleSeriesIndices[seriesIdx];
-                  const seriesConfig = seriesConfigs[origIdx];
-                  const pts = chartSwapXY
-                    ? effectiveSeriesNames.map((_, idx) => ({
-                        x: xScale(idx),
-                        y: yScale(effectiveData[seriesIdx]?.[idx] ?? 0),
-                      }))
-                    : effectiveXLabels.map((_, idx) => ({
-                        x: xScale(idx),
-                        y: yScale(effectiveData[idx]?.[seriesIdx] ?? 0),
-                      }));
-                  const lineFit = getLineFit(seriesConfig, false);
-                  if (!lineFit || pts.length < 2) return null;
-                  const lineWidth = getLineWidth(seriesConfig);
-                  const lineStyle = getLineStyle(seriesConfig);
-                  return (
-                    <path
-                      key={`scatter-fit-${seriesIdx}`}
-                      className="chart-line"
-                      d={generateFitLinePath(
-                        pts,
-                        getLineFitType(seriesConfig),
-                        getLineFitDegree(seriesConfig, 2)
-                      )}
-                      fill="none"
-                      stroke={seriesColor(origIdx, palette, seriesConfig)}
-                      strokeWidth={lineWidth}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeDasharray={getStrokeDasharray(lineStyle)}
-                    />
-                  );
-                }).filter(Boolean);
-                const markers = effectiveXLabels.map((_, xi) =>
-                  effectiveSeriesNames.map((_name, si) => {
-                    const origIdx = chartSwapXY ? visibleSeriesIndices[xi] : visibleSeriesIndices[si];
-                    const val = effectiveData[xi]?.[si] ?? 0;
-                    const seriesConfig = seriesConfigs[origIdx];
-                    const config = getScatterMarkerConfig(
-                      seriesConfig,
-                      seriesColor(origIdx, palette, seriesConfig)
-                    );
-                    const marker = renderMarker(
-                      xScale(xi),
-                      yScale(val),
-                      config.style,
-                      config.size,
-                      config.fillColor,
-                      config.edgeColor,
-                      config.edgeWidth,
-                      config.opacity,
-                      `${xi}-${si}-${config.configKey}`
-                    );
-                    return (
-                      <g
-                        key={`scatter-${xi}-${si}-${config.configKey}`}
-                        data-xindex={xi}
-                        data-seriesindex={origIdx}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {marker}
-                        {(() => {
-                          const showLabels = getShowDataLabels(seriesConfig, false);
-                          if (!showLabels) return null;
-                          const fontSize = getDataLabelFontSize(seriesConfig, 0);
-                          const dataLabelFontSize = fontSize > 0 ? fontSize : labelFontSize;
-                          const labelDecimals = getDataLabelDecimals(seriesConfig, 2);
-                          const labelStyle = getDataLabelStyle(seriesConfig);
-                          const position = (seriesConfig?.dataLabelPosition || 'auto') as
-                            | 'top'
-                            | 'bottom'
-                            | 'auto';
-                          const pointX = xScale(xi);
-                          const pointY = yScale(val);
-                          const offsetY = calculateVerticalDataLabelOffset(
-                            position,
-                            pointY,
-                            config.size,
-                            dataLabelFontSize,
-                            plotTop,
-                            plotBottom
-                          );
-                          return (
-                            <text
-                              fontFamily={s.fontFamily}
-                              className="chart-axis-label"
-                              x={pointX + (seriesConfig?.dataLabelOffsetX ?? 0)}
-                              y={pointY + offsetY + (seriesConfig?.dataLabelOffsetY ?? 0)}
+                              className="chart-pie-label"
+                              x={tx}
+                              y={ty}
                               textAnchor="middle"
-                              dominantBaseline="auto"
-                              style={{
-                                fontSize: dataLabelFontSize,
-                                fontFamily: s.fontFamily,
-                                ...labelStyle,
-                              }}
+                              dominantBaseline="middle"
+                              style={{ fontFamily: s.fontFamily }}
                             >
-                              {formatDataLabel(val, labelDecimals)}
+                              {truncate(item.label, pieLabelTruncate)}
                             </text>
                           );
-                        })()}
-                      </g>
-                    );
-                  })
-                )
-                  .flat();
-                return [...fitPaths, ...markers];
-              })())}
-
-        {viewMode === 'pie' &&
-          chartDataSafe &&
-          (() => {
-            // 只计算可见系列
-            const visibleSeries = chartDataSafe.seriesNames
-              .map((name, si) => ({ name, si }))
-              .filter(({ name }) => chartSeriesVisibility[name] !== false);
-
-            // 如果只选中一个系列，显示该系列在不同 x 值下的分布（按 x 去重）
-            if (visibleSeries.length === 1) {
-              const { si } = visibleSeries[0];
-              const xValueMap = new Map<
-                string,
-                { value: number; label: string; firstIndex: number }
-              >();
-              xLabels.forEach((xLabel, xi) => {
-                const yVal = data[xi]?.[si] ?? 0;
-                if (yVal > 0) {
-                  if (xValueMap.has(xLabel)) {
-                    const existing = xValueMap.get(xLabel)!;
-                    existing.value += yVal;
-                  } else {
-                    xValueMap.set(xLabel, { value: yVal, label: xLabel, firstIndex: xi });
-                  }
+                        })}
+                    </>
+                  );
+                } else {
+                  // 多系列：每个系列一个扇形，按系列顺序排列
+                  const visibleSeriesSums = visibleSeries.map(({ si }) => {
+                    const sum = data.reduce((acc, row) => acc + (row?.[si] ?? 0), 0);
+                    return { si, sum };
+                  });
+                  const total = visibleSeriesSums.reduce((a, b) => a + b.sum, 0) || 1;
+                  const cx = plotLeft + innerW / 2;
+                  const cy = plotTop + innerH / 2;
+                  const r = Math.min(innerW, innerH) / 2 - 8;
+                  const innerR =
+                    chartPieInnerRadius > 0 ? r * (Math.min(80, chartPieInnerRadius) / 100) : 0;
+                  const startOffset = ((chartPieStartAngle % 360) + 360) % 360;
+                  let acc = 0;
+                  return (
+                    <>
+                      {visibleSeriesSums.map(({ si, sum: v }) => {
+                        const sliceDeg = (v / total) * 360;
+                        const startDeg = acc + startOffset;
+                        const endDeg = startDeg + sliceDeg;
+                        acc += sliceDeg;
+                        const startRad = deg2rad(startDeg);
+                        const endRad = deg2rad(endDeg);
+                        const largeArc = sliceDeg > 180 ? 1 : 0;
+                        const x1 = cx + r * Math.cos(startRad);
+                        const y1 = cy + r * Math.sin(startRad);
+                        const x2 = cx + r * Math.cos(endRad);
+                        const y2 = cy + r * Math.sin(endRad);
+                        const seriesConfig = chartDataSafe.seriesConfigs[si];
+                        const fillStyle = getPieFillStyle(seriesConfig);
+                        const color = seriesColor(si, palette, seriesConfig);
+                        const edgeStyle = getPieEdgeStyle(seriesConfig);
+                        const edgeWidth = getPieEdgeWidth(seriesConfig);
+                        const edgeColor = color;
+                        if (innerR > 0) {
+                          const x3 = cx + innerR * Math.cos(endRad);
+                          const y3 = cy + innerR * Math.sin(endRad);
+                          const x4 = cx + innerR * Math.cos(startRad);
+                          const y4 = cy + innerR * Math.sin(startRad);
+                          return (
+                            <g key={si}>
+                              <path
+                                d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`}
+                                fill={
+                                  fillStyle === 'gradient'
+                                    ? `url(#chartPieGrad-${si})`
+                                    : fillStyle === 'hatched'
+                                      ? `url(#chartPieHatch-${si})`
+                                      : color
+                                }
+                                fillOpacity={pieSliceOpacity(si)}
+                                stroke={
+                                  edgeStyle === 'none'
+                                    ? undefined
+                                    : edgeWidth > 0
+                                      ? edgeColor
+                                      : undefined
+                                }
+                                strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
+                                strokeDasharray={getStrokeDasharray(edgeStyle)}
+                              />
+                            </g>
+                          );
+                        }
+                        return (
+                          <g key={si}>
+                            <path
+                              d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                              fill={
+                                fillStyle === 'gradient'
+                                  ? `url(#chartPieGrad-${si})`
+                                  : isPatternFill(fillStyle)
+                                    ? `url(#chartPieFill-${si})`
+                                    : color
+                              }
+                              fillOpacity={pieSliceOpacity(si)}
+                              stroke={
+                                edgeStyle === 'none'
+                                  ? undefined
+                                  : edgeWidth > 0
+                                    ? edgeColor
+                                    : undefined
+                              }
+                              strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
+                              strokeDasharray={getStrokeDasharray(edgeStyle)}
+                            />
+                          </g>
+                        );
+                      })}
+                      {chartPieLabelPosition !== 'none' &&
+                        chartShowAxisLabels &&
+                        visibleSeriesSums.map(({ si, sum: v }, idx) => {
+                          const prevSum = visibleSeriesSums
+                            .slice(0, idx)
+                            .reduce((a, b) => a + b.sum, 0);
+                          const midDeg = ((prevSum + v / 2) / total) * 360 + startOffset;
+                          const rad = deg2rad(midDeg);
+                          const labelRadius =
+                            chartPieLabelPosition === 'inside' ? r * 0.5 : PIE_LABEL_RATIO * r;
+                          const tx = cx + labelRadius * Math.cos(rad);
+                          const ty = cy + labelRadius * Math.sin(rad);
+                          return (
+                            <text
+                              key={si}
+                              fontFamily={s.fontFamily}
+                              className="chart-pie-label"
+                              x={tx}
+                              y={ty}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                              style={{ fontFamily: s.fontFamily }}
+                            >
+                              {truncate(seriesDisplayNames[si], pieLabelTruncate)}
+                            </text>
+                          );
+                        })}
+                    </>
+                  );
                 }
-              });
-              const pieData = Array.from(xValueMap.values()).filter((item) => item.value > 0);
-              const total = pieData.reduce((a, b) => a + b.value, 0) || 1;
-              const cx = plotLeft + innerW / 2;
-              const cy = plotTop + innerH / 2;
-              const r = Math.min(innerW, innerH) / 2 - 8;
-              const innerR =
-                chartPieInnerRadius > 0 ? r * (Math.min(80, chartPieInnerRadius) / 100) : 0;
-              const startOffset = ((chartPieStartAngle % 360) + 360) % 360;
-              let acc = 0;
-              const seriesConfig = chartDataSafe.seriesConfigs[si];
-              const fillStyle = getPieFillStyle(seriesConfig);
-              const color = seriesColor(si, palette, seriesConfig);
-              return (
-                <>
-                  {/* 生成渐变和图案定义 */}
-                  {pieData.map((_, idx) => (
-                    <g key={`def-${idx}`}>
-                      {fillStyle === 'gradient' && (
-                        <radialGradient id={`chartPieGrad-${si}-${idx}`}>
-                          <stop offset="0%" stopColor={color} stopOpacity="0.8" />
-                          <stop offset="100%" stopColor={color} stopOpacity="1" />
-                        </radialGradient>
-                      )}
-                      {renderFillPattern(fillStyle, color, `chartPieFill-${si}-${idx}`)}
-                    </g>
-                  ))}
-                  {/* 渲染扇形切片 */}
-                  {pieData.map((item, idx) => {
-                    const v = item.value;
-                    const sliceDeg = (v / total) * 360;
-                    const startDeg = acc + startOffset;
-                    const endDeg = startDeg + sliceDeg;
-                    acc += sliceDeg;
-                    const startRad = deg2rad(startDeg);
-                    const endRad = deg2rad(endDeg);
-                    const largeArc = sliceDeg > 180 ? 1 : 0;
-                    const x1 = cx + r * Math.cos(startRad);
-                    const y1 = cy + r * Math.sin(startRad);
-                    const x2 = cx + r * Math.cos(endRad);
-                    const y2 = cy + r * Math.sin(endRad);
-                    const edgeStyle = getPieEdgeStyle(seriesConfig);
-                    const edgeWidth = getPieEdgeWidth(seriesConfig);
-                    const edgeColor = color;
-                    if (innerR > 0) {
-                      const x3 = cx + innerR * Math.cos(endRad);
-                      const y3 = cy + innerR * Math.sin(endRad);
-                      const x4 = cx + innerR * Math.cos(startRad);
-                      const y4 = cy + innerR * Math.sin(startRad);
-                      return (
-                        <g key={idx}>
-                          <path
-                            d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`}
-                            fill={
-                              fillStyle === 'gradient'
-                                ? `url(#chartPieGrad-${si}-${idx})`
-                                : isPatternFill(fillStyle)
-                                  ? `url(#chartPieFill-${si}-${idx})`
-                                  : color
-                            }
-                            fillOpacity={pieSliceOpacity(si)}
-                            stroke={
-                              edgeStyle === 'none'
-                                ? undefined
-                                : edgeWidth > 0
-                                  ? edgeColor
-                                  : undefined
-                            }
-                            strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
-                            strokeDasharray={getStrokeDasharray(edgeStyle)}
-                          />
-                        </g>
-                      );
-                    }
-                    return (
-                      <g key={idx}>
-                        <path
-                          d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                          fill={
-                            fillStyle === 'gradient'
-                              ? `url(#chartPieGrad-${si})`
-                              : isPatternFill(fillStyle)
-                                ? `url(#chartPieFill-${si})`
-                                : color
-                          }
-                          fillOpacity={pieSliceOpacity(si)}
-                          stroke={
-                            edgeStyle === 'none' ? undefined : edgeWidth > 0 ? edgeColor : undefined
-                          }
-                          strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
-                          strokeDasharray={getStrokeDasharray(edgeStyle)}
-                        />
-                      </g>
-                    );
-                  })}
-                  {chartPieLabelPosition !== 'none' &&
-                    chartShowAxisLabels &&
-                    pieData.map((item, idx) => {
-                      const v = item.value;
-                      const prevSum = pieData.slice(0, idx).reduce((a, b) => a + b.value, 0);
-                      const midDeg = ((prevSum + v / 2) / total) * 360 + startOffset;
-                      const rad = deg2rad(midDeg);
-                      const labelRadius =
-                        chartPieLabelPosition === 'inside' ? r * 0.5 : PIE_LABEL_RATIO * r;
-                      const tx = cx + labelRadius * Math.cos(rad);
-                      const ty = cy + labelRadius * Math.sin(rad);
-                      return (
-                        <text
-                          key={idx}
-                          fontFamily={s.fontFamily}
-                          className="chart-pie-label"
-                          x={tx}
-                          y={ty}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          style={{ fontFamily: s.fontFamily }}
-                        >
-                          {truncate(item.label, pieLabelTruncate)}
-                        </text>
-                      );
-                    })}
-                </>
-              );
-            } else {
-              // 多系列：每个系列一个扇形，按系列顺序排列
-              const visibleSeriesSums = visibleSeries.map(({ si }) => {
-                const sum = data.reduce((acc, row) => acc + (row?.[si] ?? 0), 0);
-                return { si, sum };
-              });
-              const total = visibleSeriesSums.reduce((a, b) => a + b.sum, 0) || 1;
-              const cx = plotLeft + innerW / 2;
-              const cy = plotTop + innerH / 2;
-              const r = Math.min(innerW, innerH) / 2 - 8;
-              const innerR =
-                chartPieInnerRadius > 0 ? r * (Math.min(80, chartPieInnerRadius) / 100) : 0;
-              const startOffset = ((chartPieStartAngle % 360) + 360) % 360;
-              let acc = 0;
-              return (
-                <>
-                  {visibleSeriesSums.map(({ si, sum: v }) => {
-                    const sliceDeg = (v / total) * 360;
-                    const startDeg = acc + startOffset;
-                    const endDeg = startDeg + sliceDeg;
-                    acc += sliceDeg;
-                    const startRad = deg2rad(startDeg);
-                    const endRad = deg2rad(endDeg);
-                    const largeArc = sliceDeg > 180 ? 1 : 0;
-                    const x1 = cx + r * Math.cos(startRad);
-                    const y1 = cy + r * Math.sin(startRad);
-                    const x2 = cx + r * Math.cos(endRad);
-                    const y2 = cy + r * Math.sin(endRad);
-                    const seriesConfig = chartDataSafe.seriesConfigs[si];
-                    const fillStyle = getPieFillStyle(seriesConfig);
-                    const color = seriesColor(si, palette, seriesConfig);
-                    const edgeStyle = getPieEdgeStyle(seriesConfig);
-                    const edgeWidth = getPieEdgeWidth(seriesConfig);
-                    const edgeColor = color;
-                    if (innerR > 0) {
-                      const x3 = cx + innerR * Math.cos(endRad);
-                      const y3 = cy + innerR * Math.sin(endRad);
-                      const x4 = cx + innerR * Math.cos(startRad);
-                      const y4 = cy + innerR * Math.sin(startRad);
-                      return (
-                        <g key={si}>
-                          <path
-                            d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`}
-                            fill={
-                              fillStyle === 'gradient'
-                                ? `url(#chartPieGrad-${si})`
-                                : fillStyle === 'hatched'
-                                  ? `url(#chartPieHatch-${si})`
-                                  : color
-                            }
-                            fillOpacity={pieSliceOpacity(si)}
-                            stroke={
-                              edgeStyle === 'none'
-                                ? undefined
-                                : edgeWidth > 0
-                                  ? edgeColor
-                                  : undefined
-                            }
-                            strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
-                            strokeDasharray={getStrokeDasharray(edgeStyle)}
-                          />
-                        </g>
-                      );
-                    }
-                    return (
-                      <g key={si}>
-                        <path
-                          d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                          fill={
-                            fillStyle === 'gradient'
-                              ? `url(#chartPieGrad-${si})`
-                              : isPatternFill(fillStyle)
-                                ? `url(#chartPieFill-${si})`
-                                : color
-                          }
-                          fillOpacity={pieSliceOpacity(si)}
-                          stroke={
-                            edgeStyle === 'none' ? undefined : edgeWidth > 0 ? edgeColor : undefined
-                          }
-                          strokeWidth={edgeStyle === 'none' ? 0 : edgeWidth}
-                          strokeDasharray={getStrokeDasharray(edgeStyle)}
-                        />
-                      </g>
-                    );
-                  })}
-                  {chartPieLabelPosition !== 'none' &&
-                    chartShowAxisLabels &&
-                    visibleSeriesSums.map(({ si, sum: v }, idx) => {
-                      const prevSum = visibleSeriesSums
-                        .slice(0, idx)
-                        .reduce((a, b) => a + b.sum, 0);
-                      const midDeg = ((prevSum + v / 2) / total) * 360 + startOffset;
-                      const rad = deg2rad(midDeg);
-                      const labelRadius =
-                        chartPieLabelPosition === 'inside' ? r * 0.5 : PIE_LABEL_RATIO * r;
-                      const tx = cx + labelRadius * Math.cos(rad);
-                      const ty = cy + labelRadius * Math.sin(rad);
-                      return (
-                        <text
-                          key={si}
-                          fontFamily={s.fontFamily}
-                          className="chart-pie-label"
-                          x={tx}
-                          y={ty}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          style={{ fontFamily: s.fontFamily }}
-                        >
-                          {truncate(seriesDisplayNames[si], pieLabelTruncate)}
-                        </text>
-                      );
-                    })}
-                </>
-              );
-            }
-          })()}
+              })()}
           </>
         )}
 
