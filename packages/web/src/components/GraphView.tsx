@@ -17,6 +17,7 @@ import {
   getTouchDistance,
   getPinchCenter,
   computePinchZoomPan,
+  computeWheelZoomPan,
 } from '../utils/panZoom';
 
 /** 解析 hex 颜色为 r,g,b (0-255) */
@@ -353,8 +354,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     chartCorrelationColorEnd,
   ]);
 
-  // 缩放和平移逻辑（原 usePanZoom）
-  const ZOOM_SENSITIVITY = 0.003;
+  // 缩放和平移逻辑（与 panZoom 工具统一：滚轮以指针为锚点，pinch 以双指中心为锚点）
   const DRAG_THRESHOLD = 4;
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -371,8 +371,14 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
 
   const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    const delta = -e.deltaY * ZOOM_SENSITIVITY;
-    setZoom((z) => Math.max(0.01, z * (1 + delta)));
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const containerCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const mouseScreen = { x: e.clientX, y: e.clientY };
+    const { pan: p, zoom: z } = panZoomRef.current;
+    const { zoom: nextZoom, pan: nextPan } = computeWheelZoomPan(z, p, e.deltaY, mouseScreen, containerCenter);
+    setZoom(nextZoom);
+    setPan(nextPan);
   }, []);
 
   const pinchRef = useRef<{

@@ -537,11 +537,13 @@ export default function App() {
                 }}
               >
                 <div className="detail-card-inner">
-                  <aside className="sidebar panel-glass">
-                    <div className="sidebar-content panel-content">
-                      <Detail />
-                    </div>
-                  </aside>
+                  <div className="panel-glass-outer">
+                    <aside className="sidebar panel-glass">
+                      <div className="sidebar-content panel-content">
+                        <Detail />
+                      </div>
+                    </aside>
+                  </div>
                 </div>
                 <div
                   className="float-panel-resize-corner float-panel-resize-corner-bl"

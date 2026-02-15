@@ -652,7 +652,7 @@ export function ViewMenu({
   const dropdown = (
     <div
       ref={wrapRef}
-      className="view-dropdown-wrap view-dropdown-portal float-dropdown panel-glass"
+      className="view-dropdown-wrap view-dropdown-portal float-dropdown panel-glass-outer"
       style={{
         position: 'fixed',
         top: position.top,
@@ -665,7 +665,8 @@ export function ViewMenu({
         ...(styleHeight != null ? { height: styleHeight } : {}),
       }}
     >
-      <div className="view-dropdown-wrap-inner">
+      <div className="panel-glass">
+        <div className="view-dropdown-wrap-inner">
         <div className="view-dropdown-row">
           <div className="view-dropdown">
             <div className="view-tabs">
@@ -1722,6 +1723,7 @@ export function ViewMenu({
             </div>
           </div>
         </div>
+      </div>
         <div
           className="float-panel-resize-corner float-panel-resize-corner-br"
           role="separator"

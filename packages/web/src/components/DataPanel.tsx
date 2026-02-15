@@ -1270,7 +1270,8 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
           }}
         />
         <div className="data-panel-resizable-body">
-          <div className="view-dropdown panel-glass data-panel-inner">
+          <div className="panel-glass-outer">
+            <div className="view-dropdown panel-glass data-panel-inner">
             <div className="view-tabs">
               <button
                 type="button"
@@ -1474,6 +1475,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
   );

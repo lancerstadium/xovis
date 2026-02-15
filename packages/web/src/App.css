@@ -382,7 +382,7 @@ body.pwa-banner-visible .main {
   transform: translateX(-50%);
   top: auto;
 }
-/* 左下/右上/下侧浮窗外层统一：高度约束、不裁阴影（overflow: visible），半透明与圆角由内层 .panel-glass 提供 */
+/* 左下/右上/下侧浮窗外层统一：高度约束、不裁阴影；外观由 .panel-glass-outer（圆角+阴影）+ .panel-glass（毛玻璃+裁切）统一提供 */
 .data-panel-wrap {
   position: fixed;
   left: var(--float-panel-gap);
@@ -422,10 +422,6 @@ body.pwa-banner-visible .main {
   display: flex;
   flex-direction: column;
 }
-/* 与 .panel-glass 一致：不裁阴影，由子级 .panel-glass > * 裁切 */
-.data-panel-resizable .data-panel-inner.panel-glass {
-  overflow: visible;
-}
 .data-panel-splitter-top {
   border-radius: 12px 12px 0 0;
 }
@@ -442,7 +438,7 @@ body.pwa-banner-visible .main {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* 裁切由 .panel-glass 统一提供 */
 }
 .data-table-toolbar {
   display: flex;
@@ -914,15 +910,26 @@ body.pwa-banner-visible .main {
   }
 }
 
-/* 左右/下侧浮窗唯一外观：半透明、圆角、阴影、毛玻璃共用；overflow:visible 使阴影不被裁切，子元素圆角内裁切 */
-.panel-glass {
+/* 浮窗外观统一：外层负责圆角+阴影不裁切，内层负责毛玻璃+圆角内裁切，三处浮窗结构一致 */
+.panel-glass-outer {
   position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
   overflow: visible;
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.04),
     0 12px 32px rgba(0, 0, 0, 0.1);
+}
+.panel-glass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: inherit;
   backdrop-filter: saturate(1.12) blur(22px);
   -webkit-backdrop-filter: saturate(1.12) blur(22px);
   background: transparent;
@@ -1100,7 +1107,7 @@ body.pwa-banner-visible .main {
   white-space: nowrap;
 }
 
-/* 设置浮窗：与 float-dropdown 共用 flex 链，内层填满可滚动 */
+/* 设置浮窗：与 float-dropdown 共用 flex 链，内层填满可滚动；与 panel-glass-outer 同用时由 outer 负责不裁阴影 */
 .view-dropdown-wrap {
   display: flex;
   flex-direction: column;
@@ -1113,6 +1120,9 @@ body.pwa-banner-visible .main {
   background: transparent;
   border-radius: 12px;
   overflow: hidden;
+}
+.view-dropdown-wrap.panel-glass-outer {
+  overflow: visible;
 }
 .view-dropdown-wrap-inner {
   position: relative;
