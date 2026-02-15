@@ -511,50 +511,55 @@ export default function App() {
         </button>
 
         {/* 右上角详情浮窗：锚定在按钮下方，高度不超过视口内可用空间 */}
-        {sidebarOpen && (() => {
-          const detailAvail = typeof window !== 'undefined'
-            ? Math.max(SIDEBAR_HEIGHT_MIN, window.innerHeight - detailPosition.top - DETAIL_CARD_GAP)
-            : 400;
-          const detailMaxH = Math.min(detailAvail, floatPanelMaxHeight());
-          const detailH = sidebarHeight > 0 ? Math.min(sidebarHeight, detailMaxH) : undefined;
-          return (
-          <div
-            ref={detailWrapRef}
-            className="detail-card-wrap detail-card-wrap-right float-panel-wrap"
-            style={{
-              position: 'fixed',
-              left: 'auto',
-              top: detailPosition.top,
-              right: detailPosition.right,
-              width: sidebarWidth,
-              maxHeight: detailMaxH,
-              ...(detailH != null ? { height: detailH } : {}),
-            }}
-          >
-            <div className="detail-card-inner">
-              <aside className="sidebar panel-glass">
-                <div className="sidebar-content panel-content">
-                  <Detail />
+        {sidebarOpen &&
+          (() => {
+            const detailAvail =
+              typeof window !== 'undefined'
+                ? Math.max(
+                    SIDEBAR_HEIGHT_MIN,
+                    window.innerHeight - detailPosition.top - DETAIL_CARD_GAP
+                  )
+                : 400;
+            const detailMaxH = Math.min(detailAvail, floatPanelMaxHeight());
+            const detailH = sidebarHeight > 0 ? Math.min(sidebarHeight, detailMaxH) : undefined;
+            return (
+              <div
+                ref={detailWrapRef}
+                className="detail-card-wrap detail-card-wrap-right float-panel-wrap"
+                style={{
+                  position: 'fixed',
+                  left: 'auto',
+                  top: detailPosition.top,
+                  right: detailPosition.right,
+                  width: sidebarWidth,
+                  maxHeight: detailMaxH,
+                  ...(detailH != null ? { height: detailH } : {}),
+                }}
+              >
+                <div className="detail-card-inner">
+                  <aside className="sidebar panel-glass">
+                    <div className="sidebar-content panel-content">
+                      <Detail />
+                    </div>
+                  </aside>
                 </div>
-              </aside>
-            </div>
-            <div
-              className="float-panel-resize-corner float-panel-resize-corner-bl"
-              role="separator"
-              aria-label="调整大小"
-              style={{ touchAction: 'none' }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setDetailResizing(true);
-              }}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                setDetailResizing(true);
-              }}
-            />
-          </div>
-          );
-        })()}
+                <div
+                  className="float-panel-resize-corner float-panel-resize-corner-bl"
+                  role="separator"
+                  aria-label="调整大小"
+                  style={{ touchAction: 'none' }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDetailResizing(true);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDetailResizing(true);
+                  }}
+                />
+              </div>
+            );
+          })()}
       </main>
     </div>
   );
