@@ -423,13 +423,13 @@ body.pwa-banner-visible .main {
   flex-direction: column;
 }
 .data-panel-splitter-top {
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--panel-glass-radius) var(--panel-glass-radius) 0 0;
 }
 .data-panel-splitter-left {
-  border-radius: 12px 0 0 0;
+  border-radius: var(--panel-glass-radius) 0 0 0;
 }
 .data-panel-splitter-right {
-  border-radius: 0 12px 0 0;
+  border-radius: 0 var(--panel-glass-radius) 0 0;
 }
 .data-panel-wrap .view-dropdown {
   pointer-events: auto;
@@ -806,7 +806,7 @@ body.pwa-banner-visible .main {
   font-size: inherit;
 }
 
-/* 左上/右上浮窗外层：与 data-panel-wrap 统一，不裁阴影 */
+/* 左上/右上浮窗外层：与 data-panel-wrap 统一，不裁阴影；圆角/边框/阴影由子层 .panel-glass-outer 统一 */
 .detail-card-wrap {
   position: absolute;
   top: var(--float-trigger-row);
@@ -819,7 +819,6 @@ body.pwa-banner-visible .main {
   z-index: 18;
   pointer-events: none;
 }
-/* 右上角详情：强制靠右，左缘与底边可调（仅数据栏居中） */
 .detail-card-wrap-right {
   left: auto !important;
   margin-left: 0;
@@ -851,13 +850,13 @@ body.pwa-banner-visible .main {
   width: 6px;
   min-width: 6px;
   cursor: col-resize;
-  border-radius: 12px 0 0 12px;
+  border-radius: var(--panel-glass-radius) 0 0 var(--panel-glass-radius);
 }
 .float-panel-splitter-h {
   height: 6px;
   min-height: 6px;
   cursor: row-resize;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--panel-glass-radius) var(--panel-glass-radius);
 }
 
 /* 触控设备：拖拽条加大可触区域，便于手指拖拽 */
@@ -889,19 +888,19 @@ body.pwa-banner-visible .main {
   right: 0;
   bottom: 0;
   cursor: nwse-resize;
-  border-radius: 0 0 12px 0;
+  border-radius: 0 0 var(--panel-glass-radius) 0;
 }
 .float-panel-resize-corner-bl {
   left: 0;
   bottom: 0;
   cursor: nesw-resize;
-  border-radius: 0 0 0 12px;
+  border-radius: 0 0 0 var(--panel-glass-radius);
 }
 .float-panel-resize-corner-tr {
   top: 0;
   right: 0;
   cursor: nwse-resize;
-  border-radius: 0 12px 0 0;
+  border-radius: 0 var(--panel-glass-radius) 0 0;
 }
 @media (pointer: coarse) {
   .float-panel-resize-corner {
@@ -917,11 +916,18 @@ body.pwa-banner-visible .main {
   min-height: 0;
   min-width: 0;
   overflow: visible;
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--panel-glass-radius);
   border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.04),
     0 12px 32px rgba(0, 0, 0, 0.1);
+}
+.panel-glass-outer > .panel-glass {
+  flex: 1;
+  min-height: 0;
+  border-radius: inherit;
 }
 .panel-glass {
   position: relative;
@@ -1107,7 +1113,7 @@ body.pwa-banner-visible .main {
   white-space: nowrap;
 }
 
-/* 设置浮窗：与 float-dropdown 共用 flex 链，内层填满可滚动；与 panel-glass-outer 同用时由 outer 负责不裁阴影 */
+/* 设置浮窗：与 float-dropdown 共用 flex 链；圆角/阴影由 .panel-glass-outer 统一提供，此处不重复 */
 .view-dropdown-wrap {
   display: flex;
   flex-direction: column;
@@ -1118,7 +1124,6 @@ body.pwa-banner-visible .main {
   padding: 0;
   z-index: 10;
   background: transparent;
-  border-radius: 12px;
   overflow: hidden;
 }
 .view-dropdown-wrap.panel-glass-outer {
@@ -1163,7 +1168,7 @@ body.pwa-banner-visible .main {
   height: 6px;
   min-height: 6px;
   cursor: row-resize;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--panel-glass-radius) var(--panel-glass-radius);
 }
 .view-dropdown-splitter:hover,
 .view-dropdown-splitter-h:hover {

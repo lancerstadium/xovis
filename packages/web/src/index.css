@@ -13,6 +13,7 @@
   /** 顶部/底部按钮离边缘距离，同一变量对称 */
   --float-trigger-inset: 10px;
   --float-panel-gap: 12px;
+  --panel-glass-radius: 12px;
   --float-panel-max-height: calc(
     100vh - var(--float-trigger-row) - var(--float-panel-gap) - var(--float-trigger-row-bottom)
   );

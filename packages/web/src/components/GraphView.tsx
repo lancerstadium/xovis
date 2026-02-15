@@ -276,6 +276,7 @@ export interface GraphViewHandle {
 export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(_, ref) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const transformWrapRef = useRef<HTMLDivElement>(null);
   const emptyLogoRef = useRef<HTMLSpanElement>(null);
   const { graph, selected, setSelected, setGraph, setGraphLoading, centerOnId, setCenterOnId } =
     useGraphStore();
@@ -371,12 +372,13 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
 
   const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const containerCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const el = transformWrapRef.current ?? containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     const mouseScreen = { x: e.clientX, y: e.clientY };
     const { pan: p, zoom: z } = panZoomRef.current;
-    const { zoom: nextZoom, pan: nextPan } = computeWheelZoomPan(z, p, e.deltaY, mouseScreen, containerCenter);
+    const { zoom: nextZoom, pan: nextPan } = computeWheelZoomPan(z, p, e.deltaY, mouseScreen, origin);
     setZoom(nextZoom);
     setPan(nextPan);
   }, []);
@@ -819,6 +821,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
           </>
         ) : (
           <div
+            ref={transformWrapRef}
             style={{
               position: 'absolute',
               inset: 0,
