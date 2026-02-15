@@ -385,7 +385,7 @@ function correlationSpearman(x: number[], y: number[]): number {
   return correlationPearson(rank(x), rank(y));
 }
 
-/** Kendall tau */
+/** Kendall tau-a：分母为总配对数 n(n-1)/2，与常见实现一致 */
 function correlationKendall(x: number[], y: number[]): number {
   const n = x.length;
   if (n < 2) return 0;
@@ -400,8 +400,8 @@ function correlationKendall(x: number[], y: number[]): number {
       else if (sign < 0) discordant++;
     }
   }
-  const total = concordant + discordant;
-  return total === 0 ? 0 : (concordant - discordant) / total;
+  const totalPairs = (n * (n - 1)) / 2;
+  return totalPairs === 0 ? 0 : (concordant - discordant) / totalPairs;
 }
 
 function correlationMatrix(
@@ -416,11 +416,16 @@ function correlationMatrix(
       : method === 'spearman'
         ? correlationSpearman
         : correlationKendall;
-  // 只使用「所有列在该行均为有限值」的行，保证两两列按同一行对齐计算，避免错行导致全 1 或错误相关
+  // 只使用「所有列在该行均为有限值」的行；null/undefined 视为缺失（NaN），不当作 0
   const validRows: number[][] = [];
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r];
-    const vals = columns.map((col) => Number(row[col]));
+    const vals = columns.map((col) => {
+      const v = row[col];
+      if (v === null || v === undefined) return NaN;
+      const num = Number(v);
+      return Number.isFinite(num) ? num : NaN;
+    });
     if (vals.every((v) => Number.isFinite(v))) validRows.push(vals);
   }
   if (validRows.length < 2)
