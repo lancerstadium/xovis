@@ -1,0 +1,2027 @@
+{
+  "id": "mobilenetv2",
+  "name": "mobilenetv2",
+  "tensors": [
+    {
+      "id": "features.0.0.weight",
+      "name": "weight",
+      "shape": [32, 3, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.1.conv.0.0.weight",
+      "name": "weight",
+      "shape": [32, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.1.conv.1.weight",
+      "name": "weight",
+      "shape": [16, 32, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.2.conv.1.0.weight",
+      "name": "weight",
+      "shape": [96, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.2.conv.0.0.weight",
+      "name": "weight",
+      "shape": [96, 16, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.2.conv.2.weight",
+      "name": "weight",
+      "shape": [24, 96, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.conv.0.0.weight",
+      "name": "weight",
+      "shape": [144, 24, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.conv.1.0.weight",
+      "name": "weight",
+      "shape": [144, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.conv.2.weight",
+      "name": "weight",
+      "shape": [24, 144, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.4.conv.0.0.weight",
+      "name": "weight",
+      "shape": [144, 24, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.4.conv.1.0.weight",
+      "name": "weight",
+      "shape": [144, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.4.conv.2.weight",
+      "name": "weight",
+      "shape": [32, 144, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.5.conv.0.0.weight",
+      "name": "weight",
+      "shape": [192, 32, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.5.conv.1.0.weight",
+      "name": "weight",
+      "shape": [192, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.5.conv.2.weight",
+      "name": "weight",
+      "shape": [32, 192, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.6.conv.0.0.weight",
+      "name": "weight",
+      "shape": [192, 32, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.6.conv.1.0.weight",
+      "name": "weight",
+      "shape": [192, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.6.conv.2.weight",
+      "name": "weight",
+      "shape": [32, 192, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.7.conv.0.0.weight",
+      "name": "weight",
+      "shape": [192, 32, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.7.conv.1.0.weight",
+      "name": "weight",
+      "shape": [192, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.7.conv.2.weight",
+      "name": "weight",
+      "shape": [64, 192, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.conv.0.0.weight",
+      "name": "weight",
+      "shape": [384, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.conv.1.0.weight",
+      "name": "weight",
+      "shape": [384, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.conv.2.weight",
+      "name": "weight",
+      "shape": [64, 384, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.9.conv.0.0.weight",
+      "name": "weight",
+      "shape": [384, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.9.conv.1.0.weight",
+      "name": "weight",
+      "shape": [384, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.9.conv.2.weight",
+      "name": "weight",
+      "shape": [64, 384, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.10.conv.0.0.weight",
+      "name": "weight",
+      "shape": [384, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.10.conv.1.0.weight",
+      "name": "weight",
+      "shape": [384, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.10.conv.2.weight",
+      "name": "weight",
+      "shape": [64, 384, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.11.conv.0.0.weight",
+      "name": "weight",
+      "shape": [384, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.11.conv.1.0.weight",
+      "name": "weight",
+      "shape": [384, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.11.conv.2.weight",
+      "name": "weight",
+      "shape": [96, 384, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.12.conv.0.0.weight",
+      "name": "weight",
+      "shape": [576, 96, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.12.conv.1.0.weight",
+      "name": "weight",
+      "shape": [576, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.12.conv.2.weight",
+      "name": "weight",
+      "shape": [96, 576, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.13.conv.0.0.weight",
+      "name": "weight",
+      "shape": [576, 96, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.13.conv.1.0.weight",
+      "name": "weight",
+      "shape": [576, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.13.conv.2.weight",
+      "name": "weight",
+      "shape": [96, 576, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.14.conv.0.0.weight",
+      "name": "weight",
+      "shape": [576, 96, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.14.conv.1.0.weight",
+      "name": "weight",
+      "shape": [576, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.14.conv.2.weight",
+      "name": "weight",
+      "shape": [160, 576, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.15.conv.0.0.weight",
+      "name": "weight",
+      "shape": [960, 160, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.15.conv.1.0.weight",
+      "name": "weight",
+      "shape": [960, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.15.conv.2.weight",
+      "name": "weight",
+      "shape": [160, 960, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.16.conv.0.0.weight",
+      "name": "weight",
+      "shape": [960, 160, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.16.conv.1.0.weight",
+      "name": "weight",
+      "shape": [960, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.16.conv.2.weight",
+      "name": "weight",
+      "shape": [160, 960, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.17.conv.0.0.weight",
+      "name": "weight",
+      "shape": [960, 160, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.17.conv.1.0.weight",
+      "name": "weight",
+      "shape": [960, 1, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.17.conv.2.weight",
+      "name": "weight",
+      "shape": [320, 960, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.18.0.weight",
+      "name": "weight",
+      "shape": [1280, 320, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "classifier.1.weight",
+      "name": "weight",
+      "shape": [1000, 1280],
+      "dtype": "float32"
+    },
+    {
+      "id": "min_val_cast",
+      "name": "weight",
+      "shape": [],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_val_cast",
+      "name": "weight",
+      "shape": [],
+      "dtype": "float32"
+    },
+    {
+      "id": "val_577",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "val_581",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "input",
+      "name": "input",
+      "shape": [1, 3, 224, 224],
+      "dtype": "float32"
+    },
+    {
+      "id": "output",
+      "name": "output",
+      "shape": [1, 1000],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem",
+      "name": "activation",
+      "shape": [1, 32, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh",
+      "name": "activation",
+      "shape": [1, 32, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_3",
+      "name": "activation",
+      "shape": [1, 32, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_1",
+      "name": "activation",
+      "shape": [1, 32, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_6",
+      "name": "activation",
+      "shape": [1, 16, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_9",
+      "name": "activation",
+      "shape": [1, 96, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_2",
+      "name": "activation",
+      "shape": [1, 96, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_12",
+      "name": "activation",
+      "shape": [1, 96, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_3",
+      "name": "activation",
+      "shape": [1, 96, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_15",
+      "name": "activation",
+      "shape": [1, 24, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_18",
+      "name": "activation",
+      "shape": [1, 144, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_4",
+      "name": "activation",
+      "shape": [1, 144, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_21",
+      "name": "activation",
+      "shape": [1, 144, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_5",
+      "name": "activation",
+      "shape": [1, 144, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_24",
+      "name": "activation",
+      "shape": [1, 24, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "add",
+      "name": "activation",
+      "shape": [1, 24, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_27",
+      "name": "activation",
+      "shape": [1, 144, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_6",
+      "name": "activation",
+      "shape": [1, 144, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_30",
+      "name": "activation",
+      "shape": [1, 144, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_7",
+      "name": "activation",
+      "shape": [1, 144, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_33",
+      "name": "activation",
+      "shape": [1, 32, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_36",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_8",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_39",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_9",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_42",
+      "name": "activation",
+      "shape": [1, 32, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_1",
+      "name": "activation",
+      "shape": [1, 32, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_45",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_10",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_48",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_11",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_51",
+      "name": "activation",
+      "shape": [1, 32, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_2",
+      "name": "activation",
+      "shape": [1, 32, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_54",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_12",
+      "name": "activation",
+      "shape": [1, 192, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_57",
+      "name": "activation",
+      "shape": [1, 192, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_13",
+      "name": "activation",
+      "shape": [1, 192, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_60",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_63",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_14",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_66",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_15",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_69",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_3",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_72",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_16",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_75",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_17",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_78",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_4",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_81",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_18",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_84",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_19",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_87",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_5",
+      "name": "activation",
+      "shape": [1, 64, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_90",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_20",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_93",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_21",
+      "name": "activation",
+      "shape": [1, 384, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_96",
+      "name": "activation",
+      "shape": [1, 96, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_99",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_22",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_102",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_23",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_105",
+      "name": "activation",
+      "shape": [1, 96, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_6",
+      "name": "activation",
+      "shape": [1, 96, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_108",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_24",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_111",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_25",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_114",
+      "name": "activation",
+      "shape": [1, 96, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_7",
+      "name": "activation",
+      "shape": [1, 96, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_117",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_26",
+      "name": "activation",
+      "shape": [1, 576, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_120",
+      "name": "activation",
+      "shape": [1, 576, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_27",
+      "name": "activation",
+      "shape": [1, 576, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_123",
+      "name": "activation",
+      "shape": [1, 160, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_126",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_28",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_129",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_29",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_132",
+      "name": "activation",
+      "shape": [1, 160, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_8",
+      "name": "activation",
+      "shape": [1, 160, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_135",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_30",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_138",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_31",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_141",
+      "name": "activation",
+      "shape": [1, 160, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_9",
+      "name": "activation",
+      "shape": [1, 160, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_144",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_32",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_147",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_33",
+      "name": "activation",
+      "shape": [1, 960, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_150",
+      "name": "activation",
+      "shape": [1, 320, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_153",
+      "name": "activation",
+      "shape": [1, 1280, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "hardtanh_34",
+      "name": "activation",
+      "shape": [1, 1280, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "mean",
+      "name": "activation",
+      "shape": [1, 1280, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "view",
+      "name": "activation",
+      "shape": [1, 1280],
+      "dtype": "float32"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_Conv_810",
+      "name": "Conv",
+      "inputs": [57, 0],
+      "outputs": [59],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4",
+      "name": "Clip",
+      "inputs": [59, 53, 54],
+      "outputs": [60],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_813",
+      "name": "Conv",
+      "inputs": [60, 1],
+      "outputs": [61],
+      "attributes": {
+        "group": 32,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_2",
+      "name": "Clip",
+      "inputs": [61, 53, 54],
+      "outputs": [62],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_816",
+      "name": "Conv",
+      "inputs": [62, 2],
+      "outputs": [63],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_819",
+      "name": "Conv",
+      "inputs": [63, 4],
+      "outputs": [64],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_3",
+      "name": "Clip",
+      "inputs": [64, 53, 54],
+      "outputs": [65],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_822",
+      "name": "Conv",
+      "inputs": [65, 3],
+      "outputs": [66],
+      "attributes": {
+        "group": 96,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_4",
+      "name": "Clip",
+      "inputs": [66, 53, 54],
+      "outputs": [67],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_825",
+      "name": "Conv",
+      "inputs": [67, 5],
+      "outputs": [68],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_828",
+      "name": "Conv",
+      "inputs": [68, 6],
+      "outputs": [69],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_5",
+      "name": "Clip",
+      "inputs": [69, 53, 54],
+      "outputs": [70],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_831",
+      "name": "Conv",
+      "inputs": [70, 7],
+      "outputs": [71],
+      "attributes": {
+        "group": 144,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_6",
+      "name": "Clip",
+      "inputs": [71, 53, 54],
+      "outputs": [72],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_834",
+      "name": "Conv",
+      "inputs": [72, 8],
+      "outputs": [73],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add",
+      "name": "Add",
+      "inputs": [68, 73],
+      "outputs": [74],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_837",
+      "name": "Conv",
+      "inputs": [74, 9],
+      "outputs": [75],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_7",
+      "name": "Clip",
+      "inputs": [75, 53, 54],
+      "outputs": [76],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_840",
+      "name": "Conv",
+      "inputs": [76, 10],
+      "outputs": [77],
+      "attributes": {
+        "group": 144,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_8",
+      "name": "Clip",
+      "inputs": [77, 53, 54],
+      "outputs": [78],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_843",
+      "name": "Conv",
+      "inputs": [78, 11],
+      "outputs": [79],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_846",
+      "name": "Conv",
+      "inputs": [79, 12],
+      "outputs": [80],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_9",
+      "name": "Clip",
+      "inputs": [80, 53, 54],
+      "outputs": [81],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_849",
+      "name": "Conv",
+      "inputs": [81, 13],
+      "outputs": [82],
+      "attributes": {
+        "group": 192,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_10",
+      "name": "Clip",
+      "inputs": [82, 53, 54],
+      "outputs": [83],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_852",
+      "name": "Conv",
+      "inputs": [83, 14],
+      "outputs": [84],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_1",
+      "name": "Add",
+      "inputs": [79, 84],
+      "outputs": [85],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_855",
+      "name": "Conv",
+      "inputs": [85, 15],
+      "outputs": [86],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_11",
+      "name": "Clip",
+      "inputs": [86, 53, 54],
+      "outputs": [87],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_858",
+      "name": "Conv",
+      "inputs": [87, 16],
+      "outputs": [88],
+      "attributes": {
+        "group": 192,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_12",
+      "name": "Clip",
+      "inputs": [88, 53, 54],
+      "outputs": [89],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_861",
+      "name": "Conv",
+      "inputs": [89, 17],
+      "outputs": [90],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_2",
+      "name": "Add",
+      "inputs": [85, 90],
+      "outputs": [91],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_864",
+      "name": "Conv",
+      "inputs": [91, 18],
+      "outputs": [92],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_13",
+      "name": "Clip",
+      "inputs": [92, 53, 54],
+      "outputs": [93],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_867",
+      "name": "Conv",
+      "inputs": [93, 19],
+      "outputs": [94],
+      "attributes": {
+        "group": 192,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_14",
+      "name": "Clip",
+      "inputs": [94, 53, 54],
+      "outputs": [95],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_870",
+      "name": "Conv",
+      "inputs": [95, 20],
+      "outputs": [96],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_873",
+      "name": "Conv",
+      "inputs": [96, 21],
+      "outputs": [97],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_15",
+      "name": "Clip",
+      "inputs": [97, 53, 54],
+      "outputs": [98],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_876",
+      "name": "Conv",
+      "inputs": [98, 22],
+      "outputs": [99],
+      "attributes": {
+        "group": 384,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_16",
+      "name": "Clip",
+      "inputs": [99, 53, 54],
+      "outputs": [100],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_879",
+      "name": "Conv",
+      "inputs": [100, 23],
+      "outputs": [101],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_3",
+      "name": "Add",
+      "inputs": [96, 101],
+      "outputs": [102],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_882",
+      "name": "Conv",
+      "inputs": [102, 24],
+      "outputs": [103],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_17",
+      "name": "Clip",
+      "inputs": [103, 53, 54],
+      "outputs": [104],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_885",
+      "name": "Conv",
+      "inputs": [104, 25],
+      "outputs": [105],
+      "attributes": {
+        "group": 384,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_18",
+      "name": "Clip",
+      "inputs": [105, 53, 54],
+      "outputs": [106],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_888",
+      "name": "Conv",
+      "inputs": [106, 26],
+      "outputs": [107],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_4",
+      "name": "Add",
+      "inputs": [102, 107],
+      "outputs": [108],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_891",
+      "name": "Conv",
+      "inputs": [108, 27],
+      "outputs": [109],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_19",
+      "name": "Clip",
+      "inputs": [109, 53, 54],
+      "outputs": [110],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_894",
+      "name": "Conv",
+      "inputs": [110, 28],
+      "outputs": [111],
+      "attributes": {
+        "group": 384,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_20",
+      "name": "Clip",
+      "inputs": [111, 53, 54],
+      "outputs": [112],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_897",
+      "name": "Conv",
+      "inputs": [112, 29],
+      "outputs": [113],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_5",
+      "name": "Add",
+      "inputs": [108, 113],
+      "outputs": [114],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_900",
+      "name": "Conv",
+      "inputs": [114, 30],
+      "outputs": [115],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_21",
+      "name": "Clip",
+      "inputs": [115, 53, 54],
+      "outputs": [116],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_903",
+      "name": "Conv",
+      "inputs": [116, 31],
+      "outputs": [117],
+      "attributes": {
+        "group": 384,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_22",
+      "name": "Clip",
+      "inputs": [117, 53, 54],
+      "outputs": [118],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_906",
+      "name": "Conv",
+      "inputs": [118, 32],
+      "outputs": [119],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_909",
+      "name": "Conv",
+      "inputs": [119, 33],
+      "outputs": [120],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_23",
+      "name": "Clip",
+      "inputs": [120, 53, 54],
+      "outputs": [121],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_912",
+      "name": "Conv",
+      "inputs": [121, 34],
+      "outputs": [122],
+      "attributes": {
+        "group": 576,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_24",
+      "name": "Clip",
+      "inputs": [122, 53, 54],
+      "outputs": [123],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_915",
+      "name": "Conv",
+      "inputs": [123, 35],
+      "outputs": [124],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_6",
+      "name": "Add",
+      "inputs": [119, 124],
+      "outputs": [125],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_918",
+      "name": "Conv",
+      "inputs": [125, 36],
+      "outputs": [126],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_25",
+      "name": "Clip",
+      "inputs": [126, 53, 54],
+      "outputs": [127],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_921",
+      "name": "Conv",
+      "inputs": [127, 37],
+      "outputs": [128],
+      "attributes": {
+        "group": 576,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_26",
+      "name": "Clip",
+      "inputs": [128, 53, 54],
+      "outputs": [129],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_924",
+      "name": "Conv",
+      "inputs": [129, 38],
+      "outputs": [130],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_7",
+      "name": "Add",
+      "inputs": [125, 130],
+      "outputs": [131],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_927",
+      "name": "Conv",
+      "inputs": [131, 39],
+      "outputs": [132],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_27",
+      "name": "Clip",
+      "inputs": [132, 53, 54],
+      "outputs": [133],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_930",
+      "name": "Conv",
+      "inputs": [133, 40],
+      "outputs": [134],
+      "attributes": {
+        "group": 576,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_28",
+      "name": "Clip",
+      "inputs": [134, 53, 54],
+      "outputs": [135],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_933",
+      "name": "Conv",
+      "inputs": [135, 41],
+      "outputs": [136],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_936",
+      "name": "Conv",
+      "inputs": [136, 42],
+      "outputs": [137],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_29",
+      "name": "Clip",
+      "inputs": [137, 53, 54],
+      "outputs": [138],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_939",
+      "name": "Conv",
+      "inputs": [138, 43],
+      "outputs": [139],
+      "attributes": {
+        "group": 960,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_30",
+      "name": "Clip",
+      "inputs": [139, 53, 54],
+      "outputs": [140],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_942",
+      "name": "Conv",
+      "inputs": [140, 44],
+      "outputs": [141],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_8",
+      "name": "Add",
+      "inputs": [136, 141],
+      "outputs": [142],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_945",
+      "name": "Conv",
+      "inputs": [142, 45],
+      "outputs": [143],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_31",
+      "name": "Clip",
+      "inputs": [143, 53, 54],
+      "outputs": [144],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_948",
+      "name": "Conv",
+      "inputs": [144, 46],
+      "outputs": [145],
+      "attributes": {
+        "group": 960,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_32",
+      "name": "Clip",
+      "inputs": [145, 53, 54],
+      "outputs": [146],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_951",
+      "name": "Conv",
+      "inputs": [146, 47],
+      "outputs": [147],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_9",
+      "name": "Add",
+      "inputs": [142, 147],
+      "outputs": [148],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_954",
+      "name": "Conv",
+      "inputs": [148, 48],
+      "outputs": [149],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_33",
+      "name": "Clip",
+      "inputs": [149, 53, 54],
+      "outputs": [150],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_957",
+      "name": "Conv",
+      "inputs": [150, 49],
+      "outputs": [151],
+      "attributes": {
+        "group": 960,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_34",
+      "name": "Clip",
+      "inputs": [151, 53, 54],
+      "outputs": [152],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_960",
+      "name": "Conv",
+      "inputs": [152, 50],
+      "outputs": [153],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_963",
+      "name": "Conv",
+      "inputs": [153, 51],
+      "outputs": [154],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "n4_35",
+      "name": "Clip",
+      "inputs": [154, 53, 54],
+      "outputs": [155],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_mean",
+      "name": "ReduceMean",
+      "inputs": [155, 55],
+      "outputs": [156],
+      "attributes": {
+        "noop_with_empty_axes": 0,
+        "keepdims": 1
+      }
+    },
+    {
+      "id": "node_view",
+      "name": "Reshape",
+      "inputs": [156, 56],
+      "outputs": [157],
+      "attributes": {
+        "allowzero": 1
+      }
+    },
+    {
+      "id": "node_Gemm_964",
+      "name": "Gemm",
+      "inputs": [157, 52],
+      "outputs": [58],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    }
+  ],
+  "inputs": [57],
+  "outputs": [58],
+  "metadata": {
+  }
+}

@@ -12,6 +12,9 @@ const EXAMPLES = [
   { value: 'lenet.json', path: `${BASE_URL}examples/models/lenet.json` },
   { value: 'resnet18.json', path: `${BASE_URL}examples/models/resnet18.json` },
   { value: 'squeezenet.json', path: `${BASE_URL}examples/models/squeezenet.json` },
+  { value: 'mobilenetv2.json', path: `${BASE_URL}examples/models/mobilenetv2.json` },
+  { value: 'vgg11.json', path: `${BASE_URL}examples/models/vgg11.json` },
+  { value: 'mnasnet0_5.json', path: `${BASE_URL}examples/models/mnasnet0_5.json` },
 ] as const;
 
 const ICON_SVG = {

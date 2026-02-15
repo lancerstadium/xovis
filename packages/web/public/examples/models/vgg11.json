@@ -1,0 +1,576 @@
+{
+  "id": "vgg11",
+  "name": "vgg11",
+  "tensors": [
+    {
+      "id": "features.0.weight",
+      "name": "weight",
+      "shape": [64, 3, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.weight",
+      "name": "weight",
+      "shape": [128, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.6.weight",
+      "name": "weight",
+      "shape": [256, 128, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.weight",
+      "name": "weight",
+      "shape": [256, 256, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.11.weight",
+      "name": "weight",
+      "shape": [512, 256, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.13.weight",
+      "name": "weight",
+      "shape": [512, 512, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.16.weight",
+      "name": "weight",
+      "shape": [512, 512, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.18.weight",
+      "name": "weight",
+      "shape": [512, 512, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "classifier.0.weight",
+      "name": "weight",
+      "shape": [4096, 25088],
+      "dtype": "float32"
+    },
+    {
+      "id": "classifier.3.weight",
+      "name": "weight",
+      "shape": [4096, 4096],
+      "dtype": "float32"
+    },
+    {
+      "id": "classifier.6.weight",
+      "name": "weight",
+      "shape": [1000, 4096],
+      "dtype": "float32"
+    },
+    {
+      "id": "val_8",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "input",
+      "name": "input",
+      "shape": [1, 3, 224, 224],
+      "dtype": "float32"
+    },
+    {
+      "id": "output",
+      "name": "output",
+      "shape": [1, 1000],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d",
+      "name": "activation",
+      "shape": [1, 64, 224, 224],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu",
+      "name": "activation",
+      "shape": [1, 64, 224, 224],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d",
+      "name": "activation",
+      "shape": [1, 64, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_1",
+      "name": "activation",
+      "shape": [1, 128, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_1",
+      "name": "activation",
+      "shape": [1, 128, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_1",
+      "name": "activation",
+      "shape": [1, 128, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_2",
+      "name": "activation",
+      "shape": [1, 256, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_2",
+      "name": "activation",
+      "shape": [1, 256, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_3",
+      "name": "activation",
+      "shape": [1, 256, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_3",
+      "name": "activation",
+      "shape": [1, 256, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_2",
+      "name": "activation",
+      "shape": [1, 256, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_4",
+      "name": "activation",
+      "shape": [1, 512, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_4",
+      "name": "activation",
+      "shape": [1, 512, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_5",
+      "name": "activation",
+      "shape": [1, 512, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_5",
+      "name": "activation",
+      "shape": [1, 512, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_3",
+      "name": "activation",
+      "shape": [1, 512, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_6",
+      "name": "activation",
+      "shape": [1, 512, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_6",
+      "name": "activation",
+      "shape": [1, 512, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_7",
+      "name": "activation",
+      "shape": [1, 512, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_7",
+      "name": "activation",
+      "shape": [1, 512, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_4",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "avg_pool2d",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "view",
+      "name": "activation",
+      "shape": [1, 25088],
+      "dtype": "float32"
+    },
+    {
+      "id": "linear",
+      "name": "activation",
+      "shape": [1, 4096],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_8",
+      "name": "activation",
+      "shape": [1, 4096],
+      "dtype": "float32"
+    },
+    {
+      "id": "linear_1",
+      "name": "activation",
+      "shape": [1, 4096],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_9",
+      "name": "activation",
+      "shape": [1, 4096],
+      "dtype": "float32"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_Conv_4",
+      "name": "Conv",
+      "inputs": [12, 0],
+      "outputs": [14],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu",
+      "name": "Relu",
+      "inputs": [14],
+      "outputs": [15],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d",
+      "name": "MaxPool",
+      "inputs": [15],
+      "outputs": [16],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_5",
+      "name": "Conv",
+      "inputs": [16, 1],
+      "outputs": [17],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_1",
+      "name": "Relu",
+      "inputs": [17],
+      "outputs": [18],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d_1",
+      "name": "MaxPool",
+      "inputs": [18],
+      "outputs": [19],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_6",
+      "name": "Conv",
+      "inputs": [19, 2],
+      "outputs": [20],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_2",
+      "name": "Relu",
+      "inputs": [20],
+      "outputs": [21],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_7",
+      "name": "Conv",
+      "inputs": [21, 3],
+      "outputs": [22],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_3",
+      "name": "Relu",
+      "inputs": [22],
+      "outputs": [23],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d_2",
+      "name": "MaxPool",
+      "inputs": [23],
+      "outputs": [24],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_8",
+      "name": "Conv",
+      "inputs": [24, 4],
+      "outputs": [25],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_4",
+      "name": "Relu",
+      "inputs": [25],
+      "outputs": [26],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_9",
+      "name": "Conv",
+      "inputs": [26, 5],
+      "outputs": [27],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_5",
+      "name": "Relu",
+      "inputs": [27],
+      "outputs": [28],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d_3",
+      "name": "MaxPool",
+      "inputs": [28],
+      "outputs": [29],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_10",
+      "name": "Conv",
+      "inputs": [29, 6],
+      "outputs": [30],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_6",
+      "name": "Relu",
+      "inputs": [30],
+      "outputs": [31],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_11",
+      "name": "Conv",
+      "inputs": [31, 7],
+      "outputs": [32],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_7",
+      "name": "Relu",
+      "inputs": [32],
+      "outputs": [33],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d_4",
+      "name": "MaxPool",
+      "inputs": [33],
+      "outputs": [34],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_avg_pool2d",
+      "name": "AveragePool",
+      "inputs": [34],
+      "outputs": [35],
+      "attributes": {
+        "count_include_pad": 1,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_view",
+      "name": "Reshape",
+      "inputs": [35, 11],
+      "outputs": [36],
+      "attributes": {
+        "allowzero": 1
+      }
+    },
+    {
+      "id": "node_Gemm_12",
+      "name": "Gemm",
+      "inputs": [36, 8],
+      "outputs": [37],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    },
+    {
+      "id": "node_relu_8",
+      "name": "Relu",
+      "inputs": [37],
+      "outputs": [38],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Gemm_13",
+      "name": "Gemm",
+      "inputs": [38, 9],
+      "outputs": [39],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    },
+    {
+      "id": "node_relu_9",
+      "name": "Relu",
+      "inputs": [39],
+      "outputs": [40],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Gemm_14",
+      "name": "Gemm",
+      "inputs": [40, 10],
+      "outputs": [13],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    }
+  ],
+  "inputs": [12],
+  "outputs": [13],
+  "metadata": {
+  }
+}
