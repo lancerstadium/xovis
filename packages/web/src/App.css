@@ -382,7 +382,7 @@ body.pwa-banner-visible .main {
   transform: translateX(-50%);
   top: auto;
 }
-/* 数据面板：与详情/设置浮窗一致，fixed + 底边由 JS 锚定，高度约束防溢出 */
+/* 左下/右上/下侧浮窗外层统一：高度约束、不裁阴影（overflow: visible），半透明与圆角由内层 .panel-glass 提供 */
 .data-panel-wrap {
   position: fixed;
   left: var(--float-panel-gap);
@@ -395,7 +395,7 @@ body.pwa-banner-visible .main {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  overflow: hidden;
+  overflow: visible;
   z-index: 18;
   pointer-events: none;
 }
@@ -407,8 +407,6 @@ body.pwa-banner-visible .main {
   align-items: stretch;
   min-height: 0;
   max-width: min(90vw, 960px);
-  border-radius: 12px;
-  overflow: hidden;
   pointer-events: auto;
 }
 .data-panel-resizable-body {
@@ -423,7 +421,10 @@ body.pwa-banner-visible .main {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+}
+/* 与 .panel-glass 一致：不裁阴影，由子级 .panel-glass > * 裁切 */
+.data-panel-resizable .data-panel-inner.panel-glass {
+  overflow: visible;
 }
 .data-panel-splitter-top {
   border-radius: 12px 12px 0 0;
@@ -809,7 +810,7 @@ body.pwa-banner-visible .main {
   font-size: inherit;
 }
 
-/* 浮窗通用：可调宽高，高度约束 + overflow 防溢出 */
+/* 左上/右上浮窗外层：与 data-panel-wrap 统一，不裁阴影 */
 .detail-card-wrap {
   position: absolute;
   top: var(--float-trigger-row);
@@ -818,7 +819,7 @@ body.pwa-banner-visible .main {
   align-items: stretch;
   max-height: var(--float-panel-max-height);
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   z-index: 18;
   pointer-events: none;
 }
@@ -913,10 +914,10 @@ body.pwa-banner-visible .main {
   }
 }
 
-/* 左右浮窗唯一外观：透明度、背景色、圆角、毛玻璃完全共用，观感无区别 */
+/* 左右/下侧浮窗唯一外观：半透明、圆角、阴影、毛玻璃共用；overflow:visible 使阴影不被裁切，子元素圆角内裁切 */
 .panel-glass {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
   box-shadow:
@@ -932,7 +933,7 @@ body.pwa-banner-visible .main {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 12px;
+  border-radius: inherit;
   background: color-mix(in srgb, var(--bg-sidebar) 88%, black 12%);
   opacity: 0.52;
   pointer-events: none;
@@ -942,6 +943,8 @@ body.pwa-banner-visible .main {
   position: relative;
   z-index: 1;
   background: transparent;
+  border-radius: inherit;
+  overflow: hidden;
 }
 /* 浮窗内文字与浮窗背景区分：浅色主题加深、深色主题提亮 */
 [data-theme='light'] .panel-glass {
@@ -1017,7 +1020,7 @@ body.pwa-banner-visible .main {
   word-wrap: break-word;
 }
 
-/* 详情浮窗：与设置浮窗同结构，flex 列 + 可滚动内容区 */
+/* 详情浮窗：与设置浮窗同结构，flex 列 + 可滚动内容区；与 .panel-glass > * 一致由子级裁切 */
 .sidebar {
   position: relative;
   flex: 1;
@@ -1027,6 +1030,7 @@ body.pwa-banner-visible .main {
   flex-direction: column;
   color: var(--text);
   overflow: hidden;
+  border-radius: inherit;
   background: transparent;
 }
 /* 左右浮窗可滚动内容区：详情/设置/数据 共用 */
@@ -1118,6 +1122,7 @@ body.pwa-banner-visible .main {
   flex-direction: column;
   width: 100%;
   overflow: hidden;
+  border-radius: inherit;
 }
 .view-dropdown-row {
   flex: 1;

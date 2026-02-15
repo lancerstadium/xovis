@@ -13,6 +13,11 @@ import { getLocale } from '../locale';
 import type { GraphNode } from '@xovis/core';
 import { getOperatorRows } from '../utils/operatorRows';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
+import {
+  getTouchDistance,
+  getPinchCenter,
+  computePinchZoomPan,
+} from '../utils/panZoom';
 
 export type ChartViewHandle = {
   getSvgElement: () => SVGSVGElement | null;
@@ -1292,6 +1297,8 @@ export const ChartView = forwardRef<
   const [isDragging, setIsDragging] = useState(false);
   const panStart = useRef<{ x: number; y: number; clientX: number; clientY: number } | null>(null);
   const didDrag = useRef(false);
+  const panZoomRef = useRef({ pan: { x: 0, y: 0 }, zoom: 1 });
+  panZoomRef.current = { pan, zoom };
 
   const resetView = useCallback(() => {
     setZoom(1);
@@ -1304,29 +1311,42 @@ export const ChartView = forwardRef<
     setZoom((z) => Math.max(0.01, z * (1 + delta)));
   }, []);
 
-  const pinchRef = useRef<{ initialDistance: number; initialZoom: number } | null>(null);
+  const pinchRef = useRef<{
+    initialDistance: number;
+    initialZoom: number;
+    initialPan: { x: number; y: number };
+    initialCenter: { x: number; y: number };
+  } | null>(null);
   const isPinchingRef = useRef(false);
-  const getTouchDistance = (touches: TouchList) =>
-    Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY);
   const onTouchStart = useCallback((e: TouchEvent) => {
-    if (e.touches.length === 2) {
+    if (e.touches.length === 2 && containerRef.current) {
       e.preventDefault();
       isPinchingRef.current = true;
-      const initialDistance = getTouchDistance(e.touches);
-      setZoom((z) => {
-        pinchRef.current = { initialDistance, initialZoom: z };
-        return z;
-      });
+      const { pan: p, zoom: z } = panZoomRef.current;
+      pinchRef.current = {
+        initialDistance: getTouchDistance(e.touches),
+        initialZoom: z,
+        initialPan: { ...p },
+        initialCenter: getPinchCenter(e.touches),
+      };
     }
   }, []);
   const onTouchMove = useCallback((e: TouchEvent) => {
-    if (e.touches.length === 2 && pinchRef.current) {
+    if (e.touches.length === 2 && pinchRef.current && containerRef.current) {
       e.preventDefault();
+      const rect = containerRef.current.getBoundingClientRect();
+      const containerCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
       const ratio = getTouchDistance(e.touches) / pinchRef.current.initialDistance;
-      const exp = ratio > 1 ? 0.6 : 0.4;
-      const scale = Math.pow(ratio, exp);
-      const next = pinchRef.current.initialZoom * scale;
-      setZoom(Math.max(0.01, next));
+      const { zoom: nextZoom, pan: nextPan } = computePinchZoomPan(
+        ratio,
+        pinchRef.current.initialZoom,
+        pinchRef.current.initialPan,
+        pinchRef.current.initialCenter,
+        getPinchCenter(e.touches),
+        containerCenter
+      );
+      setZoom(nextZoom);
+      setPan(nextPan);
     }
   }, []);
   const onTouchEnd = useCallback((e: TouchEvent) => {

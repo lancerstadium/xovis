@@ -617,6 +617,12 @@ export function ViewMenu({
 
   const tensorRole = s.tensorRoleColors ?? ['#dbeafe', '#fed7aa', '#e9d5ff', '#bbf7d0'];
 
+  const availHeight =
+    typeof window !== 'undefined' ? Math.max(200, window.innerHeight - position.top - 16) : 560;
+  const maxH = Math.min(availHeight, VIEW_MENU_HEIGHT_MAX());
+  const styleHeight =
+    s.viewMenuHeight > 0 ? Math.min(s.viewMenuHeight, maxH) : undefined;
+
   const dropdown = (
     <div
       ref={wrapRef}
@@ -629,7 +635,8 @@ export function ViewMenu({
         width: s.viewMenuWidth,
         minWidth: 220,
         maxWidth: Math.min(480, typeof window !== 'undefined' ? window.innerWidth * 0.9 : 480),
-        ...(s.viewMenuHeight > 0 ? { height: s.viewMenuHeight } : {}),
+        maxHeight: maxH,
+        ...(styleHeight != null ? { height: styleHeight } : {}),
       }}
     >
       <div className="view-dropdown-wrap-inner">
