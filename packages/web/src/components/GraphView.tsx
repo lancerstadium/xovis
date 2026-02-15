@@ -387,7 +387,8 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     if (e.touches.length === 2 && pinchRef.current) {
       e.preventDefault();
       const ratio = getTouchDistance(e.touches) / pinchRef.current.initialDistance;
-      const scale = Math.pow(ratio, 0.6);
+      const exp = ratio > 1 ? 0.6 : 0.4;
+      const scale = Math.pow(ratio, exp);
       const next = pinchRef.current.initialZoom * scale;
       setZoom(Math.max(0.01, next));
     }
@@ -535,7 +536,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   }, [graph]);
 
   // 详情搜索点击后居中并放大：任意计算图下聚焦项都占视口同一比例（不因图大而变小）
-  const FOCUS_VIEW_FRACTION = 0.65; // 聚焦项在视口短边上的占比
+  const FOCUS_VIEW_FRACTION = 0.5; // 聚焦项在视口短边上的占比（稍小以便看到周边）
   const FOCUS_ZOOM_MIN = 0.2;
   const FOCUS_ZOOM_MAX = 80; // 大图时需较大 zoom 才能让单节点占满比例，不压死
   useEffect(() => {
