@@ -1,0 +1,289 @@
+{
+  "id": "lenet",
+  "name": "lenet",
+  "tensors": [
+    {
+      "id": "conv1.weight",
+      "name": "weight",
+      "shape": [6, 1, 5, 5],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv1.bias",
+      "name": "weight",
+      "shape": [6],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2.bias",
+      "name": "weight",
+      "shape": [16],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc1.bias",
+      "name": "weight",
+      "shape": [120],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc2.bias",
+      "name": "weight",
+      "shape": [84],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc3.weight",
+      "name": "weight",
+      "shape": [10, 84],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc3.bias",
+      "name": "weight",
+      "shape": [10],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2.weight",
+      "name": "weight",
+      "shape": [16, 6, 5, 5],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc1.weight",
+      "name": "weight",
+      "shape": [120, 256],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc2.weight",
+      "name": "weight",
+      "shape": [84, 120],
+      "dtype": "float32"
+    },
+    {
+      "id": "val_5",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "input",
+      "name": "input",
+      "shape": [1, 1, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "output",
+      "name": "output",
+      "shape": [1, 10],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d",
+      "name": "activation",
+      "shape": [1, 6, 24, 24],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu",
+      "name": "activation",
+      "shape": [1, 6, 24, 24],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d",
+      "name": "activation",
+      "shape": [1, 6, 12, 12],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_1",
+      "name": "activation",
+      "shape": [1, 16, 8, 8],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_1",
+      "name": "activation",
+      "shape": [1, 16, 8, 8],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_1",
+      "name": "activation",
+      "shape": [1, 16, 4, 4],
+      "dtype": "float32"
+    },
+    {
+      "id": "view",
+      "name": "activation",
+      "shape": [1, 256],
+      "dtype": "float32"
+    },
+    {
+      "id": "linear",
+      "name": "activation",
+      "shape": [1, 120],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_2",
+      "name": "activation",
+      "shape": [1, 120],
+      "dtype": "float32"
+    },
+    {
+      "id": "linear_1",
+      "name": "activation",
+      "shape": [1, 84],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_3",
+      "name": "activation",
+      "shape": [1, 84],
+      "dtype": "float32"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_conv2d",
+      "name": "Conv",
+      "inputs": [11, 0, 1],
+      "outputs": [13],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu",
+      "name": "Relu",
+      "inputs": [13],
+      "outputs": [14],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d",
+      "name": "MaxPool",
+      "inputs": [14],
+      "outputs": [15],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_conv2d_1",
+      "name": "Conv",
+      "inputs": [15, 7, 2],
+      "outputs": [16],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_1",
+      "name": "Relu",
+      "inputs": [16],
+      "outputs": [17],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d_1",
+      "name": "MaxPool",
+      "inputs": [17],
+      "outputs": [18],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [2, 2],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_view",
+      "name": "Reshape",
+      "inputs": [18, 10],
+      "outputs": [19],
+      "attributes": {
+        "allowzero": 1
+      }
+    },
+    {
+      "id": "node_linear",
+      "name": "Gemm",
+      "inputs": [19, 8, 3],
+      "outputs": [20],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    },
+    {
+      "id": "node_relu_2",
+      "name": "Relu",
+      "inputs": [20],
+      "outputs": [21],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_linear_1",
+      "name": "Gemm",
+      "inputs": [21, 9, 4],
+      "outputs": [22],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    },
+    {
+      "id": "node_relu_3",
+      "name": "Relu",
+      "inputs": [22],
+      "outputs": [23],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_linear_2",
+      "name": "Gemm",
+      "inputs": [23, 5, 6],
+      "outputs": [12],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    }
+  ],
+  "inputs": [11],
+  "outputs": [12],
+  "metadata": {
+  }
+}

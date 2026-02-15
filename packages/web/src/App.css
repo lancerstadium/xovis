@@ -920,6 +920,8 @@ body.pwa-banner-visible .main {
   backdrop-filter: saturate(1.12) blur(22px);
   -webkit-backdrop-filter: saturate(1.12) blur(22px);
   background: transparent;
+  will-change: backdrop-filter;
+  isolation: isolate;
 }
 .panel-glass::before {
   content: '';

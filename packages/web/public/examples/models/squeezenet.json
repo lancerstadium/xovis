@@ -1,0 +1,1258 @@
+{
+  "id": "squeezenet",
+  "name": "squeezenet",
+  "tensors": [
+    {
+      "id": "features.0.weight",
+      "name": "weight",
+      "shape": [96, 3, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.squeeze.weight",
+      "name": "weight",
+      "shape": [16, 96, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.expand1x1.weight",
+      "name": "weight",
+      "shape": [64, 16, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.3.expand3x3.weight",
+      "name": "weight",
+      "shape": [64, 16, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.4.squeeze.weight",
+      "name": "weight",
+      "shape": [16, 128, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.4.expand1x1.weight",
+      "name": "weight",
+      "shape": [64, 16, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.4.expand3x3.weight",
+      "name": "weight",
+      "shape": [64, 16, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.5.squeeze.weight",
+      "name": "weight",
+      "shape": [32, 128, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.5.expand1x1.weight",
+      "name": "weight",
+      "shape": [128, 32, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.5.expand3x3.weight",
+      "name": "weight",
+      "shape": [128, 32, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.7.squeeze.weight",
+      "name": "weight",
+      "shape": [32, 256, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.7.expand1x1.weight",
+      "name": "weight",
+      "shape": [128, 32, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.7.expand3x3.weight",
+      "name": "weight",
+      "shape": [128, 32, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.squeeze.weight",
+      "name": "weight",
+      "shape": [48, 256, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.expand1x1.weight",
+      "name": "weight",
+      "shape": [192, 48, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.8.expand3x3.weight",
+      "name": "weight",
+      "shape": [192, 48, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.9.squeeze.weight",
+      "name": "weight",
+      "shape": [48, 384, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.9.expand1x1.weight",
+      "name": "weight",
+      "shape": [192, 48, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.9.expand3x3.weight",
+      "name": "weight",
+      "shape": [192, 48, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.10.squeeze.weight",
+      "name": "weight",
+      "shape": [64, 384, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.10.expand1x1.weight",
+      "name": "weight",
+      "shape": [256, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.10.expand3x3.weight",
+      "name": "weight",
+      "shape": [256, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.12.squeeze.weight",
+      "name": "weight",
+      "shape": [64, 512, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.12.expand1x1.weight",
+      "name": "weight",
+      "shape": [256, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "features.12.expand3x3.weight",
+      "name": "weight",
+      "shape": [256, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "classifier.1.weight",
+      "name": "weight",
+      "shape": [1000, 512, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "val_5",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "val_9",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "input",
+      "name": "input",
+      "shape": [1, 3, 224, 224],
+      "dtype": "float32"
+    },
+    {
+      "id": "output",
+      "name": "output",
+      "shape": [1, 1000],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d",
+      "name": "activation",
+      "shape": [1, 96, 109, 109],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu",
+      "name": "activation",
+      "shape": [1, 96, 109, 109],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d",
+      "name": "activation",
+      "shape": [1, 96, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_1",
+      "name": "activation",
+      "shape": [1, 16, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_1",
+      "name": "activation",
+      "shape": [1, 16, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_2",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_2",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_3",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_3",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat",
+      "name": "activation",
+      "shape": [1, 128, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_4",
+      "name": "activation",
+      "shape": [1, 16, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_4",
+      "name": "activation",
+      "shape": [1, 16, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_5",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_5",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_6",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_6",
+      "name": "activation",
+      "shape": [1, 64, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_1",
+      "name": "activation",
+      "shape": [1, 128, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_7",
+      "name": "activation",
+      "shape": [1, 32, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_7",
+      "name": "activation",
+      "shape": [1, 32, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_8",
+      "name": "activation",
+      "shape": [1, 128, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_8",
+      "name": "activation",
+      "shape": [1, 128, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_9",
+      "name": "activation",
+      "shape": [1, 128, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_9",
+      "name": "activation",
+      "shape": [1, 128, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_2",
+      "name": "activation",
+      "shape": [1, 256, 54, 54],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_1",
+      "name": "activation",
+      "shape": [1, 256, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_10",
+      "name": "activation",
+      "shape": [1, 32, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_10",
+      "name": "activation",
+      "shape": [1, 32, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_11",
+      "name": "activation",
+      "shape": [1, 128, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_11",
+      "name": "activation",
+      "shape": [1, 128, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_12",
+      "name": "activation",
+      "shape": [1, 128, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_12",
+      "name": "activation",
+      "shape": [1, 128, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_3",
+      "name": "activation",
+      "shape": [1, 256, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_13",
+      "name": "activation",
+      "shape": [1, 48, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_13",
+      "name": "activation",
+      "shape": [1, 48, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_14",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_14",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_15",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_15",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_4",
+      "name": "activation",
+      "shape": [1, 384, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_16",
+      "name": "activation",
+      "shape": [1, 48, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_16",
+      "name": "activation",
+      "shape": [1, 48, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_17",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_17",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_18",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_18",
+      "name": "activation",
+      "shape": [1, 192, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_5",
+      "name": "activation",
+      "shape": [1, 384, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_19",
+      "name": "activation",
+      "shape": [1, 64, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_19",
+      "name": "activation",
+      "shape": [1, 64, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_20",
+      "name": "activation",
+      "shape": [1, 256, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_20",
+      "name": "activation",
+      "shape": [1, 256, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_21",
+      "name": "activation",
+      "shape": [1, 256, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_21",
+      "name": "activation",
+      "shape": [1, 256, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_6",
+      "name": "activation",
+      "shape": [1, 512, 27, 27],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d_2",
+      "name": "activation",
+      "shape": [1, 512, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_22",
+      "name": "activation",
+      "shape": [1, 64, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_22",
+      "name": "activation",
+      "shape": [1, 64, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_23",
+      "name": "activation",
+      "shape": [1, 256, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_23",
+      "name": "activation",
+      "shape": [1, 256, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_24",
+      "name": "activation",
+      "shape": [1, 256, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_24",
+      "name": "activation",
+      "shape": [1, 256, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "cat_7",
+      "name": "activation",
+      "shape": [1, 512, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv2d_25",
+      "name": "activation",
+      "shape": [1, 1000, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_25",
+      "name": "activation",
+      "shape": [1, 1000, 13, 13],
+      "dtype": "float32"
+    },
+    {
+      "id": "mean",
+      "name": "activation",
+      "shape": [1, 1000, 1, 1],
+      "dtype": "float32"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_Conv_7",
+      "name": "Conv",
+      "inputs": [28, 0],
+      "outputs": [30],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu",
+      "name": "Relu",
+      "inputs": [30],
+      "outputs": [31],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d",
+      "name": "MaxPool",
+      "inputs": [31],
+      "outputs": [32],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 1,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [3, 3],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_8",
+      "name": "Conv",
+      "inputs": [32, 1],
+      "outputs": [33],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_1",
+      "name": "Relu",
+      "inputs": [33],
+      "outputs": [34],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_9",
+      "name": "Conv",
+      "inputs": [34, 2],
+      "outputs": [35],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_2",
+      "name": "Relu",
+      "inputs": [35],
+      "outputs": [36],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_10",
+      "name": "Conv",
+      "inputs": [34, 3],
+      "outputs": [37],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_3",
+      "name": "Relu",
+      "inputs": [37],
+      "outputs": [38],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat",
+      "name": "Concat",
+      "inputs": [36, 38],
+      "outputs": [39],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_Conv_11",
+      "name": "Conv",
+      "inputs": [39, 4],
+      "outputs": [40],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_4",
+      "name": "Relu",
+      "inputs": [40],
+      "outputs": [41],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_12",
+      "name": "Conv",
+      "inputs": [41, 5],
+      "outputs": [42],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_5",
+      "name": "Relu",
+      "inputs": [42],
+      "outputs": [43],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_13",
+      "name": "Conv",
+      "inputs": [41, 6],
+      "outputs": [44],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_6",
+      "name": "Relu",
+      "inputs": [44],
+      "outputs": [45],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_1",
+      "name": "Concat",
+      "inputs": [43, 45],
+      "outputs": [46],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_Conv_14",
+      "name": "Conv",
+      "inputs": [46, 7],
+      "outputs": [47],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_7",
+      "name": "Relu",
+      "inputs": [47],
+      "outputs": [48],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_15",
+      "name": "Conv",
+      "inputs": [48, 8],
+      "outputs": [49],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_8",
+      "name": "Relu",
+      "inputs": [49],
+      "outputs": [50],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_16",
+      "name": "Conv",
+      "inputs": [48, 9],
+      "outputs": [51],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_9",
+      "name": "Relu",
+      "inputs": [51],
+      "outputs": [52],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_2",
+      "name": "Concat",
+      "inputs": [50, 52],
+      "outputs": [53],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_max_pool2d_1",
+      "name": "MaxPool",
+      "inputs": [53],
+      "outputs": [54],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 1,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [3, 3],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_17",
+      "name": "Conv",
+      "inputs": [54, 10],
+      "outputs": [55],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_10",
+      "name": "Relu",
+      "inputs": [55],
+      "outputs": [56],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_18",
+      "name": "Conv",
+      "inputs": [56, 11],
+      "outputs": [57],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_11",
+      "name": "Relu",
+      "inputs": [57],
+      "outputs": [58],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_19",
+      "name": "Conv",
+      "inputs": [56, 12],
+      "outputs": [59],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_12",
+      "name": "Relu",
+      "inputs": [59],
+      "outputs": [60],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_3",
+      "name": "Concat",
+      "inputs": [58, 60],
+      "outputs": [61],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_Conv_20",
+      "name": "Conv",
+      "inputs": [61, 13],
+      "outputs": [62],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_13",
+      "name": "Relu",
+      "inputs": [62],
+      "outputs": [63],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_21",
+      "name": "Conv",
+      "inputs": [63, 14],
+      "outputs": [64],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_14",
+      "name": "Relu",
+      "inputs": [64],
+      "outputs": [65],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_22",
+      "name": "Conv",
+      "inputs": [63, 15],
+      "outputs": [66],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_15",
+      "name": "Relu",
+      "inputs": [66],
+      "outputs": [67],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_4",
+      "name": "Concat",
+      "inputs": [65, 67],
+      "outputs": [68],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_Conv_23",
+      "name": "Conv",
+      "inputs": [68, 16],
+      "outputs": [69],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_16",
+      "name": "Relu",
+      "inputs": [69],
+      "outputs": [70],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_24",
+      "name": "Conv",
+      "inputs": [70, 17],
+      "outputs": [71],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_17",
+      "name": "Relu",
+      "inputs": [71],
+      "outputs": [72],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_25",
+      "name": "Conv",
+      "inputs": [70, 18],
+      "outputs": [73],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_18",
+      "name": "Relu",
+      "inputs": [73],
+      "outputs": [74],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_5",
+      "name": "Concat",
+      "inputs": [72, 74],
+      "outputs": [75],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_Conv_26",
+      "name": "Conv",
+      "inputs": [75, 19],
+      "outputs": [76],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_19",
+      "name": "Relu",
+      "inputs": [76],
+      "outputs": [77],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_27",
+      "name": "Conv",
+      "inputs": [77, 20],
+      "outputs": [78],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_20",
+      "name": "Relu",
+      "inputs": [78],
+      "outputs": [79],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_28",
+      "name": "Conv",
+      "inputs": [77, 21],
+      "outputs": [80],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_21",
+      "name": "Relu",
+      "inputs": [80],
+      "outputs": [81],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_6",
+      "name": "Concat",
+      "inputs": [79, 81],
+      "outputs": [82],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_max_pool2d_2",
+      "name": "MaxPool",
+      "inputs": [82],
+      "outputs": [83],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 1,
+        "pads": [0, 0, 0, 0],
+        "kernel_shape": [3, 3],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_29",
+      "name": "Conv",
+      "inputs": [83, 22],
+      "outputs": [84],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_22",
+      "name": "Relu",
+      "inputs": [84],
+      "outputs": [85],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_30",
+      "name": "Conv",
+      "inputs": [85, 23],
+      "outputs": [86],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_23",
+      "name": "Relu",
+      "inputs": [86],
+      "outputs": [87],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_31",
+      "name": "Conv",
+      "inputs": [85, 24],
+      "outputs": [88],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_24",
+      "name": "Relu",
+      "inputs": [88],
+      "outputs": [89],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_cat_7",
+      "name": "Concat",
+      "inputs": [87, 89],
+      "outputs": [90],
+      "attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "id": "node_Conv_32",
+      "name": "Conv",
+      "inputs": [90, 25],
+      "outputs": [91],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_25",
+      "name": "Relu",
+      "inputs": [91],
+      "outputs": [92],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_mean",
+      "name": "ReduceMean",
+      "inputs": [92, 26],
+      "outputs": [93],
+      "attributes": {
+        "noop_with_empty_axes": 0,
+        "keepdims": 1
+      }
+    },
+    {
+      "id": "node_view",
+      "name": "Reshape",
+      "inputs": [93, 27],
+      "outputs": [29],
+      "attributes": {
+        "allowzero": 1
+      }
+    }
+  ],
+  "inputs": [28],
+  "outputs": [29],
+  "metadata": {
+  }
+}

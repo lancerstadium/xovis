@@ -9,6 +9,9 @@ const BASE_URL = import.meta.env.BASE_URL || '/';
 const EXAMPLES = [
   { value: 'example-graph.json', path: `${BASE_URL}examples/models/example-graph.json` },
   { value: 'example-complete.json', path: `${BASE_URL}examples/models/example-complete.json` },
+  { value: 'lenet.json', path: `${BASE_URL}examples/models/lenet.json` },
+  { value: 'resnet18.json', path: `${BASE_URL}examples/models/resnet18.json` },
+  { value: 'squeezenet.json', path: `${BASE_URL}examples/models/squeezenet.json` },
 ] as const;
 
 const ICON_SVG = {

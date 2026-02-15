@@ -1,0 +1,962 @@
+{
+  "id": "resnet18",
+  "name": "resnet18",
+  "tensors": [
+    {
+      "id": "fc.bias",
+      "name": "weight",
+      "shape": [1000],
+      "dtype": "float32"
+    },
+    {
+      "id": "conv1.weight",
+      "name": "weight",
+      "shape": [64, 3, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer1.0.conv1.weight",
+      "name": "weight",
+      "shape": [64, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer1.0.conv2.weight",
+      "name": "weight",
+      "shape": [64, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer1.1.conv1.weight",
+      "name": "weight",
+      "shape": [64, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer1.1.conv2.weight",
+      "name": "weight",
+      "shape": [64, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer2.0.conv1.weight",
+      "name": "weight",
+      "shape": [128, 64, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer2.0.conv2.weight",
+      "name": "weight",
+      "shape": [128, 128, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer2.0.downsample.0.weight",
+      "name": "weight",
+      "shape": [128, 64, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer2.1.conv1.weight",
+      "name": "weight",
+      "shape": [128, 128, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer2.1.conv2.weight",
+      "name": "weight",
+      "shape": [128, 128, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer3.0.conv1.weight",
+      "name": "weight",
+      "shape": [256, 128, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer3.0.conv2.weight",
+      "name": "weight",
+      "shape": [256, 256, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer3.0.downsample.0.weight",
+      "name": "weight",
+      "shape": [256, 128, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer3.1.conv1.weight",
+      "name": "weight",
+      "shape": [256, 256, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer3.1.conv2.weight",
+      "name": "weight",
+      "shape": [256, 256, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer4.0.conv1.weight",
+      "name": "weight",
+      "shape": [512, 256, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer4.0.conv2.weight",
+      "name": "weight",
+      "shape": [512, 512, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer4.0.downsample.0.weight",
+      "name": "weight",
+      "shape": [512, 256, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer4.1.conv1.weight",
+      "name": "weight",
+      "shape": [512, 512, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "layer4.1.conv2.weight",
+      "name": "weight",
+      "shape": [512, 512, 3, 3],
+      "dtype": "float32"
+    },
+    {
+      "id": "fc.weight",
+      "name": "weight",
+      "shape": [1000, 512],
+      "dtype": "float32"
+    },
+    {
+      "id": "val_226",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "val_230",
+      "name": "weight",
+      "shape": [2],
+      "dtype": "int64"
+    },
+    {
+      "id": "input",
+      "name": "input",
+      "shape": [1, 3, 224, 224],
+      "dtype": "float32"
+    },
+    {
+      "id": "output",
+      "name": "output",
+      "shape": [1, 1000],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem",
+      "name": "activation",
+      "shape": [1, 64, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu",
+      "name": "activation",
+      "shape": [1, 64, 112, 112],
+      "dtype": "float32"
+    },
+    {
+      "id": "max_pool2d",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_3",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_1",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_6",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "add",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_2",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_9",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_3",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_12",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_1",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_4",
+      "name": "activation",
+      "shape": [1, 64, 56, 56],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_15",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_5",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_18",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_21",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_2",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_6",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_24",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_7",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_27",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_3",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_8",
+      "name": "activation",
+      "shape": [1, 128, 28, 28],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_30",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_9",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_33",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_36",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_4",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_10",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_39",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_11",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_42",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_5",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_12",
+      "name": "activation",
+      "shape": [1, 256, 14, 14],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_45",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_13",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_48",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_51",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_6",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_14",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_54",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_15",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "getitem_57",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "add_7",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "relu_16",
+      "name": "activation",
+      "shape": [1, 512, 7, 7],
+      "dtype": "float32"
+    },
+    {
+      "id": "mean",
+      "name": "activation",
+      "shape": [1, 512, 1, 1],
+      "dtype": "float32"
+    },
+    {
+      "id": "view",
+      "name": "activation",
+      "shape": [1, 512],
+      "dtype": "float32"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_Conv_292",
+      "name": "Conv",
+      "inputs": [24, 1],
+      "outputs": [26],
+      "attributes": {
+        "group": 1,
+        "pads": [3, 3, 3, 3],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu",
+      "name": "Relu",
+      "inputs": [26],
+      "outputs": [27],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_max_pool2d",
+      "name": "MaxPool",
+      "inputs": [27],
+      "outputs": [28],
+      "attributes": {
+        "storage_order": 0,
+        "ceil_mode": 0,
+        "pads": [1, 1, 1, 1],
+        "kernel_shape": [3, 3],
+        "strides": [2, 2],
+        "dilations": [1, 1],
+        "auto_pad": "NOTSET"
+      }
+    },
+    {
+      "id": "node_Conv_295",
+      "name": "Conv",
+      "inputs": [28, 2],
+      "outputs": [29],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_1",
+      "name": "Relu",
+      "inputs": [29],
+      "outputs": [30],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_298",
+      "name": "Conv",
+      "inputs": [30, 3],
+      "outputs": [31],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add",
+      "name": "Add",
+      "inputs": [31, 28],
+      "outputs": [32],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_2",
+      "name": "Relu",
+      "inputs": [32],
+      "outputs": [33],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_301",
+      "name": "Conv",
+      "inputs": [33, 4],
+      "outputs": [34],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_3",
+      "name": "Relu",
+      "inputs": [34],
+      "outputs": [35],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_304",
+      "name": "Conv",
+      "inputs": [35, 5],
+      "outputs": [36],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_1",
+      "name": "Add",
+      "inputs": [36, 33],
+      "outputs": [37],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_4",
+      "name": "Relu",
+      "inputs": [37],
+      "outputs": [38],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_307",
+      "name": "Conv",
+      "inputs": [38, 6],
+      "outputs": [39],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_5",
+      "name": "Relu",
+      "inputs": [39],
+      "outputs": [40],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_310",
+      "name": "Conv",
+      "inputs": [40, 7],
+      "outputs": [41],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_313",
+      "name": "Conv",
+      "inputs": [38, 8],
+      "outputs": [42],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_2",
+      "name": "Add",
+      "inputs": [41, 42],
+      "outputs": [43],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_6",
+      "name": "Relu",
+      "inputs": [43],
+      "outputs": [44],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_316",
+      "name": "Conv",
+      "inputs": [44, 9],
+      "outputs": [45],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_7",
+      "name": "Relu",
+      "inputs": [45],
+      "outputs": [46],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_319",
+      "name": "Conv",
+      "inputs": [46, 10],
+      "outputs": [47],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_3",
+      "name": "Add",
+      "inputs": [47, 44],
+      "outputs": [48],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_8",
+      "name": "Relu",
+      "inputs": [48],
+      "outputs": [49],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_322",
+      "name": "Conv",
+      "inputs": [49, 11],
+      "outputs": [50],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_9",
+      "name": "Relu",
+      "inputs": [50],
+      "outputs": [51],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_325",
+      "name": "Conv",
+      "inputs": [51, 12],
+      "outputs": [52],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_328",
+      "name": "Conv",
+      "inputs": [49, 13],
+      "outputs": [53],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_4",
+      "name": "Add",
+      "inputs": [52, 53],
+      "outputs": [54],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_10",
+      "name": "Relu",
+      "inputs": [54],
+      "outputs": [55],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_331",
+      "name": "Conv",
+      "inputs": [55, 14],
+      "outputs": [56],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_11",
+      "name": "Relu",
+      "inputs": [56],
+      "outputs": [57],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_334",
+      "name": "Conv",
+      "inputs": [57, 15],
+      "outputs": [58],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_5",
+      "name": "Add",
+      "inputs": [58, 55],
+      "outputs": [59],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_12",
+      "name": "Relu",
+      "inputs": [59],
+      "outputs": [60],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_337",
+      "name": "Conv",
+      "inputs": [60, 16],
+      "outputs": [61],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_13",
+      "name": "Relu",
+      "inputs": [61],
+      "outputs": [62],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_340",
+      "name": "Conv",
+      "inputs": [62, 17],
+      "outputs": [63],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_Conv_343",
+      "name": "Conv",
+      "inputs": [60, 18],
+      "outputs": [64],
+      "attributes": {
+        "group": 1,
+        "pads": [0, 0, 0, 0],
+        "strides": [2, 2],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_6",
+      "name": "Add",
+      "inputs": [63, 64],
+      "outputs": [65],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_14",
+      "name": "Relu",
+      "inputs": [65],
+      "outputs": [66],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_346",
+      "name": "Conv",
+      "inputs": [66, 19],
+      "outputs": [67],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_relu_15",
+      "name": "Relu",
+      "inputs": [67],
+      "outputs": [68],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_Conv_349",
+      "name": "Conv",
+      "inputs": [68, 20],
+      "outputs": [69],
+      "attributes": {
+        "group": 1,
+        "pads": [1, 1, 1, 1],
+        "strides": [1, 1],
+        "auto_pad": "NOTSET",
+        "dilations": [1, 1]
+      }
+    },
+    {
+      "id": "node_add_7",
+      "name": "Add",
+      "inputs": [69, 66],
+      "outputs": [70],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_relu_16",
+      "name": "Relu",
+      "inputs": [70],
+      "outputs": [71],
+      "attributes": {
+      }
+    },
+    {
+      "id": "node_mean",
+      "name": "ReduceMean",
+      "inputs": [71, 22],
+      "outputs": [72],
+      "attributes": {
+        "noop_with_empty_axes": 0,
+        "keepdims": 1
+      }
+    },
+    {
+      "id": "node_view",
+      "name": "Reshape",
+      "inputs": [72, 23],
+      "outputs": [73],
+      "attributes": {
+        "allowzero": 1
+      }
+    },
+    {
+      "id": "node_linear",
+      "name": "Gemm",
+      "inputs": [73, 21, 0],
+      "outputs": [25],
+      "attributes": {
+        "beta": 1.0,
+        "transB": 1,
+        "alpha": 1.0,
+        "transA": 0
+      }
+    }
+  ],
+  "inputs": [24],
+  "outputs": [25],
+  "metadata": {
+  }
+}

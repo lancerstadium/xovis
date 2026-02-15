@@ -343,7 +343,7 @@ function gaussElimination(A: number[][], b: number[]): number[] {
   return x;
 }
 
-/** Pearson 相关系数 */
+/** Pearson 相关系数；结果钳位到 [-1,1] 避免浮点误差导致越界 */
 function correlationPearson(x: number[], y: number[]): number {
   const n = x.length;
   if (n < 2) return 0;
@@ -361,11 +361,14 @@ function correlationPearson(x: number[], y: number[]): number {
   }
   const num = n * sumXY - sumX * sumY;
   const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-  return den === 0 ? 0 : num / den;
+  if (den === 0 || !Number.isFinite(den)) return 0;
+  const r = num / den;
+  return Math.max(-1, Math.min(1, Number.isFinite(r) ? r : 0));
 }
 
-/** 排名（相同值取平均秩） */
+/** 排名（1-based，相同值取平均秩，与 Spearman 标准一致） */
 function rank(arr: number[]): number[] {
+  if (arr.length === 0) return [];
   const indexed = arr.map((v, i) => ({ v, i }));
   indexed.sort((a, b) => a.v - b.v);
   const out = new Array<number>(arr.length);
@@ -401,7 +404,9 @@ function correlationKendall(x: number[], y: number[]): number {
     }
   }
   const totalPairs = (n * (n - 1)) / 2;
-  return totalPairs === 0 ? 0 : (concordant - discordant) / totalPairs;
+  if (totalPairs === 0) return 0;
+  const tau = (concordant - discordant) / totalPairs;
+  return Math.max(-1, Math.min(1, tau));
 }
 
 function correlationMatrix(
