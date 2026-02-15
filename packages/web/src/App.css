@@ -155,11 +155,14 @@ body.pwa-banner-visible .main {
 .loader-examples-wrap {
   position: relative;
 }
-/* 浮窗共用：高度约束；内容区滚动单处定义，详情与设置复用 */
+/* 浮窗共用：高度约束 + flex 链，避免首开或内容多时溢出；内容区滚动单处定义 */
 .float-panel,
 .float-dropdown {
   max-height: var(--float-panel-max-height);
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 /* 导入下拉：仅定位，外观 100% 复用 panel-glass + panel-menu */
 .loader-dropdown {
@@ -379,7 +382,7 @@ body.pwa-banner-visible .main {
   transform: translateX(-50%);
   top: auto;
 }
-/* 数据面板：与详情/设置浮窗一致，fixed + 底边由 JS 锚定在数据按钮上方（App.tsx 设 bottom），左右与其它浮窗同距 */
+/* 数据面板：与详情/设置浮窗一致，fixed + 底边由 JS 锚定，高度约束防溢出 */
 .data-panel-wrap {
   position: fixed;
   left: var(--float-panel-gap);
@@ -392,6 +395,7 @@ body.pwa-banner-visible .main {
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  overflow: hidden;
   z-index: 18;
   pointer-events: none;
 }
@@ -805,7 +809,7 @@ body.pwa-banner-visible .main {
   font-size: inherit;
 }
 
-/* 浮窗通用：可调宽高 */
+/* 浮窗通用：可调宽高，高度约束 + overflow 防溢出 */
 .detail-card-wrap {
   position: absolute;
   top: var(--float-trigger-row);
@@ -814,6 +818,7 @@ body.pwa-banner-visible .main {
   align-items: stretch;
   max-height: var(--float-panel-max-height);
   min-height: 0;
+  overflow: hidden;
   z-index: 18;
   pointer-events: none;
 }
@@ -1091,12 +1096,13 @@ body.pwa-banner-visible .main {
   white-space: nowrap;
 }
 
-/* 设置浮窗：外层可拖宽/拖高（右下可调），内层内容区 + 右下角把手 */
+/* 设置浮窗：与 float-dropdown 共用 flex 链，内层填满可滚动 */
 .view-dropdown-wrap {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 0;
   margin-top: 4px;
   padding: 0;
   z-index: 10;

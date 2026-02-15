@@ -1322,7 +1322,8 @@ export const ChartView = forwardRef<
   const onTouchMove = useCallback((e: TouchEvent) => {
     if (e.touches.length === 2 && pinchRef.current) {
       e.preventDefault();
-      const scale = getTouchDistance(e.touches) / pinchRef.current.initialDistance;
+      const ratio = getTouchDistance(e.touches) / pinchRef.current.initialDistance;
+      const scale = Math.pow(ratio, 0.6);
       const next = pinchRef.current.initialZoom * scale;
       setZoom(Math.max(0.01, next));
     }
