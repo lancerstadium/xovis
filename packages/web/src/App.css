@@ -871,7 +871,7 @@ body.pwa-banner-visible .main {
   }
 }
 
-/* 浮窗角把手：单角调整宽高，不占边，鼠标与触控一致 */
+/* 浮窗角把手：单角调整宽高，不占边，保证在内容之上可点 */
 .float-panel-resize-corner {
   position: absolute;
   width: 20px;
@@ -879,7 +879,7 @@ body.pwa-banner-visible .main {
   padding: 0;
   background: transparent;
   transition: background 0.15s;
-  z-index: 1;
+  z-index: 10;
 }
 .float-panel-resize-corner:hover {
   background: color-mix(in srgb, var(--border) 50%, transparent);
@@ -928,6 +928,8 @@ body.pwa-banner-visible .main {
   flex: 1;
   min-height: 0;
   border-radius: inherit;
+  display: flex;
+  flex-direction: column;
 }
 .panel-glass {
   position: relative;
@@ -1129,6 +1131,13 @@ body.pwa-banner-visible .main {
 .view-dropdown-wrap.panel-glass-outer {
   overflow: visible;
 }
+/* 左上角设置浮窗：与详情/数据浮窗一致，根不参与命中，角把手可点；角把手放首子元素与 DataPanel 一致 */
+.view-menu-wrap {
+  pointer-events: none;
+}
+.view-menu-wrap > * {
+  pointer-events: auto;
+}
 .view-dropdown-wrap-inner {
   position: relative;
   flex: 1;
@@ -1145,6 +1154,36 @@ body.pwa-banner-visible .main {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+}
+.view-menu-about {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.625rem;
+  color: var(--text-muted, #666);
+  border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+.view-menu-about-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  vertical-align: middle;
+}
+.view-menu-about-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.view-menu-about-link:hover {
+  color: var(--text);
+}
+.view-menu-about-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
 }
 .view-dropdown-wrap .view-dropdown {
   flex: 1;
