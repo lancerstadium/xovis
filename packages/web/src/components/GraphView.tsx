@@ -8,7 +8,7 @@ import {
   useImperativeHandle,
 } from 'react';
 import dagre from '@dagrejs/dagre';
-import { type Graph, type GraphNode, type GraphEdge, type Tensor } from '@xovis/core';
+import { type Graph, type GraphOperator, type GraphEdge, type Tensor } from '@xovis/core';
 import { useGraphStore, useSettingsStore, useElectronTabsStore } from '../stores';
 import { getLocale } from '../locale';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
@@ -49,13 +49,13 @@ const OP_ATTR_ORDER = [
 ] as const;
 
 /** 节点是否有可展示属性（有则放大+两段式，无则保持原尺寸纯色） */
-function nodeHasAttrs(node: GraphNode, tensor: Tensor | null): boolean {
+function nodeHasAttrs(node: GraphOperator, tensor: Tensor | null): boolean {
   if (tensor) return !!(tensor.shape?.length || tensor.dtype);
   const attrs = node.attributes ?? {};
   return OP_ATTR_ORDER.some((k) => attrs[k] !== undefined && attrs[k] !== null);
 }
 
-function nodeAttrsLines(node: GraphNode, tensor: Tensor | null): string[] {
+function nodeAttrsLines(node: GraphOperator, tensor: Tensor | null): string[] {
   const formatVal = (v: unknown): string =>
     Array.isArray(v) ? `[${v.join(',')}]` : String(v ?? '');
   if (tensor) {
@@ -178,14 +178,14 @@ function useLayout(graph: Graph | null, layoutKey: number = 0) {
   const paddingH = 20;
   const paddingAttr = 16;
   return useMemo(() => {
-    if (!graph?.nodes?.length) return { nodes: [] as LayoutNode[], edges: [] as LayoutEdge[] };
+    if (!graph?.operators?.length) return { nodes: [] as LayoutNode[], edges: [] as LayoutEdge[] };
     const g = new dagre.graphlib.Graph({ compound: true, multigraph: true });
     g.setGraph({ rankdir: rankDir, nodesep: nodeGap, ranksep: rankGap });
     (g as { setDefaultEdgeLabel: (cb: () => object) => void }).setDefaultEdgeLabel(() => ({}));
     const minHeadH = fs + 10;
 
     // 过滤节点：根据设置决定是否包含权重节点和IO节点
-    const filteredNodes = graph.nodes.filter((n: GraphNode) => {
+    const filteredOperators = graph.operators.filter((n: GraphOperator) => {
       const isTensor = n.metadata?.isTensorNode === true;
       if (!isTensor) return true; // 算子节点始终显示
       const tensor = graph.tensors ? graph.tensors[n.metadata?.tensorIndex as number] : null;
@@ -199,7 +199,7 @@ function useLayout(graph: Graph | null, layoutKey: number = 0) {
       return true;
     });
 
-    filteredNodes.forEach((n: GraphNode) => {
+    filteredOperators.forEach((n: GraphOperator) => {
       const isTensor = n.metadata?.isTensorNode === true;
       const tensor =
         isTensor && graph.tensors ? graph.tensors[n.metadata?.tensorIndex as number] : null;
@@ -221,9 +221,9 @@ function useLayout(graph: Graph | null, layoutKey: number = 0) {
     });
 
     // 只添加连接可见节点的边
-    const visibleNodeIds = new Set(filteredNodes.map((n: GraphNode) => n.id));
+    const visibleOperatorIds = new Set(filteredOperators.map((n: GraphOperator) => n.id));
     graph.edges?.forEach((e: GraphEdge) => {
-      if (visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)) {
+      if (visibleOperatorIds.has(e.source) && visibleOperatorIds.has(e.target)) {
         g.setEdge(e.source, e.target, {}, e.id);
       }
     });
@@ -293,14 +293,14 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   const graphRef = useRef(graph);
   graphRef.current = graph;
   useEffect(() => {
-    if (!graph?.nodes?.length) return;
+    if (!graph?.operators?.length) return;
     setLayoutKey((k) => k + 1);
     let raf2: number | null = null;
     let rafReady: number | null = null;
     const raf1 = requestAnimationFrame(() => {
       setLayoutKey((k) => k + 1);
       // 大图时首帧布局可能仍用默认设置，多一帧延迟再算一次以保证 nodeLabelShowAttrs 等已就绪
-      if (graph.nodes.length > 50) {
+      if (graph.operators.length > 50) {
         raf2 = requestAnimationFrame(() => {
           setLayoutKey((k) => k + 1);
           // 最后一帧布局提交后再等一帧渲染（含属性），再通知加载完毕
@@ -329,9 +329,9 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   /** 热分析：节点 id -> 归一化后的线条颜色（仅算子节点） */
   const nodeHeatColorMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (!graph?.nodes?.length || !graphHeatAnalysisEnabled || !graphHeatTargetKey?.trim())
+    if (!graph?.operators?.length || !graphHeatAnalysisEnabled || !graphHeatTargetKey?.trim())
       return map;
-    const rows = getOperatorRows({ nodes: graph.nodes });
+    const rows = getOperatorRows({ operators: graph.operators });
     const key = graphHeatTargetKey.trim();
     const values = rows
       .map((r) => ({ id: String(r.id), v: Number(r[key]) }))
@@ -348,7 +348,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     });
     return map;
   }, [
-    graph?.nodes,
+    graph?.operators,
     graphHeatAnalysisEnabled,
     graphHeatTargetKey,
     chartCorrelationColorStart,
@@ -664,9 +664,9 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     [setSelected]
   );
 
-  const nodeMap = useMemo(() => {
-    const m = new Map<string, GraphNode>();
-    graph?.nodes?.forEach((n: GraphNode) => m.set(n.id, n));
+  const operatorMap = useMemo(() => {
+    const m = new Map<string, GraphOperator>();
+    graph?.operators?.forEach((n: GraphOperator) => m.set(n.id, n));
     return m;
   }, [graph]);
   const edgeMap = useMemo(() => {
@@ -732,9 +732,9 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
   const edgeCurve = Math.max(0, Math.min(1, s.edgeCurvature ?? 0));
 
   // 过滤节点：根据设置决定是否渲染权重节点和IO节点
-  const visibleNodes = useMemo(() => {
-    if (!graph?.nodes) return [];
-    return graph.nodes.filter((n: GraphNode) => {
+  const visibleOperators = useMemo(() => {
+    if (!graph?.operators) return [];
+    return graph.operators.filter((n: GraphOperator) => {
       const isTensor = n.metadata?.isTensorNode === true;
       if (!isTensor) return true; // 算子节点始终显示
       const tensor = graph.tensors ? graph.tensors[n.metadata?.tensorIndex as number] : null;
@@ -749,9 +749,9 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
     });
   }, [graph, s.showWeightNodes, s.showIONodes]);
 
-  const visibleNodeIds = useMemo(
-    () => new Set(visibleNodes.map((n: GraphNode) => n.id)),
-    [visibleNodes]
+  const visibleOperatorIds = useMemo(
+    () => new Set(visibleOperators.map((n: GraphOperator) => n.id)),
+    [visibleOperators]
   );
 
   return (
@@ -900,7 +900,8 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                   const ge = edgeMap.get(e.id);
                   if (!ge) return null;
                   // 只显示连接可见节点的边
-                  if (!visibleNodeIds.has(ge.source) || !visibleNodeIds.has(ge.target)) return null;
+                  if (!visibleOperatorIds.has(ge.source) || !visibleOperatorIds.has(ge.target))
+                    return null;
                   const { d, mid } = edgePathAndMid(e.points, edgeCurve);
                   const shape = ge?.data?.shape;
                   const shapeStr: string =
@@ -966,10 +967,10 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
                   );
                 })}
                 {layoutNodes.map((pos, nodeIdx) => {
-                  const node = nodeMap.get(pos.id);
+                  const node = operatorMap.get(pos.id);
                   if (!node) return null;
                   // 检查节点是否应该显示
-                  if (!visibleNodeIds.has(node.id)) return null;
+                  if (!visibleOperatorIds.has(node.id)) return null;
                   const isTensor = node.metadata?.isTensorNode === true;
                   const tensor =
                     isTensor && graph ? graph.tensors[node.metadata?.tensorIndex as number] : null;

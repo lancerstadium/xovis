@@ -11,7 +11,7 @@
     { "id": "tensor_6", "name": "activation", "shape": [1, 128, 112, 112], "dtype": "float32" },
     { "id": "tensor_7", "name": "output", "shape": [1, 128, 112, 112], "dtype": "float32" }
   ],
-  "nodes": [
+  "operators": [
     {
       "id": "conv1",
       "name": "Conv",

@@ -2,7 +2,7 @@
  * JSON 计算图解析（见 doc/json-spec.md，扩展信息统一在 metadata）
  */
 
-import type { Graph, GraphNode, GraphEdge, Tensor } from './types';
+import type { Graph, GraphOperator, GraphEdge, Tensor } from './types';
 
 const DTYPES = ['float32', 'float16', 'int32', 'int64', 'uint8', 'bool', 'string'] as const;
 function toDtype(s: string): Tensor['dtype'] {
@@ -14,25 +14,25 @@ function parseShape(v: unknown): number[] {
   return Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number') : [];
 }
 
-function deriveEdges(nodes: GraphNode[], tensors: Tensor[]): GraphEdge[] {
+function deriveEdges(operators: GraphOperator[], tensors: Tensor[]): GraphEdge[] {
   const edges: GraphEdge[] = [];
   const seen = new Set<string>();
   const tensorToProducers = new Map<number, string[]>();
   const tensorToTensorNode = new Map<number, string>();
 
-  nodes.forEach((n) => {
+  operators.forEach((n) => {
     if (n.metadata?.isTensorNode) return;
     n.outputs.forEach((ti) => {
       if (!tensorToProducers.has(ti)) tensorToProducers.set(ti, []);
       tensorToProducers.get(ti)!.push(n.id);
     });
   });
-  nodes.forEach((n) => {
+  operators.forEach((n) => {
     const ti = n.metadata?.tensorIndex as number | undefined;
     if (ti !== undefined && n.metadata?.isTensorNode) tensorToTensorNode.set(ti, n.id);
   });
 
-  nodes.forEach((target) => {
+  operators.forEach((target) => {
     if (target.metadata?.isTensorNode) return;
     target.inputs.forEach((ti) => {
       const t = tensors[ti];
@@ -57,7 +57,7 @@ function deriveEdges(nodes: GraphNode[], tensors: Tensor[]): GraphEdge[] {
     });
   });
 
-  nodes.forEach((n) => {
+  operators.forEach((n) => {
     if (!n.metadata?.isTensorNode) return;
     const ti = n.metadata.tensorIndex as number;
     const t = tensors[ti];
@@ -83,8 +83,8 @@ function deriveEdges(nodes: GraphNode[], tensors: Tensor[]): GraphEdge[] {
 export function parseGraph(json: string): Graph {
   let raw = JSON.parse(json) as Record<string, unknown>;
   if (raw?.graph && typeof raw.graph === 'object') raw = raw.graph as Record<string, unknown>;
-  if (!raw || !Array.isArray(raw.tensors) || !Array.isArray(raw.nodes)) {
-    throw new Error('Invalid graph: missing tensors or nodes');
+  if (!raw || !Array.isArray(raw.tensors) || !Array.isArray(raw.operators)) {
+    throw new Error('Invalid graph: missing tensors or operators');
   }
 
   const NAMES: Tensor['name'][] = ['input', 'output', 'weight', 'activation'];
@@ -107,7 +107,7 @@ export function parseGraph(json: string): Graph {
     };
   });
 
-  const opNodes: GraphNode[] = (raw.nodes as Record<string, unknown>[]).map((n) => {
+  const opOperators: GraphOperator[] = (raw.operators as Record<string, unknown>[]).map((n) => {
     const inputs = Array.isArray(n.inputs)
       ? (n.inputs.filter((x) => typeof x === 'number') as number[])
       : [];
@@ -133,10 +133,10 @@ export function parseGraph(json: string): Graph {
     };
   });
 
-  const tensorNodes: GraphNode[] = [];
+  const tensorOperators: GraphOperator[] = [];
   tensors.forEach((t, i) => {
     if (t.name === 'activation') return;
-    tensorNodes.push({
+    tensorOperators.push({
       id: t.id,
       name: t.name.charAt(0).toUpperCase() + t.name.slice(1),
       inputs: [],
@@ -146,8 +146,8 @@ export function parseGraph(json: string): Graph {
     });
   });
 
-  const nodes = [...opNodes, ...tensorNodes];
-  const edges = deriveEdges(nodes, tensors);
+  const operators = [...opOperators, ...tensorOperators];
+  const edges = deriveEdges(operators, tensors);
 
   let inputs: number[] = Array.isArray(raw.inputs)
     ? (raw.inputs as number[]).filter((x) => typeof x === 'number')
@@ -171,7 +171,7 @@ export function parseGraph(json: string): Graph {
     id: String(raw.id ?? 'graph'),
     name: String(raw.name ?? raw.id ?? 'graph'),
     tensors,
-    nodes,
+    operators,
     edges,
     inputs,
     outputs,

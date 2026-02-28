@@ -7,13 +7,13 @@ import type { ParsedCsv } from './parseCsv';
 
 /**
  * 将 CSV 数据转换为 Graph 格式
- * CSV 的每一行作为一个节点，列作为节点的属性
+ * CSV 的每一行作为一个算子，列作为算子的属性
  */
 export function csvToGraph(csv: ParsedCsv): Graph {
   const { headers, rows } = csv;
 
-  // 将每一行转换为一个节点
-  const nodes = rows.map((row, index) => {
+  // 将每一行转换为一个算子
+  const operators = rows.map((row, index) => {
     // 优先使用CSV中的id列（如果存在），否则使用生成的id
     const csvId =
       row.id !== undefined && row.id !== null && row.id !== ''
@@ -21,7 +21,7 @@ export function csvToGraph(csv: ParsedCsv): Graph {
         : `csv-row-${index}`;
     const nodeName = String(row[headers[0]] ?? `Row${index + 1}`);
 
-    // 将行数据转换为 attributes（排除id列，因为id已经是节点的id属性）
+    // 将行数据转换为 attributes（排除 id 列，因为 id 已经是算子的 id 属性）
     const attributes: Record<string, unknown> = {};
     headers.forEach((header) => {
       // 跳过id列，避免重复
@@ -49,7 +49,7 @@ export function csvToGraph(csv: ParsedCsv): Graph {
     id: 'csv-data',
     name: 'CSV Data',
     tensors: [],
-    nodes,
+    operators,
     edges: [],
     inputs: [],
     outputs: [],

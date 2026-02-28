@@ -11,7 +11,7 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
   "id": "string",
   "name": "string",
   "tensors": [...],
-  "nodes": [...],
+  "operators": [...],
   "inputs": [...],
   "outputs": [...],
   "metadata": {...}
@@ -25,7 +25,7 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
 | `id`       | string | **是** | 图/算子的唯一标识，对应 Operator.name             |
 | `name`     | string | **是** | 图/算子的名称，由 Operator.name 直接解析          |
 | `tensors`  | array  | **是** | 全局张量列表                                      |
-| `nodes`    | array  | **是** | 节点（算子）列表                                  |
+| `operators` | array  | **是** | 算子列表                                          |
 | `inputs`   | array  | **是** | 输入张量索引，指向 tensors                        |
 | `outputs`  | array  | **是** | 输出张量索引，指向 tensors                        |
 | `metadata` | object | 否     | 元数据，仅包含 attrs 中存在的字段，不硬编码默认值 |
@@ -50,9 +50,9 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
 | `dtype`    | 是     | `float32` \| `float16` \| `int32` \| `int64` \| `uint8` \| `bool` \| `string` |
 | `metadata` | object | 否                                                                            | 元数据，仅包含 attrs 中存在的字段，不硬编码默认值 |
 
-**注意**：张量以 `id` 标识，无冗余字段；边的输入输出由 nodes 的 inputs/outputs 索引即可推导，无需 `operator_id`。
+**注意**：张量以 `id` 标识，无冗余字段；边的输入输出由 operators 的 inputs/outputs 索引即可推导，无需 `operator_id`。
 
-## nodes（节点）
+## operators（算子）
 
 ```json
 {
@@ -91,7 +91,7 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
     { "id": "tensor_1", "name": "weight", "shape": [64, 3, 3, 3], "dtype": "float32" },
     { "id": "tensor_2", "name": "activation", "shape": [1, 64, 224, 224], "dtype": "float32" }
   ],
-  "nodes": [
+  "operators": [
     {
       "id": "node_0",
       "name": "Conv",
@@ -115,17 +115,17 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
 | `json.id`       | Operator.name                       |
 | `json.name`     | Operator.name                       |
 | `json.tensors`  | Operator.vars()                     |
-| `json.nodes`    | Operator.getSubOps()                |
+| `json.operators` | Operator.getSubOps()                |
 | `json.inputs`   | Operator.inputs() 在 vars 中的索引  |
 | `json.outputs`  | Operator.outputs() 在 vars 中的索引 |
 | `json.metadata` | Operator.attrs()，dotted key 展开   |
 
 | JSON                       | XOC                                                                                                                 |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `json.nodes[i].id`         | 节点索引                                                                                                            |
-| `json.nodes[i].name`       | 算子类型（如 Conv、Relu），即 Expr.name / 算子注册名                                                                |
-| `json.nodes[i].attributes` | attrs 中 **schema 内** 属性                                                                                         |
-| `json.nodes[i].metadata`   | attrs 中 **非 schema** 部分（无 "metadata." 前缀）：`level`、`parent_id`、`children_ids`、`performance.time.cpu` 等 |
+| `json.operators[i].id`         | 算子索引                                                                                                            |
+| `json.operators[i].name`       | 算子类型（如 Conv、Relu），即 Expr.name / 算子注册名                                                                |
+| `json.operators[i].attributes` | attrs 中 **schema 内** 属性                                                                                         |
+| `json.operators[i].metadata`   | attrs 中 **非 schema** 部分（无 "metadata." 前缀）：`level`、`parent_id`、`children_ids`、`performance.time.cpu` 等 |
 
 | JSON                   | XOC                                 |
 | ---------------------- | ----------------------------------- |
@@ -141,7 +141,7 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
 
 ## 设计原则
 
-1. **精简**：形状用整数数组；tensor 支持可选 metadata，与 nodes 一致
+1. **精简**：形状用整数数组；tensor 支持可选 metadata，与 operators 一致
 2. **分离**：`attributes` 仅 schema；`metadata` 承载可选/扩展信息
 3. **必选**：根级 `id`、`name` 必选，来自 Operator.name
 4. **可选无默认**：metadata 等可选字段不硬编码默认值
@@ -151,6 +151,6 @@ JSON 格式用于表示神经网络计算图，采用精简设计，不向前兼
 
 - `shape` 直接使用整数数组
 - 张量 `name` 为类型（input/output/weight/activation），以 `id` 标识，无 operator_id
-- `nodes[].name` 为算子类型，支持任意字符串
+- `operators[].name` 为算子类型，支持任意字符串
 - `edges` 可从 inputs/outputs 推导，导出时可选
 - 张量节点由非 activation 张量自动创建

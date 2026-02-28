@@ -447,7 +447,7 @@
       "dtype": "float32"
     }
   ],
-  "nodes": [
+  "operators": [
     {
       "id": "node_Conv_292",
       "name": "Conv",

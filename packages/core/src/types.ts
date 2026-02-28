@@ -11,8 +11,8 @@ export interface Tensor {
   metadata?: Record<string, unknown>;
 }
 
-/** 节点：name 即算子类型（如 Conv、Relu），见 json-spec；扩展信息统一在 metadata */
-export interface GraphNode {
+/** 算子：name 即算子类型（如 Conv、Relu），见 json-spec；扩展信息统一在 metadata */
+export interface GraphOperator {
   id: string;
   name: string;
   inputs: number[];
@@ -34,7 +34,7 @@ export interface Graph {
   id: string;
   name: string;
   tensors: Tensor[];
-  nodes: GraphNode[];
+  operators: GraphOperator[];
   edges: GraphEdge[];
   inputs: number[];
   outputs: number[];

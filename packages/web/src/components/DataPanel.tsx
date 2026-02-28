@@ -1186,7 +1186,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
 
   const { rows, columns } = useMemo(() => {
     if (!graph) return { rows: [] as Record<string, unknown>[], columns: [] as string[] };
-    const rows = getOperatorRows({ nodes: graph.nodes });
+    const rows = getOperatorRows({ operators: graph.operators });
     const columns = getTableColumns(rows);
     return { rows, columns };
   }, [graph]);

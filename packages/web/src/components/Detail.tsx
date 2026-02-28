@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { Graph, GraphNode, GraphEdge, Tensor } from '@xovis/core';
+import type { Graph, GraphOperator, GraphEdge, Tensor } from '@xovis/core';
 import { useGraphStore, useSettingsStore } from '../stores';
 import { getLocale } from '../locale';
 
@@ -31,7 +31,7 @@ function Section({ title, entries }: { title: string; entries: [string, unknown]
 }
 
 function GraphDetail({ graph, t }: { graph: Graph; t: ReturnType<typeof getLocale> }) {
-  const opCount = graph.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode).length;
+  const opCount = graph.operators.filter((n: GraphOperator) => !n.metadata?.isTensorNode).length;
   const base: [string, unknown][] = [
     [t.detailId, graph.id],
     [t.detailName, graph.name],
@@ -58,7 +58,7 @@ function OpNodeDetail({
   typeLabel,
   t,
 }: {
-  node: GraphNode;
+  node: GraphOperator;
   graph: Graph;
   typeLabel: string;
   t: ReturnType<typeof getLocale>;
@@ -121,7 +121,7 @@ function TensorNodeDetail({
   typeLabel,
   t,
 }: {
-  node: GraphNode;
+  node: GraphOperator;
   tensor: Tensor;
   typeLabel: string;
   t: ReturnType<typeof getLocale>;
@@ -165,7 +165,7 @@ const MATCH_RANK_NONE = 6;
 
 /** 返回匹配优先级（数字越小越靠前）：先 name 后 id，再张量 name/id/role-io，最后 JSON 兜底。 */
 function getMatchRank(
-  obj: GraphNode | GraphEdge,
+  obj: GraphOperator | GraphEdge,
   q: string,
   graph?: Graph | null
 ): number {
@@ -177,7 +177,7 @@ function getMatchRank(
   if (!('metadata' in obj) || !graph?.tensors) {
     return JSON.stringify(obj).toLowerCase().includes(lower) ? MATCH_RANK_JSON : MATCH_RANK_NONE;
   }
-  const node = obj as GraphNode;
+  const node = obj as GraphOperator;
   const ti = node.metadata?.tensorIndex as number | undefined;
   if (!node.metadata?.isTensorNode || ti === undefined || !graph.tensors[ti]) {
     return JSON.stringify(obj).toLowerCase().includes(lower) ? MATCH_RANK_JSON : MATCH_RANK_NONE;
@@ -197,19 +197,19 @@ function getMatchRank(
   return JSON.stringify(obj).toLowerCase().includes(lower) ? MATCH_RANK_JSON : MATCH_RANK_NONE;
 }
 
-function matchQuery(obj: GraphNode | GraphEdge, q: string, graph?: Graph | null): boolean {
+function matchQuery(obj: GraphOperator | GraphEdge, q: string, graph?: Graph | null): boolean {
   return getMatchRank(obj, q, graph) < MATCH_RANK_NONE;
 }
 
-/** 与 GraphView 一致：当前设置下在图中可见的节点 id 集合（受 showWeightNodes / showIONodes 控制） */
-function visibleNodeIdsFromGraph(
+/** 与 GraphView 一致：当前设置下在图中可见的算子 id 集合（受 showWeightNodes / showIONodes 控制） */
+function visibleOperatorIdsFromGraph(
   graph: Graph | null,
   showWeightNodes: boolean,
   showIONodes: boolean
 ): Set<string> {
-  if (!graph?.nodes?.length) return new Set();
+  if (!graph?.operators?.length) return new Set();
   const ids = new Set<string>();
-  for (const n of graph.nodes) {
+  for (const n of graph.operators) {
     const isTensor = n.metadata?.isTensorNode === true;
     if (!isTensor) {
       ids.add(n.id);
@@ -234,30 +234,30 @@ export function Detail() {
   const t = getLocale(lang);
   const [query, setQuery] = useState('');
 
-  const visibleNodeIds = useMemo(
-    () => visibleNodeIdsFromGraph(graph, showWeightNodes, showIONodes),
+  const visibleOperatorIds = useMemo(
+    () => visibleOperatorIdsFromGraph(graph, showWeightNodes, showIONodes),
     [graph, showWeightNodes, showIONodes]
   );
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!graph || !q) return { nodes: [] as GraphNode[], edges: [] as GraphEdge[] };
-    const nodes = graph.nodes
-      .filter((n) => visibleNodeIds.has(n.id) && matchQuery(n, q, graph))
+    if (!graph || !q) return { operators: [] as GraphOperator[], edges: [] as GraphEdge[] };
+    const operators = graph.operators
+      .filter((n) => visibleOperatorIds.has(n.id) && matchQuery(n, q, graph))
       .sort((a, b) => getMatchRank(a, q, graph) - getMatchRank(b, q, graph));
     const edges = (graph.edges ?? [])
       .filter(
         (e) =>
-          visibleNodeIds.has(e.source) &&
-          visibleNodeIds.has(e.target) &&
+          visibleOperatorIds.has(e.source) &&
+          visibleOperatorIds.has(e.target) &&
           matchQuery(e, q, graph)
       )
       .sort((a, b) => getMatchRank(a, q, graph) - getMatchRank(b, q, graph));
-    return { nodes, edges };
-  }, [graph, query, visibleNodeIds]);
+    return { operators, edges };
+  }, [graph, query, visibleOperatorIds]);
 
   const hasSearch = query.trim().length > 0;
-  const onSelect = (item: GraphNode | GraphEdge) => {
+  const onSelect = (item: GraphOperator | GraphEdge) => {
     setSelected(item);
     setCenterOnId(item.id ?? null);
     setQuery('');
@@ -279,23 +279,25 @@ export function Detail() {
       )}
       {hasSearch && graph ? (
         <div className="detail-search-results">
-          {searchResults.nodes.length === 0 && searchResults.edges.length === 0 ? (
+          {searchResults.operators.length === 0 && searchResults.edges.length === 0 ? (
             <p className="detail-empty-hint">{t.detailSearchNoResults}</p>
           ) : (
             <>
-              {searchResults.nodes.map((n) => {
+              {searchResults.operators.map((n) => {
                 const isTensor = n.metadata?.isTensorNode && graph?.tensors?.[n.metadata?.tensorIndex as number];
                 const tensor = isTensor ? graph!.tensors[n.metadata!.tensorIndex as number] : null;
                 const displayId = tensor ? (tensor.id ?? n.id) : n.id;
                 const displayName = tensor ? (tensor.name ?? n.name) : n.name;
                 return (
                   <button
-                    key={`node-${n.id}`}
+                    key={`operator-${n.id}`}
                     type="button"
                     className="detail-search-item"
                     onClick={() => onSelect(n)}
                   >
-                    <span className="detail-search-item-type">{t.detailNode}</span>
+                    <span className="detail-search-item-type">
+                      {isTensor ? t.detailTensor : t.detailOperator}
+                    </span>
                     <span className="detail-search-item-label">
                       {displayId}
                       {displayName && displayName !== displayId ? ` · ${displayName}` : ''}
@@ -326,15 +328,17 @@ export function Detail() {
       ) : 'source' in selected ? (
         <EdgeDetail edge={selected} typeLabel={t.detailEdge} />
       ) : (() => {
-        const node = selected as GraphNode;
+        const node = selected as GraphOperator;
         const ti = node.metadata?.tensorIndex as number | undefined;
         const isTensor = node.metadata?.isTensorNode && ti !== undefined && graph?.tensors?.[ti];
         if (isTensor && graph) {
           return (
-            <TensorNodeDetail node={node} tensor={graph.tensors[ti]} typeLabel={t.detailNode} t={t} />
+            <TensorNodeDetail node={node} tensor={graph.tensors[ti]} typeLabel={t.detailTensor} t={t} />
           );
         }
-        return graph ? <OpNodeDetail node={node} graph={graph} typeLabel={t.detailNode} t={t} /> : null;
+        return graph ? (
+          <OpNodeDetail node={node} graph={graph} typeLabel={t.detailOperator} t={t} />
+        ) : null;
       })()}
     </>
   );

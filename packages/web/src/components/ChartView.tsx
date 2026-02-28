@@ -10,7 +10,7 @@ import {
 import { useGraphStore, useSettingsStore, useElectronTabsStore } from '../stores';
 import type { ChartYColumnConfig } from '../stores/settings';
 import { getLocale } from '../locale';
-import type { GraphNode } from '@xovis/core';
+import type { GraphOperator } from '@xovis/core';
 import { getOperatorRows } from '../utils/operatorRows';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
 import {
@@ -1476,7 +1476,7 @@ export const ChartView = forwardRef<
   useImperativeHandle(ref, () => ({ getSvgElement: () => svgRef.current, resetView }), [resetView]);
 
   const ops = useMemo(
-    () => graph?.nodes.filter((n: GraphNode) => !n.metadata?.isTensorNode) ?? [],
+    () => graph?.operators.filter((n: GraphOperator) => !n.metadata?.isTensorNode) ?? [],
     [graph]
   );
 
