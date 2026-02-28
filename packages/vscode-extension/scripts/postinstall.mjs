@@ -17,8 +17,20 @@ try {
   await sharp(svgSrc).resize(128, 128).png().toFile(iconPng);
 } catch {
   const { execSync } = await import('child_process');
+  const run = (cmd) => {
+    try {
+      execSync(cmd, { stdio: 'pipe' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
   try {
-    execSync(`convert -background white -resize 128x128 "${svgSrc}" "${iconPng}"`, { stdio: 'pipe' });
+    const ok =
+      run(`magick -background white -resize 128x128 "${svgSrc}" "${iconPng}"`) ||
+      run(`magick convert -background white -resize 128x128 "${svgSrc}" "${iconPng}"`) ||
+      run(`convert -background white -resize 128x128 "${svgSrc}" "${iconPng}"`);
+    if (!ok) throw new Error('icon generation failed');
   } catch {
     console.warn('vscode-extension: Could not generate icon.png (install sharp or ImageMagick for icon support)');
   }

@@ -32,20 +32,26 @@ async function withSharp() {
   }
 }
 
-function withConvert() {
+function runCmd(cmd) {
   try {
-    execSync(`convert -background white -resize 512x512 "${svgSrc}" "${outPng}"`, {
-      stdio: 'pipe',
-    });
+    execSync(cmd, { stdio: 'pipe' });
     return true;
   } catch {
     return false;
   }
 }
 
-const ok = (await withSharp()) || withConvert();
+function withImageMagick() {
+  return (
+    runCmd(`magick -background white -resize 512x512 "${svgSrc}" "${outPng}"`) ||
+    runCmd(`magick convert -background white -resize 512x512 "${svgSrc}" "${outPng}"`) ||
+    runCmd(`convert -background white -resize 512x512 "${svgSrc}" "${outPng}"`)
+  );
+}
+
+const ok = (await withSharp()) || withImageMagick();
 if (!ok) {
   console.warn(
-    'scripts/generate-electron-icon: run pnpm install and ensure sharp or ImageMagick is available'
+    'scripts/generate-electron-icon: run pnpm install and ensure sharp or ImageMagick (magick/convert) is available'
   );
 }

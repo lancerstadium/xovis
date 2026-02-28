@@ -118,7 +118,7 @@ jobs:
           echo "node-linker=hoisted" > .npmrc
           pnpm install
           mkdir -p build
-          (magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || echo "Warning: icon.png not generated"
+          (magick -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || echo "Warning: icon.png not generated"
           for i in 1 2 3; do
             if pnpm run build:win; then exit 0; fi
             echo "Attempt $i failed (e.g. 502 from GitHub), retrying in 30s..."
@@ -193,7 +193,7 @@ jobs:
           echo "node-linker=hoisted" > .npmrc
           pnpm install
           mkdir -p build
-          convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png
+          (magick -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || echo "Warning: icon.png not generated"
           pnpm run build:mac
 
       - name: Upload macOS artifacts
@@ -265,7 +265,7 @@ jobs:
           echo "node-linker=hoisted" > .npmrc
           pnpm install
           mkdir -p build
-          convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png
+          (magick -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (magick convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || (convert -background white -resize 512x512 ../web/public/favicon-app.svg build/icon.png 2>/dev/null) || echo "Warning: icon.png not generated"
           pnpm run build:linux
 
       - name: Upload Linux artifacts
@@ -321,12 +321,10 @@ jobs:
           pnpm install
           # 从 favicon-app.svg 生成插件图标 PNG
           mkdir -p images
-          if [ -f "../web/public/favicon-app.svg" ] && command -v convert &> /dev/null; then
-            convert -background white -resize 128x128 ../web/public/favicon-app.svg images/icon.png 2>/dev/null || echo "Warning: Could not generate icon.png"
+          if [ -f "../web/public/favicon-app.svg" ]; then
+            (magick -background white -resize 128x128 ../web/public/favicon-app.svg images/icon.png 2>/dev/null) || (magick convert -background white -resize 128x128 ../web/public/favicon-app.svg images/icon.png 2>/dev/null) || (convert -background white -resize 128x128 ../web/public/favicon-app.svg images/icon.png 2>/dev/null) || echo "Warning: Could not generate icon.png"
           elif [ ! -f "../web/public/favicon-app.svg" ]; then
             echo "Warning: favicon-app.svg not found, skipping icon generation"
-          else
-            echo "Warning: ImageMagick not available, icon.png not generated"
           fi
           pnpm run compile
           # 若 icon.png 不存在则从 package.json 移除 icon 字段，避免 vsce 报错
