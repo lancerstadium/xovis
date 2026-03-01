@@ -23,6 +23,7 @@ export const locale: Record<
     viewLine: string;
     viewScatter: string;
     viewCorrelation: string;
+    viewBoxplot: string;
     dataTabTable: string;
     dataTabView: string;
     tableIndex: string;
@@ -51,6 +52,19 @@ export const locale: Record<
     chartCorrelationFill: string;
     chartCorrelationShowValues: string;
     chartCorrelationDecimals: string;
+    boxplotAlgorithm: string;
+    boxplotAlgorithmCustom: string;
+    boxplotAlgorithmStacked: string;
+    boxplotAlgorithmFirstFit: string;
+    boxplotAlgorithmBestFit: string;
+    boxplotFillStyle: string;
+    boxplotEdgeStyle: string;
+    boxplotEdgeWidth: string;
+    boxplotCornerRadius: string;
+    boxplotOpacity: string;
+    boxplotColor: string;
+    boxplotMaxLine: string;
+    boxplotMaxLineColor: string;
     chartYColumnsLabel: string;
     chartAddYColumn: string;
     chartAddYColumnHint: string;
@@ -147,6 +161,7 @@ export const locale: Record<
     settingsSectionChartPie: string;
     settingsSectionChartDataLabels: string;
     settingsSectionChartCorrelation: string;
+    settingsSectionChartBoxplot: string;
     settingsChartSeriesKey: string;
     settingsChartWidth: string;
     settingsChartHeight: string;
@@ -224,6 +239,15 @@ export const locale: Record<
     settingsChartAxisPaddingBottom: string;
     settingsChartAxisTickLength: string;
     settingsChartAxisLabelDecimals: string;
+    settingsChartAxisLabelDecimalsX: string;
+    settingsChartAxisLabelDecimalsY: string;
+    settingsChartAxisLabelFormatX: string;
+    settingsChartAxisLabelFormatY: string;
+    settingsChartAxisLabelFormatNormal: string;
+    settingsChartAxisLabelFormatScientificE: string;
+    settingsChartAxisLabelFormatScientific10: string;
+    settingsChartAxisTickMatchDigitsX: string;
+    settingsChartAxisTickMatchDigitsY: string;
     settingsChartAxisLabelMaxChars: string;
     settingsChartExportScale: string;
     settingsChartGridLineCount: string;
@@ -423,13 +447,14 @@ export const locale: Record<
     viewPie: '扇形图',
     viewLine: '折线图',
     viewScatter: '散点图',
-    viewCorrelation: '相关系数图',
+    viewCorrelation: '关系图',
+    viewBoxplot: '装箱图',
     dataTabTable: '表格',
     dataTabView: '视图',
-    tableIndex: '序号',
+    tableIndex: '索引',
     tableId: 'ID',
     tableName: '名称',
-    tableColumnSelectHint: '勾选列参与图表映射；主键（序号、ID）必选。',
+    tableColumnSelectHint: '勾选列参与图表映射。',
     chartXAxis: '分类',
     chartYAxis: '数值',
     chartSeriesAxis: '分组',
@@ -452,6 +477,19 @@ export const locale: Record<
     chartCorrelationFill: '单元填充',
     chartCorrelationShowValues: '显示数值',
     chartCorrelationDecimals: '小数位',
+    boxplotAlgorithm: '装箱算法',
+    boxplotAlgorithmCustom: '自定义',
+    boxplotAlgorithmStacked: '基础堆叠',
+    boxplotAlgorithmFirstFit: '首次适配',
+    boxplotAlgorithmBestFit: '最佳适配',
+    boxplotFillStyle: '矩形填充',
+    boxplotEdgeStyle: '矩形边框',
+    boxplotEdgeWidth: '边框宽度',
+    boxplotCornerRadius: '矩形圆角',
+    boxplotOpacity: '矩形透明度',
+    boxplotColor: '矩形颜色',
+    boxplotMaxLine: '最大值标线',
+    boxplotMaxLineColor: '标线颜色',
     chartYColumnsLabel: '数值列',
     chartAddYColumn: '添加数值列',
     chartAddYColumnHint: '点击可增加多个数值系列，图表将显示多组柱/多条线等。',
@@ -548,6 +586,7 @@ export const locale: Record<
     settingsSectionChartPie: '图表·扇形图',
     settingsSectionChartDataLabels: '图表·数据标签',
     settingsSectionChartCorrelation: '图表·相关系数',
+    settingsSectionChartBoxplot: '图表·装箱图',
     settingsChartSeriesKey: '分组列（多系列）',
     settingsChartWidth: '画布宽度',
     settingsChartHeight: '画布高度',
@@ -557,6 +596,15 @@ export const locale: Record<
     settingsChartAxisPaddingTop: '上边界距离',
     settingsChartAxisPaddingBottom: '下边界距离',
     settingsChartAxisLabelDecimals: '轴刻度小数位',
+    settingsChartAxisLabelDecimalsX: 'X轴刻度小数位',
+    settingsChartAxisLabelDecimalsY: 'Y轴刻度小数位',
+    settingsChartAxisLabelFormatX: 'X轴刻度表示',
+    settingsChartAxisLabelFormatY: 'Y轴刻度表示',
+    settingsChartAxisLabelFormatNormal: '普通',
+    settingsChartAxisLabelFormatScientificE: 'e科学',
+    settingsChartAxisLabelFormatScientific10: '10科学',
+    settingsChartAxisTickMatchDigitsX: 'X轴刻度匹配位',
+    settingsChartAxisTickMatchDigitsY: 'Y轴刻度匹配位',
     settingsChartAxisLabelMaxChars: '轴刻度标签最大字符数',
     settingsChartExportScale: '导出缩放',
     settingsChartBarGap: '柱间距',
@@ -823,13 +871,14 @@ export const locale: Record<
     viewPie: 'Pie',
     viewLine: 'Line',
     viewScatter: 'Scatter',
-    viewCorrelation: 'Correlation',
+    viewCorrelation: 'Relation',
+    viewBoxplot: 'Boxplot',
     dataTabTable: 'Table',
     dataTabView: 'View',
-    tableIndex: '#',
+    tableIndex: 'Index',
     tableId: 'ID',
     tableName: 'Name',
-    tableColumnSelectHint: 'Check columns to use in chart mapping; primary key always selected.',
+    tableColumnSelectHint: 'Check columns to use in chart mapping.',
     chartXAxis: 'Category',
     chartYAxis: 'Value',
     chartSeriesAxis: 'Series',
@@ -852,6 +901,19 @@ export const locale: Record<
     chartCorrelationFill: 'Cell fill',
     chartCorrelationShowValues: 'Show values',
     chartCorrelationDecimals: 'Decimals',
+    boxplotAlgorithm: 'Boxplot algorithm',
+    boxplotAlgorithmCustom: 'Custom',
+    boxplotAlgorithmStacked: 'Stacked',
+    boxplotAlgorithmFirstFit: 'First fit',
+    boxplotAlgorithmBestFit: 'Best fit',
+    boxplotFillStyle: 'Rectangle fill',
+    boxplotEdgeStyle: 'Rectangle edge',
+    boxplotEdgeWidth: 'Edge width',
+    boxplotCornerRadius: 'Rectangle radius',
+    boxplotOpacity: 'Rectangle opacity',
+    boxplotColor: 'Rectangle color',
+    boxplotMaxLine: 'Max value line',
+    boxplotMaxLineColor: 'Line color',
     chartYColumnsLabel: 'Value columns',
     chartAddYColumn: 'Add value column',
     chartAddYColumnHint: 'Click to add more value series; chart will show multiple bars/lines etc.',
@@ -948,6 +1010,7 @@ export const locale: Record<
     settingsSectionChartPie: 'Chart · Pie',
     settingsSectionChartDataLabels: 'Data labels',
     settingsSectionChartCorrelation: 'Chart · Correlation',
+    settingsSectionChartBoxplot: 'Chart · Boxplot',
     settingsChartSeriesKey: 'Series key',
     settingsChartWidth: 'Canvas width',
     settingsChartHeight: 'Canvas height',
@@ -957,6 +1020,15 @@ export const locale: Record<
     settingsChartAxisPaddingTop: 'Top padding',
     settingsChartAxisPaddingBottom: 'Bottom padding',
     settingsChartAxisLabelDecimals: 'Axis tick decimals',
+    settingsChartAxisLabelDecimalsX: 'X axis tick decimals',
+    settingsChartAxisLabelDecimalsY: 'Y axis tick decimals',
+    settingsChartAxisLabelFormatX: 'X axis tick format',
+    settingsChartAxisLabelFormatY: 'Y axis tick format',
+    settingsChartAxisLabelFormatNormal: 'Normal',
+    settingsChartAxisLabelFormatScientificE: 'Scientific (e)',
+    settingsChartAxisLabelFormatScientific10: 'Scientific (10^n)',
+    settingsChartAxisTickMatchDigitsX: 'X axis tick match digits',
+    settingsChartAxisTickMatchDigitsY: 'Y axis tick match digits',
     settingsChartAxisLabelMaxChars: 'Axis label max characters',
     settingsChartExportScale: 'Export scale',
     settingsChartBarGap: 'Bar gap',

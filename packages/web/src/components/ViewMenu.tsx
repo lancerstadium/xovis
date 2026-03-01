@@ -6,6 +6,7 @@ import {
   themeToPresetNum,
   modeAndPresetToTheme,
   THEME_PRESET_NUMS,
+  FILL_STYLES,
 } from '../stores/settings';
 import { getLocale } from '../locale';
 import type { Lang } from '../locale';
@@ -1123,9 +1124,70 @@ export function ViewMenu({
                     </div>
                   </Section>
                   <Section title={t.settingsSectionChartDataLabels}>
-                    <div
-                      style={{ padding: '8px 0', color: 'var(--text2)', fontSize: '12px' }}
-                    ></div>
+                    <div className="panel-check-list">
+                      <PanelCheck
+                        label={t.settingsChartShowDataLabels}
+                        checked={s.chartShowDataLabels}
+                        onChange={(v) => s.set({ chartShowDataLabels: v })}
+                      />
+                      <PanelCheck
+                        label={t.settingsChartDataLabelBold}
+                        checked={s.chartDataLabelBold}
+                        onChange={(v) => s.set({ chartDataLabelBold: v })}
+                      />
+                      <PanelCheck
+                        label={t.settingsChartDataLabelItalic}
+                        checked={s.chartDataLabelItalic}
+                        onChange={(v) => s.set({ chartDataLabelItalic: v })}
+                      />
+                    </div>
+                    <NumRow
+                      label={t.settingsChartDataLabelFontSize}
+                      value={s.chartDataLabelFontSize}
+                      min={0}
+                      max={48}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartDataLabelFontSize: n })}
+                    />
+                    <NumRow
+                      label={t.settingsChartDataLabelDecimals}
+                      value={s.chartDataLabelDecimals}
+                      min={0}
+                      max={6}
+                      defaultVal={2}
+                      onChange={(n) => s.set({ chartDataLabelDecimals: n })}
+                    />
+                    <Row label={t.settingsChartDataLabelPosition}>
+                      <select
+                        className="view-input"
+                        value={s.chartDataLabelPosition}
+                        onChange={(e) =>
+                          s.set({
+                            chartDataLabelPosition: e.target.value as 'top' | 'bottom' | 'auto',
+                          })
+                        }
+                      >
+                        <option value="top">{t.settingsChartDataLabelPositionTop}</option>
+                        <option value="bottom">{t.settingsChartDataLabelPositionBottom}</option>
+                        <option value="auto">{t.settingsChartDataLabelPositionAuto}</option>
+                      </select>
+                    </Row>
+                    <NumRow
+                      label={t.settingsChartDataLabelOffsetX}
+                      value={s.chartDataLabelOffsetX}
+                      min={-100}
+                      max={100}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartDataLabelOffsetX: n })}
+                    />
+                    <NumRow
+                      label={t.settingsChartDataLabelOffsetY}
+                      value={s.chartDataLabelOffsetY}
+                      min={-100}
+                      max={100}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartDataLabelOffsetY: n })}
+                    />
                   </Section>
                   <Section title={t.settingsSectionChartAxis}>
                     <NumRow
@@ -1161,12 +1223,80 @@ export function ViewMenu({
                       onChange={(n) => s.set({ chartAxisPaddingBottom: n })}
                     />
                     <NumRow
-                      label={t.settingsChartAxisLabelDecimals}
-                      value={s.chartAxisLabelDecimals}
+                      label={t.settingsChartAxisLabelDecimalsX}
+                      value={s.chartAxisLabelDecimalsX}
                       min={0}
                       max={6}
                       defaultVal={0}
-                      onChange={(n) => s.set({ chartAxisLabelDecimals: n })}
+                      onChange={(n) => s.set({ chartAxisLabelDecimalsX: n })}
+                    />
+                    <NumRow
+                      label={t.settingsChartAxisLabelDecimalsY}
+                      value={s.chartAxisLabelDecimalsY}
+                      min={0}
+                      max={6}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartAxisLabelDecimalsY: n })}
+                    />
+                    <Row label={t.settingsChartAxisLabelFormatX}>
+                      <select
+                        className="view-input"
+                        value={s.chartAxisLabelFormatX}
+                        onChange={(e) =>
+                          s.set({
+                            chartAxisLabelFormatX: e.target.value as
+                              | 'normal'
+                              | 'scientific_e'
+                              | 'scientific_10',
+                          })
+                        }
+                      >
+                        <option value="normal">{t.settingsChartAxisLabelFormatNormal}</option>
+                        <option value="scientific_e">
+                          {t.settingsChartAxisLabelFormatScientificE}
+                        </option>
+                        <option value="scientific_10">
+                          {t.settingsChartAxisLabelFormatScientific10}
+                        </option>
+                      </select>
+                    </Row>
+                    <Row label={t.settingsChartAxisLabelFormatY}>
+                      <select
+                        className="view-input"
+                        value={s.chartAxisLabelFormatY}
+                        onChange={(e) =>
+                          s.set({
+                            chartAxisLabelFormatY: e.target.value as
+                              | 'normal'
+                              | 'scientific_e'
+                              | 'scientific_10',
+                          })
+                        }
+                      >
+                        <option value="normal">{t.settingsChartAxisLabelFormatNormal}</option>
+                        <option value="scientific_e">
+                          {t.settingsChartAxisLabelFormatScientificE}
+                        </option>
+                        <option value="scientific_10">
+                          {t.settingsChartAxisLabelFormatScientific10}
+                        </option>
+                      </select>
+                    </Row>
+                    <NumRow
+                      label={t.settingsChartAxisTickMatchDigitsX}
+                      value={s.chartAxisTickMatchDigitsX}
+                      min={-3}
+                      max={6}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartAxisTickMatchDigitsX: n })}
+                    />
+                    <NumRow
+                      label={t.settingsChartAxisTickMatchDigitsY}
+                      value={s.chartAxisTickMatchDigitsY}
+                      min={-3}
+                      max={6}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartAxisTickMatchDigitsY: n })}
                     />
                     <NumRow
                       label={t.settingsChartAxisLabelMaxChars}
@@ -1491,12 +1621,48 @@ export function ViewMenu({
                         <option value="kendall">{t.chartCorrelationMethodKendall}</option>
                       </select>
                     </Row>
+                    <Row label={t.chartCorrelationFill}>
+                      <select
+                        className="view-input"
+                        value={s.chartCorrelationFillStyle ?? 'solid'}
+                        onChange={(e) =>
+                          s.set({
+                            chartCorrelationFillStyle: e.target.value as
+                              | 'none'
+                              | 'solid'
+                              | 'gradient'
+                              | 'hatched'
+                              | 'hatched-h'
+                              | 'hatched-v'
+                              | 'hatched-cross'
+                              | 'stripes'
+                              | 'pattern',
+                          })
+                        }
+                      >
+                        <option value="none">{t.styleNone}</option>
+                        {FILL_STYLES.map((style) => (
+                          <option key={style.value} value={style.value}>
+                            {style.value === 'solid'
+                              ? t.styleSolid
+                              : style.value === 'gradient'
+                                ? t.styleGradient
+                                : style.value === 'hatched'
+                                  ? t.styleHatched
+                                  : style.value === 'hatched-h'
+                                    ? t.styleHatchedH
+                                    : style.value === 'hatched-v'
+                                      ? t.styleHatchedV
+                                      : style.value === 'hatched-cross'
+                                        ? t.styleHatchedCross
+                                        : style.value === 'stripes'
+                                          ? t.styleStripes
+                                          : t.stylePattern}
+                          </option>
+                        ))}
+                      </select>
+                    </Row>
                     <div className="panel-check-list">
-                      <PanelCheck
-                        label={t.chartCorrelationFill}
-                        checked={s.chartCorrelationFill !== false}
-                        onChange={(v) => s.set({ chartCorrelationFill: v })}
-                      />
                       <PanelCheck
                         label={t.chartCorrelationShowValues}
                         checked={s.chartCorrelationShowValues !== false}
@@ -1511,6 +1677,133 @@ export function ViewMenu({
                       defaultVal={2}
                       onChange={(n) => s.set({ chartCorrelationDecimals: n })}
                     />
+                  </Section>
+                  <Section title={t.settingsSectionChartBoxplot}>
+                    <Row label={t.boxplotAlgorithm}>
+                      <select
+                        className="view-input"
+                        value={s.chartBoxAlgorithm}
+                        onChange={(e) =>
+                          s.set({
+                            chartBoxAlgorithm: e.target.value as
+                              | 'custom'
+                              | 'stacked'
+                              | 'first_fit'
+                              | 'best_fit',
+                          })
+                        }
+                      >
+                        <option value="custom">{t.boxplotAlgorithmCustom}</option>
+                        <option value="stacked">{t.boxplotAlgorithmStacked}</option>
+                        <option value="first_fit">{t.boxplotAlgorithmFirstFit}</option>
+                        <option value="best_fit">{t.boxplotAlgorithmBestFit}</option>
+                      </select>
+                    </Row>
+                    <Row label={t.boxplotFillStyle}>
+                      <select
+                        className="view-input"
+                        value={s.chartBoxFillStyle}
+                        onChange={(e) =>
+                          s.set({
+                            chartBoxFillStyle: e.target.value as
+                              | 'solid'
+                              | 'gradient'
+                              | 'hatched'
+                              | 'hatched-h'
+                              | 'hatched-v'
+                              | 'hatched-cross'
+                              | 'stripes'
+                              | 'pattern',
+                          })
+                        }
+                      >
+                        {FILL_STYLES.map((style) => (
+                          <option key={style.value} value={style.value}>
+                            {style.value === 'solid'
+                              ? t.styleSolid
+                              : style.value === 'gradient'
+                                ? t.styleGradient
+                                : style.value === 'hatched'
+                                  ? t.styleHatched
+                                  : style.value === 'hatched-h'
+                                    ? t.styleHatchedH
+                                    : style.value === 'hatched-v'
+                                      ? t.styleHatchedV
+                                      : style.value === 'hatched-cross'
+                                        ? t.styleHatchedCross
+                                        : style.value === 'stripes'
+                                          ? t.styleStripes
+                                          : t.stylePattern}
+                          </option>
+                        ))}
+                      </select>
+                    </Row>
+                    <Row label={t.boxplotEdgeStyle}>
+                      <select
+                        className="view-input"
+                        value={s.chartBoxEdgeStyle}
+                        onChange={(e) =>
+                          s.set({
+                            chartBoxEdgeStyle: e.target.value as 'solid' | 'dashed' | 'dotted' | 'none',
+                          })
+                        }
+                      >
+                        <option value="solid">{t.styleSolid}</option>
+                        <option value="dashed">{t.styleDashed}</option>
+                        <option value="dotted">{t.styleDotted}</option>
+                        <option value="none">{t.styleNoneBorder}</option>
+                      </select>
+                    </Row>
+                    <NumRow
+                      label={t.boxplotEdgeWidth}
+                      value={s.chartBoxEdgeWidth}
+                      min={0}
+                      max={8}
+                      step={0.5}
+                      defaultVal={1}
+                      onChange={(n) => s.set({ chartBoxEdgeWidth: n })}
+                    />
+                    <NumRow
+                      label={t.boxplotCornerRadius}
+                      value={s.chartBoxCornerRadius}
+                      min={0}
+                      max={20}
+                      step={1}
+                      defaultVal={0}
+                      onChange={(n) => s.set({ chartBoxCornerRadius: n })}
+                    />
+                    <NumRow
+                      label={t.boxplotOpacity}
+                      value={s.chartBoxOpacity}
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      defaultVal={0.85}
+                      onChange={(n) => s.set({ chartBoxOpacity: n })}
+                    />
+                    <PanelCheck
+                      label={t.boxplotMaxLine}
+                      checked={s.chartBoxShowMaxLine}
+                      onChange={(checked) => s.set({ chartBoxShowMaxLine: checked })}
+                    />
+                    <Row label={t.boxplotColor}>
+                      <input
+                        type="color"
+                        className="view-input"
+                        style={{ width: '100%', height: '22px', padding: '2px' }}
+                        value={s.chartBoxColor}
+                        onChange={(e) => s.set({ chartBoxColor: e.target.value })}
+                      />
+                    </Row>
+                    <Row label={t.boxplotMaxLineColor}>
+                      <input
+                        type="color"
+                        className="view-input"
+                        style={{ width: '100%', height: '22px', padding: '2px' }}
+                        value={s.chartBoxMaxLineColor}
+                        onChange={(e) => s.set({ chartBoxMaxLineColor: e.target.value })}
+                      />
+                    </Row>
                   </Section>
                   <Section title={t.settingsSectionChartBar}>
                     <NumRow

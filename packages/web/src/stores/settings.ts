@@ -75,6 +75,19 @@ export type ChartYColumnConfig = {
   pieEdgeWidth?: number;
 };
 
+export type BoxplotAlgorithm = 'custom' | 'stacked' | 'first_fit' | 'best_fit';
+export type AxisLabelFormat = 'normal' | 'scientific_e' | 'scientific_10';
+export type ChartFillStyle =
+  | 'none'
+  | 'solid'
+  | 'gradient'
+  | 'hatched'
+  | 'hatched-h'
+  | 'hatched-v'
+  | 'hatched-cross'
+  | 'stripes'
+  | 'pattern';
+
 /** 柱状图/扇形图填充样式选项 */
 export const FILL_STYLES = [
   { value: 'solid', label: '纯色' },
@@ -1307,10 +1320,10 @@ export interface ViewSettings {
   tensorRoleColors: string[];
   /** 数据面板是否打开（底部横幅） */
   dataPanelOpen: boolean;
-  /** 表格中未选中的列（主键 index/id 必选，不可取消） */
+  /** 表格中未选中的列 */
   dataPanelHiddenColumns: string[];
-  /** 画布视图模式：计算图 | 柱状图 | 扇形图 | 折线图 | 散点图 | 相关系数图 */
-  viewMode: 'graph' | 'bar' | 'pie' | 'line' | 'scatter' | 'correlation';
+  /** 画布视图模式：计算图 | 柱状图 | 扇形图 | 折线图 | 散点图 | 关系图 | 装箱图 */
+  viewMode: 'graph' | 'bar' | 'pie' | 'line' | 'scatter' | 'correlation' | 'boxplot';
   /** 计算图热分析：是否开启 */
   graphHeatAnalysisEnabled: boolean;
   /** 计算图热分析：目标数据列（用于归一化着色），在设置·图·线条中配置 */
@@ -1431,8 +1444,20 @@ export interface ViewSettings {
   chartAxisPaddingBottom: number;
   /** 图表：坐标轴刻度线长度（0=不画刻度线） */
   chartAxisTickLength: number;
-  /** 图表：轴刻度数值小数位（0=自动） */
+  /** 图表：轴刻度数值小数位（兼容旧配置） */
   chartAxisLabelDecimals: number;
+  /** 图表：X 轴刻度小数位（0=整数或自动） */
+  chartAxisLabelDecimalsX: number;
+  /** 图表：Y 轴刻度小数位（0=整数或自动） */
+  chartAxisLabelDecimalsY: number;
+  /** 图表：X 轴刻度值表示方式（普通/科学计数） */
+  chartAxisLabelFormatX: AxisLabelFormat;
+  /** 图表：Y 轴刻度值表示方式（普通/科学计数） */
+  chartAxisLabelFormatY: AxisLabelFormat;
+  /** 图表：X 轴刻度匹配位数（0=个位，1=十位，-1=十分位） */
+  chartAxisTickMatchDigitsX: number;
+  /** 图表：Y 轴刻度匹配位数（0=个位，1=十位，-1=十分位） */
+  chartAxisTickMatchDigitsY: number;
   /** 图表：导出缩放倍率（1=原始，2=高清） */
   chartExportScale: number;
   /** 图表：网格线数量（水平/竖直各几条，如 4 即 0.25/0.5/0.75/1） */
@@ -1509,12 +1534,34 @@ export interface ViewSettings {
   chartCorrelationColorStart: string;
   /** 相关系数图：色条终端颜色 */
   chartCorrelationColorEnd: string;
-  /** 相关系数图：单元填充（热力色块） */
-  chartCorrelationFill: boolean;
+  /** 相关系数图：单元填充样式 */
+  chartCorrelationFillStyle: ChartFillStyle;
   /** 相关系数图：显示数值 */
   chartCorrelationShowValues: boolean;
   /** 相关系数图：数值小数位（0–4） */
   chartCorrelationDecimals: number;
+  /** 装箱图：布局算法 */
+  chartBoxAlgorithm: BoxplotAlgorithm;
+  /** 装箱图：X 轴映射列（默认执行序号 index） */
+  chartBoxXKey: string;
+  /** 装箱图：X 轴别名 */
+  chartBoxXAlias: string;
+  /** 装箱图：矩形填充样式 */
+  chartBoxFillStyle: Exclude<ChartFillStyle, 'none'>;
+  /** 装箱图：矩形边框样式 */
+  chartBoxEdgeStyle: 'solid' | 'dashed' | 'dotted' | 'none';
+  /** 装箱图：矩形边框宽度 */
+  chartBoxEdgeWidth: number;
+  /** 装箱图：矩形圆角 */
+  chartBoxCornerRadius: number;
+  /** 装箱图：矩形不透明度 */
+  chartBoxOpacity: number;
+  /** 装箱图：矩形主色 */
+  chartBoxColor: string;
+  /** 装箱图：显示最大值标线 */
+  chartBoxShowMaxLine: boolean;
+  /** 装箱图：最大值标线颜色 */
+  chartBoxMaxLineColor: string;
   /** 导出：文件格式 */
   exportFormat: 'svg' | 'png' | 'jpg' | 'webp' | 'pdf';
   /** 导出：位图DPI（100-600，PNG/JPG格式有效，影响分辨率，默认300） */
@@ -1647,6 +1694,12 @@ const defaults: ViewSettings = {
   chartAxisPaddingBottom: 10,
   chartAxisTickLength: 0,
   chartAxisLabelDecimals: 0,
+  chartAxisLabelDecimalsX: 0,
+  chartAxisLabelDecimalsY: 0,
+  chartAxisLabelFormatX: 'normal',
+  chartAxisLabelFormatY: 'normal',
+  chartAxisTickMatchDigitsX: 0,
+  chartAxisTickMatchDigitsY: 0,
   chartExportScale: 2,
   chartGridLineCount: 4,
   chartLegendItemSpacing: 8,
@@ -1685,9 +1738,20 @@ const defaults: ViewSettings = {
   chartCorrelationMethod: 'pearson',
   chartCorrelationColorStart: '#2563eb',
   chartCorrelationColorEnd: '#dc2626',
-  chartCorrelationFill: true,
+  chartCorrelationFillStyle: 'solid',
   chartCorrelationShowValues: true,
   chartCorrelationDecimals: 2,
+  chartBoxAlgorithm: 'custom',
+  chartBoxXKey: 'index',
+  chartBoxXAlias: '',
+  chartBoxFillStyle: 'gradient',
+  chartBoxEdgeStyle: 'solid',
+  chartBoxEdgeWidth: 1,
+  chartBoxCornerRadius: 0,
+  chartBoxOpacity: 0.85,
+  chartBoxColor: '#1d4ed8',
+  chartBoxShowMaxLine: false,
+  chartBoxMaxLineColor: '#ef4444',
   exportFormat: 'svg',
   exportImageDpi: 300,
   exportImageQuality: 95,
@@ -1818,6 +1882,17 @@ export const useSettingsStore = create<
           out.fontFamilyZh
         );
         if (out.viewMode == null) out.viewMode = 'graph';
+        if (
+          out.viewMode !== 'graph' &&
+          out.viewMode !== 'bar' &&
+          out.viewMode !== 'pie' &&
+          out.viewMode !== 'line' &&
+          out.viewMode !== 'scatter' &&
+          out.viewMode !== 'correlation' &&
+          out.viewMode !== 'boxplot'
+        ) {
+          out.viewMode = 'graph';
+        }
         if (out.chartXKey == null) out.chartXKey = '';
         if (out.chartXAlias == null) out.chartXAlias = '';
         if (out.chartYKeys == null) {
@@ -1884,6 +1959,32 @@ export const useSettingsStore = create<
         if (out.chartAxisPaddingBottom == null) out.chartAxisPaddingBottom = 10;
         if (out.chartAxisTickLength == null) out.chartAxisTickLength = 0;
         if (out.chartAxisLabelDecimals == null) out.chartAxisLabelDecimals = 0;
+        if (out.chartAxisLabelDecimalsX == null)
+          out.chartAxisLabelDecimalsX = out.chartAxisLabelDecimals;
+        if (out.chartAxisLabelDecimalsY == null)
+          out.chartAxisLabelDecimalsY = out.chartAxisLabelDecimals;
+        if ((out as { chartAxisLabelFormatX?: string }).chartAxisLabelFormatX === 'scientific') {
+          out.chartAxisLabelFormatX = 'scientific_e';
+        }
+        if ((out as { chartAxisLabelFormatY?: string }).chartAxisLabelFormatY === 'scientific') {
+          out.chartAxisLabelFormatY = 'scientific_e';
+        }
+        if (
+          out.chartAxisLabelFormatX !== 'normal' &&
+          out.chartAxisLabelFormatX !== 'scientific_e' &&
+          out.chartAxisLabelFormatX !== 'scientific_10'
+        ) {
+          out.chartAxisLabelFormatX = 'normal';
+        }
+        if (
+          out.chartAxisLabelFormatY !== 'normal' &&
+          out.chartAxisLabelFormatY !== 'scientific_e' &&
+          out.chartAxisLabelFormatY !== 'scientific_10'
+        ) {
+          out.chartAxisLabelFormatY = 'normal';
+        }
+        if (out.chartAxisTickMatchDigitsX == null) out.chartAxisTickMatchDigitsX = 0;
+        if (out.chartAxisTickMatchDigitsY == null) out.chartAxisTickMatchDigitsY = 0;
         if (out.chartExportScale == null) out.chartExportScale = 2;
         if (out.chartGridLineCount == null) out.chartGridLineCount = 4;
         if (out.chartLegendItemSpacing == null) out.chartLegendItemSpacing = 8;
@@ -1934,9 +2035,37 @@ export const useSettingsStore = create<
         if (out.chartCorrelationMethod == null) out.chartCorrelationMethod = 'pearson';
         if (out.chartCorrelationColorStart == null) out.chartCorrelationColorStart = '#2563eb';
         if (out.chartCorrelationColorEnd == null) out.chartCorrelationColorEnd = '#dc2626';
-        if (out.chartCorrelationFill == null) out.chartCorrelationFill = true;
+        if ((out as unknown as { chartCorrelationFill?: boolean }).chartCorrelationFill != null) {
+          out.chartCorrelationFillStyle =
+            (out as unknown as { chartCorrelationFill?: boolean }).chartCorrelationFill
+              ? 'solid'
+              : 'none';
+          delete (out as unknown as Record<string, unknown>).chartCorrelationFill;
+        }
+        if (out.chartCorrelationFillStyle == null) out.chartCorrelationFillStyle = 'solid';
         if (out.chartCorrelationShowValues == null) out.chartCorrelationShowValues = true;
         if (out.chartCorrelationDecimals == null) out.chartCorrelationDecimals = 2;
+        if (out.chartBoxAlgorithm == null) out.chartBoxAlgorithm = 'custom';
+        if (
+          out.chartBoxAlgorithm !== 'custom' &&
+          out.chartBoxAlgorithm !== 'stacked' &&
+          out.chartBoxAlgorithm !== 'first_fit' &&
+          out.chartBoxAlgorithm !== 'best_fit'
+        ) {
+          out.chartBoxAlgorithm = 'custom';
+        }
+        if (out.chartBoxXKey == null) out.chartBoxXKey = 'index';
+        if (out.chartBoxXAlias == null) out.chartBoxXAlias = '';
+        if (out.chartBoxFillStyle == null) out.chartBoxFillStyle = 'gradient';
+        if ((out as unknown as { chartBoxFillStyle?: string }).chartBoxFillStyle === 'none')
+          out.chartBoxFillStyle = 'gradient';
+        if (out.chartBoxEdgeStyle == null) out.chartBoxEdgeStyle = 'solid';
+        if (out.chartBoxEdgeWidth == null) out.chartBoxEdgeWidth = 1;
+        if (out.chartBoxCornerRadius == null) out.chartBoxCornerRadius = 0;
+        if (out.chartBoxOpacity == null) out.chartBoxOpacity = 0.85;
+        if (out.chartBoxColor == null) out.chartBoxColor = '#1d4ed8';
+        if (out.chartBoxShowMaxLine == null) out.chartBoxShowMaxLine = false;
+        if (out.chartBoxMaxLineColor == null) out.chartBoxMaxLineColor = '#ef4444';
         if (out.showWeightNodes == null) out.showWeightNodes = false;
         if (out.showIONodes == null) out.showIONodes = true;
         if (out.exportFormat == null) out.exportFormat = 'svg';
@@ -1995,7 +2124,7 @@ export const useSettingsStore = create<
 
         return out;
       },
-      version: 21,
+      version: 22,
       onRehydrateStorage: () => (state) => {
         if (state && typeof document !== 'undefined') {
           const root = document.documentElement;

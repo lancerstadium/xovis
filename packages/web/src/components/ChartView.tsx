@@ -8,10 +8,17 @@ import {
   useState,
 } from 'react';
 import { useGraphStore, useSettingsStore, useElectronTabsStore } from '../stores';
-import type { ChartYColumnConfig } from '../stores/settings';
+import type {
+  AxisLabelFormat,
+  BoxplotAlgorithm,
+  ChartFillStyle,
+  ChartYColumnConfig,
+} from '../stores/settings';
 import { getLocale } from '../locale';
-import type { GraphOperator } from '@xovis/core';
+import type { GraphEdge, GraphOperator } from '@xovis/core';
 import { getOperatorRows } from '../utils/operatorRows';
+import { getActivationTensorRows, getTensorRows } from '../utils/tensorRows';
+import { computeTensorRects } from '../utils/boxplotAlgorithms';
 import { loadFile, isSupportedFile } from '../utils/loadFile';
 import {
   getTouchDistance,
@@ -941,9 +948,41 @@ function getStrokeDasharray(style: string): string | undefined {
   }
 }
 
+function buildAlignedTicks(
+  min: number,
+  max: number,
+  matchDigits: number,
+  fallback: number[],
+  maxVisibleCount: number
+): number[] {
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min) return fallback;
+  const digits = Math.max(-6, Math.min(9, Math.round(matchDigits)));
+  const baseStep = Math.pow(10, digits);
+  if (!Number.isFinite(baseStep) || baseStep <= 0) return fallback;
+  const limit = Math.max(2, Math.min(64, Math.floor(maxVisibleCount || 0)));
+  // 在对齐步长（10^digits）的基础上放大整数倍，保证刻度数量受限且间隔均匀。
+  const roughStep = (max - min) / Math.max(1, limit - 1);
+  const stepMul = Math.max(1, Math.ceil(roughStep / baseStep));
+  const step = baseStep * stepMul;
+  const start = Math.ceil(min / step) * step;
+  const end = Math.floor(max / step) * step;
+  if (end < start) return fallback;
+  const ticks: number[] = [];
+  const maxCount = 256;
+  let v = start;
+  for (let i = 0; i < maxCount && v <= end + step * 1e-6; i++) {
+    ticks.push(Number(v.toFixed(12)));
+    v += step;
+  }
+  if (ticks.length < 2 || ticks.length > limit) return fallback;
+  // 与其他图表保持同步：若对齐后的刻度数量明显少于目标数量，回退到通用网格分布。
+  const minAccepted = Math.max(2, Math.floor(limit * 0.7));
+  return ticks.length >= minAccepted ? ticks : fallback;
+}
+
 /** 渲染图例符号：根据图表类型显示不同的样式。patternId 用于图案类填充时引用 defs 中的 pattern */
 function renderLegendSymbol(
-  chartType: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation',
+  chartType: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation' | 'boxplot',
   x: number,
   y: number,
   size: number,
@@ -952,7 +991,7 @@ function renderLegendSymbol(
   patternId?: string
 ): JSX.Element {
   const halfSize = size / 2;
-  if (chartType === 'correlation') {
+  if (chartType === 'correlation' || chartType === 'boxplot') {
     return <rect x={x - halfSize} y={y - halfSize} width={size} height={size} fill={color} />;
   }
   switch (chartType) {
@@ -1202,7 +1241,7 @@ function renderMarker(
 
 export const ChartView = forwardRef<
   ChartViewHandle,
-  { viewMode: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation' }
+  { viewMode: 'bar' | 'pie' | 'line' | 'scatter' | 'correlation' | 'boxplot' }
 >(function ChartView({ viewMode }, ref) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1224,6 +1263,12 @@ export const ChartView = forwardRef<
     chartAxisPaddingTop,
     chartAxisPaddingBottom,
     chartAxisLabelDecimals,
+    chartAxisLabelDecimalsX = 0,
+    chartAxisLabelDecimalsY = 0,
+    chartAxisLabelFormatX = 'normal',
+    chartAxisLabelFormatY = 'normal',
+    chartAxisTickMatchDigitsX = 0,
+    chartAxisTickMatchDigitsY = 0,
     chartLabelFontSize,
     chartPieInnerRadius,
     chartPieLabelPosition,
@@ -1286,9 +1331,20 @@ export const ChartView = forwardRef<
     chartCorrelationMethod = 'pearson',
     chartCorrelationColorStart = '#2563eb',
     chartCorrelationColorEnd = '#dc2626',
-    chartCorrelationFill = true,
+    chartCorrelationFillStyle = 'solid',
     chartCorrelationShowValues = true,
     chartCorrelationDecimals = 2,
+    chartBoxAlgorithm = 'custom',
+    chartBoxXKey = 'index',
+    chartBoxXAlias = '',
+    chartBoxFillStyle = 'gradient',
+    chartBoxEdgeStyle = 'solid',
+    chartBoxEdgeWidth = 1,
+    chartBoxCornerRadius = 0,
+    chartBoxOpacity = 0.85,
+    chartBoxColor = '#1d4ed8',
+    chartBoxShowMaxLine = false,
+    chartBoxMaxLineColor = '#ef4444',
   } = s;
 
   // 缩放和平移逻辑（与 panZoom 工具统一：滚轮以指针为锚点，pinch 以双指中心为锚点）
@@ -1308,7 +1364,7 @@ export const ChartView = forwardRef<
 
   const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    const el = transformWrapRef.current ?? containerRef.current;
+    const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -1479,6 +1535,27 @@ export const ChartView = forwardRef<
     () => graph?.operators.filter((n: GraphOperator) => !n.metadata?.isTensorNode) ?? [],
     [graph]
   );
+  const tensorNodeByIndex = useMemo(() => {
+    const map = new Map<number, GraphOperator>();
+    (graph?.operators ?? []).forEach((op) => {
+      if (!op.metadata?.isTensorNode) return;
+      const idx = Number(op.metadata.tensorIndex);
+      if (Number.isFinite(idx)) map.set(idx, op);
+    });
+    return map;
+  }, [graph]);
+  const edgeByTensorId = useMemo(() => {
+    const map = new Map<string, GraphEdge>();
+    (graph?.edges ?? []).forEach((edge) => {
+      const candidates = [edge.id, edge.sourceOutput, edge.targetInput].filter(
+        (v): v is string => typeof v === 'string' && v.length > 0
+      );
+      candidates.forEach((id) => {
+        if (!map.has(id)) map.set(id, edge);
+      });
+    });
+    return map;
+  }, [graph]);
 
   // 仅使用已选中的 Y 列（key 非空），避免添加空 slot 未选中时影响图表数据与坐标轴
   const selectedYKeys = useMemo(() => chartYKeys.filter((yc) => yc.key), [chartYKeys]);
@@ -1490,6 +1567,12 @@ export const ChartView = forwardRef<
     return buildChartData(rows, chartXKey, selectedYKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, chartXKey, chartYKeysKey]);
+  const tensorRows = useMemo(() => getTensorRows(graph ?? null), [graph]);
+  const boxRows = useMemo(() => getActivationTensorRows(tensorRows), [tensorRows]);
+  const boxRects = useMemo(
+    () => computeTensorRects(boxRows, chartBoxAlgorithm as BoxplotAlgorithm, graph ?? null),
+    [boxRows, chartBoxAlgorithm, graph]
+  );
 
   const padding = chartPadding;
   const w = Math.max(320, chartWidth);
@@ -1514,12 +1597,31 @@ export const ChartView = forwardRef<
   const isFull = chartAxisTickStyle === 'inside-full' || chartAxisTickStyle === 'outside-full';
 
   const labelFontSize = chartLabelFontSize > 0 ? chartLabelFontSize : Math.max(8, s.fontSize * 0.8);
-  const formatAxisTick = (v: number) =>
-    chartAxisLabelDecimals <= 0
-      ? v % 1 === 0
-        ? String(v)
-        : v.toFixed(2)
-      : v.toFixed(Math.min(6, chartAxisLabelDecimals));
+  const formatTickByMode = (v: number, decimals: number, mode: AxisLabelFormat) => {
+    if (!Number.isFinite(v)) return '0';
+    const d = Math.max(0, Math.min(6, decimals));
+    if (mode === 'scientific_e') return v.toExponential(d);
+    if (mode === 'scientific_10') {
+      if (v === 0) return '0';
+      const exp = Math.floor(Math.log10(Math.abs(v)));
+      const mantissa = v / Math.pow(10, exp);
+      const mantissaStr = d <= 0 ? (mantissa % 1 === 0 ? String(mantissa) : mantissa.toFixed(2)) : mantissa.toFixed(d);
+      return `${mantissaStr}×10^${exp}`;
+    }
+    return d <= 0 ? (v % 1 === 0 ? String(v) : v.toFixed(2)) : v.toFixed(d);
+  };
+  const formatAxisTickX = (v: number) =>
+    formatTickByMode(
+      v,
+      chartAxisLabelDecimalsX ?? chartAxisLabelDecimals,
+      chartAxisLabelFormatX as AxisLabelFormat
+    );
+  const formatAxisTickY = (v: number) =>
+    formatTickByMode(
+      v,
+      chartAxisLabelDecimalsY ?? chartAxisLabelDecimals,
+      chartAxisLabelFormatY as AxisLabelFormat
+    );
   const titleFontSize =
     chartTitleFontSize > 0 ? chartTitleFontSize : Math.round(labelFontSize * 1.2);
   const axisTitleFontSize = chartAxisTitleFontSize > 0 ? chartAxisTitleFontSize : labelFontSize;
@@ -1741,10 +1843,23 @@ export const ChartView = forwardRef<
         if (rowIndex >= 0 && ops[rowIndex]) setSelected(ops[rowIndex]);
         return;
       }
+      const tensorEl = (e.target as SVGElement).closest?.('[data-tensorindex]') as SVGElement | null;
+      if (tensorEl) {
+        const tensorIndex = parseInt(tensorEl.getAttribute('data-tensorindex') ?? '', 10);
+        const tensorId = tensorEl.getAttribute('data-tensorid') ?? '';
+        const tensorNode = tensorNodeByIndex.get(tensorIndex);
+        if (tensorNode) {
+          setSelected(tensorNode);
+          return;
+        }
+        const tensorEdge = tensorId ? edgeByTensorId.get(tensorId) : undefined;
+        if (tensorEdge) setSelected(tensorEdge);
+        return;
+      }
       if (e.target === svgRef.current || (e.target as SVGElement).closest?.('.chart-content'))
         setSelected(null);
     },
-    [chartDataSafe, ops, setSelected, didDrag]
+    [chartDataSafe, edgeByTensorId, ops, setSelected, didDrag, tensorNodeByIndex]
   );
 
   useEffect(() => {
@@ -1834,7 +1949,11 @@ export const ChartView = forwardRef<
 
   const yKeysValid = chartYKeys.filter((yc) => yc.key).length > 0;
   const hasMapping =
-    viewMode === 'correlation' ? !!correlationData : !!chartXKey && yKeysValid && chartData;
+    viewMode === 'boxplot'
+      ? boxRects.length > 0
+      : viewMode === 'correlation'
+        ? !!correlationData
+        : !!chartXKey && yKeysValid && chartData;
   if (!graph || !hasMapping) {
     return (
       <div
@@ -1884,6 +2003,428 @@ export const ChartView = forwardRef<
           </div>
         )}
       </div>
+    );
+  }
+
+  if (viewMode === 'boxplot') {
+    const padding = chartPadding;
+    const w = Math.max(320, chartWidth);
+    const h = Math.max(240, chartHeight);
+    const labelFontSize = chartLabelFontSize > 0 ? chartLabelFontSize : Math.max(8, s.fontSize * 0.8);
+    const titleFontSize = chartTitleFontSize > 0 ? chartTitleFontSize : Math.round(labelFontSize * 1.2);
+    const titleH = chartTitle ? titleFontSize + 8 : 0;
+    const axisTitleFontSize = chartAxisTitleFontSize > 0 ? chartAxisTitleFontSize : labelFontSize;
+    const xDisplayTitle = chartXTitle || chartBoxXAlias || chartXAlias || '';
+    const effectiveXTitle = xDisplayTitle;
+    const effectiveYTitle = chartYTitle;
+    const xTitleOnBottom = !!effectiveXTitle && chartXTitlePosition === 'bottom';
+    const xTitleOnTop = !!effectiveXTitle && chartXTitlePosition === 'top';
+    const yTitleOnLeft = !!effectiveYTitle && chartYTitlePosition === 'left';
+    const yTitleOnRight = !!effectiveYTitle && chartYTitlePosition === 'right';
+    const xTitleH = xTitleOnBottom ? axisTitleFontSize + 4 : 0;
+    const xTitleTopMargin = xTitleOnTop ? axisTitleFontSize + 4 : 0;
+    const axisLabelGap = 6;
+    const axisLabelH = chartShowAxisLabels ? labelFontSize + 6 + axisLabelGap : 0;
+    const axisLabelW = chartShowAxisLabels ? Math.max(28, Math.ceil(labelFontSize * 0.55 * 8)) + axisLabelGap : 0;
+    const yTitleW = yTitleOnLeft ? axisTitleFontSize + 12 : 0;
+    const yTitleRightMargin = yTitleOnRight ? axisTitleFontSize + 12 : 0;
+
+    const legendText = 'activation';
+    const legendW = Math.max(
+      80,
+      effectiveLegendSymbolSize + 8 + legendText.length * legendFontSize * 0.55 + 8
+    );
+    const legendH = LEGEND_ITEM_HEIGHT + (chartLegendItemSpacing ?? 0);
+    const legendPos = chartLegendPosition;
+    const legendOnLeft =
+      legendPos === 'left' || legendPos === 'top-left' || legendPos === 'bottom-left';
+    const legendOnRight =
+      legendPos === 'right' || legendPos === 'top-right' || legendPos === 'bottom-right';
+    const legendOnTop = legendPos === 'top' || legendPos === 'top-left' || legendPos === 'top-right';
+    const legendOnBottom =
+      legendPos === 'bottom' || legendPos === 'bottom-left' || legendPos === 'bottom-right';
+    const isLegendOutside = !chartLegendInside;
+    const legendReserveLeft = chartShowLegend && isLegendOutside && legendOnLeft ? legendW : 0;
+    const legendReserveRight = chartShowLegend && isLegendOutside && legendOnRight ? legendW : 0;
+    const legendReserveTop = chartShowLegend && isLegendOutside && legendOnTop ? legendH + LEGEND_GAP * 2 : 0;
+    const legendReserveBottom =
+      chartShowLegend && isLegendOutside && legendOnBottom ? legendH + LEGEND_GAP * 2 : 0;
+
+    const left = padding + legendReserveLeft + axisLabelW + yTitleW;
+    const right = w - padding - legendReserveRight - yTitleRightMargin;
+    const top = padding + titleH + xTitleTopMargin + legendReserveTop;
+    const bottom = h - padding - axisLabelH - xTitleH - legendReserveBottom;
+    const innerW = Math.max(10, right - left);
+    const innerH = Math.max(10, bottom - top);
+
+    const minX = Math.min(...boxRects.map((r) => r.x0));
+    const maxX = Math.max(...boxRects.map((r) => r.x1));
+    const minY = Math.min(...boxRects.map((r) => r.y0));
+    const maxY = Math.max(...boxRects.map((r) => r.y1));
+    const rawRangeX = Math.max(1e-6, maxX - minX);
+    const rawRangeY = Math.max(1e-6, maxY - minY);
+    const xPadLeft = Math.max(0, Math.min(50, chartAxisPaddingLeft)) / 100;
+    const xPadRight = Math.max(0, Math.min(50, chartAxisPaddingRight)) / 100;
+    const yPadTop = Math.max(0, Math.min(50, chartAxisPaddingTop)) / 100;
+    const yPadBottom = Math.max(0, Math.min(50, chartAxisPaddingBottom)) / 100;
+    const minXScaled = minX - rawRangeX * xPadLeft;
+    const maxXScaled = maxX + rawRangeX * xPadRight;
+    const minYScaled = minY - rawRangeY * yPadBottom;
+    const maxYScaled = maxY + rawRangeY * yPadTop;
+    const rangeX = Math.max(1e-6, maxXScaled - minXScaled);
+    const rangeY = Math.max(1e-6, maxYScaled - minYScaled);
+    const xScale = (v: number) => left + ((v - minXScaled) / rangeX) * innerW;
+    const yScale = (v: number) => bottom - ((v - minYScaled) / rangeY) * innerH;
+
+    const boxFillStyle = chartBoxFillStyle as FillStyleType;
+    const boxEdgeDash = getStrokeDasharray(chartBoxEdgeStyle);
+    const boxIsPattern = isPatternFill(boxFillStyle);
+    const axisDash = getStrokeDasharray(chartAxisStrokeStyle);
+    const tickFallbackX = gridTicks.map((t) => minXScaled + t * rangeX);
+    const tickFallbackY = gridTicks.map((t) => minYScaled + t * rangeY);
+    const xTicks = buildAlignedTicks(
+      minXScaled,
+      maxXScaled,
+      chartAxisTickMatchDigitsX,
+      tickFallbackX,
+      gridTicks.length
+    );
+    const yTicks = buildAlignedTicks(
+      minYScaled,
+      maxYScaled,
+      chartAxisTickMatchDigitsY,
+      tickFallbackY,
+      gridTicks.length
+    );
+    const xLabelByExec = new Map<number, string>();
+    if (chartBoxXKey && chartBoxXKey !== 'index') {
+      boxRows.forEach((r) => {
+        const exec = Math.round(Number(r.start));
+        if (Number.isFinite(exec) && !xLabelByExec.has(exec))
+          xLabelByExec.set(exec, String((r as Record<string, unknown>)[chartBoxXKey] ?? ''));
+      });
+    }
+    const xTickPositions = xTicks.map((v) => xScale(v));
+    const yTickPositions = yTicks.map((v) => yScale(v));
+    const maxLineY = yScale(maxY);
+    const maxLineTickLen = Math.max(4, effectiveTickLength || 4);
+    const maxLineLabel = formatAxisTickY(maxY);
+    const legendOffsetX = chartLegendOffsetX ?? 0;
+    const legendOffsetY = chartLegendOffsetY ?? 0;
+    const legendX = chartLegendInside
+      ? legendOnLeft
+        ? left + 12 + legendOffsetX
+        : legendOnRight
+          ? right - legendW - 12 + legendOffsetX
+          : left + innerW / 2 - legendW / 2 + legendOffsetX
+      : legendOnLeft
+        ? padding + 8 + legendOffsetX
+        : legendOnRight
+          ? w - padding - legendW - 8 + legendOffsetX
+          : w / 2 - legendW / 2 + legendOffsetX;
+    const legendY = chartLegendInside
+      ? legendOnTop
+        ? top + 12 + legendOffsetY
+        : legendOnBottom
+          ? bottom - legendH - 12 + legendOffsetY
+          : top + innerH / 2 - legendH / 2 + legendOffsetY
+      : legendOnTop
+        ? padding + titleH + LEGEND_GAP + legendOffsetY
+        : legendOnBottom
+          ? h - padding - legendH - LEGEND_GAP + legendOffsetY
+          : top + innerH / 2 - legendH / 2 + legendOffsetY;
+    return chartWrap(
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${w} ${h}`}
+        preserveAspectRatio="xMidYMid meet"
+        className="chart-svg"
+        style={{ width: '100%', height: '100%', display: 'block', fontFamily: s.fontFamily }}
+        onClick={onChartClick}
+      >
+        <defs>
+          {boxFillStyle === 'gradient' && (
+            <linearGradient id="chartBoxGrad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor={chartBoxColor} stopOpacity="0.55" />
+              <stop offset="100%" stopColor={chartBoxColor} stopOpacity="1" />
+            </linearGradient>
+          )}
+          {renderFillPattern(boxFillStyle, chartBoxColor, 'chartBoxFill')}
+        </defs>
+        {chartTitle && (
+          <text x={w / 2} y={padding + titleFontSize} textAnchor="middle" style={{ fontSize: titleFontSize }}>
+            {chartTitle}
+          </text>
+        )}
+        {chartShowAxisLine &&
+          chartAxisBoxStyle !== 'none' &&
+          (chartAxisBoxStyle === 'full' ? (
+            <rect
+              x={left}
+              y={top}
+              width={innerW}
+              height={innerH}
+              fill="none"
+              stroke={chartAxisColor || 'var(--text)'}
+              strokeWidth={chartAxisStrokeWidth}
+              strokeDasharray={axisDash}
+            />
+          ) : (
+            <>
+              <line
+                x1={left}
+                y1={top}
+                x2={left}
+                y2={bottom}
+                stroke={chartAxisColor || 'var(--text)'}
+                strokeWidth={chartAxisStrokeWidth}
+                strokeDasharray={axisDash}
+              />
+              <line
+                x1={left}
+                y1={bottom}
+                x2={right}
+                y2={bottom}
+                stroke={chartAxisColor || 'var(--text)'}
+                strokeWidth={chartAxisStrokeWidth}
+                strokeDasharray={axisDash}
+              />
+            </>
+          ))}
+        {chartShowGrid && (
+          <>
+            {yTicks.map((v, i) => (
+              <line
+                key={`box-y-grid-${i}`}
+                x1={left}
+                y1={yScale(v)}
+                x2={right}
+                y2={yScale(v)}
+                stroke={chartGridColor || 'var(--border)'}
+                strokeOpacity={chartGridOpacity}
+                strokeWidth={chartGridStrokeWidth}
+                strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
+              />
+            ))}
+            {xTicks.map((v, i) => (
+              <line
+                key={`box-x-grid-${i}`}
+                x1={xScale(v)}
+                y1={top}
+                x2={xScale(v)}
+                y2={bottom}
+                stroke={chartGridColor || 'var(--border)'}
+                strokeOpacity={chartGridOpacity}
+                strokeWidth={chartGridStrokeWidth}
+                strokeDasharray={getStrokeDasharray(chartGridStrokeStyle)}
+              />
+            ))}
+          </>
+        )}
+        {boxRects.map((rect, i) => {
+          const x = xScale(rect.x0);
+          const y = yScale(rect.y1);
+          const width = Math.max(1, xScale(rect.x1) - xScale(rect.x0));
+          const height = Math.max(1, yScale(rect.y0) - yScale(rect.y1));
+          const fill =
+            boxFillStyle === 'gradient'
+              ? 'url(#chartBoxGrad)'
+              : boxIsPattern
+                ? 'url(#chartBoxFill)'
+                : chartBoxColor;
+          return (
+            <rect
+              key={`${rect.tensorId}-${i}`}
+              data-tensorindex={rect.tensorIndex}
+              data-tensorid={rect.tensorId}
+              x={x}
+              y={y}
+              width={width}
+              height={height}
+              rx={chartBoxCornerRadius}
+              ry={chartBoxCornerRadius}
+              fill={fill}
+              fillOpacity={chartBoxOpacity}
+              stroke={chartBoxEdgeStyle === 'none' ? 'none' : chartBoxColor}
+              strokeWidth={chartBoxEdgeStyle === 'none' ? 0 : chartBoxEdgeWidth}
+              strokeDasharray={boxEdgeDash}
+              style={{ cursor: 'pointer' }}
+            />
+          );
+        })}
+        {chartBoxShowMaxLine && (
+          <>
+            <line
+              x1={left}
+              y1={maxLineY}
+              x2={right}
+              y2={maxLineY}
+              stroke={chartBoxMaxLineColor}
+              strokeWidth={chartAxisStrokeWidth}
+            />
+            <line
+              x1={left}
+              y1={maxLineY}
+              x2={left + (isInside ? maxLineTickLen : -maxLineTickLen)}
+              y2={maxLineY}
+              stroke={chartBoxMaxLineColor}
+              strokeWidth={Math.max(1, chartAxisStrokeWidth)}
+            />
+            {isFull && (
+              <line
+                x1={right}
+                y1={maxLineY}
+                x2={right + (isInside ? -maxLineTickLen : maxLineTickLen)}
+                y2={maxLineY}
+                stroke={chartBoxMaxLineColor}
+                strokeWidth={Math.max(1, chartAxisStrokeWidth)}
+              />
+            )}
+            {chartShowAxisLabels && (
+              <text
+                x={left - 6}
+                y={maxLineY}
+                textAnchor="end"
+                dominantBaseline="central"
+                style={{ ...axisLabelStyle, fontSize: labelFontSize, fill: chartBoxMaxLineColor }}
+              >
+                {maxLineLabel}
+              </text>
+            )}
+          </>
+        )}
+        {chartShowAxisLabels &&
+          xTicks.map((v, i) => {
+            const mapped = chartBoxXKey && chartBoxXKey !== 'index' ? xLabelByExec.get(Math.round(v)) : undefined;
+            const label = mapped && mapped.trim() ? mapped : formatAxisTickX(v);
+            return (
+              <text
+                key={`box-x-tick-${i}`}
+                x={xScale(v)}
+                y={bottom + 16}
+                textAnchor="middle"
+                style={{ ...axisLabelStyle, fontSize: labelFontSize }}
+              >
+                {label}
+              </text>
+            );
+          })}
+        {chartShowAxisLabels &&
+          yTicks.map((v, i) => (
+            <text
+              key={`box-y-tick-${i}`}
+              x={left - 6}
+              y={yScale(v)}
+              textAnchor="end"
+              dominantBaseline="central"
+              style={{ ...axisLabelStyle, fontSize: labelFontSize }}
+            >
+              {formatAxisTickY(v)}
+            </text>
+          ))}
+        {effectiveTickLength > 0 &&
+          (() => {
+            const stroke = chartTickColor || 'var(--text)';
+            const xTickLines = xTickPositions.map((tickX, i) => (
+              <g key={`box-x-tick-line-${i}`}>
+                <line
+                  x1={tickX}
+                  y1={bottom}
+                  x2={tickX}
+                  y2={bottom + (isInside ? -effectiveTickLength : effectiveTickLength)}
+                  stroke={stroke}
+                  strokeWidth={chartAxisStrokeWidth}
+                />
+                {isFull && (
+                  <line
+                    x1={tickX}
+                    y1={top}
+                    x2={tickX}
+                    y2={top + (isInside ? effectiveTickLength : -effectiveTickLength)}
+                    stroke={stroke}
+                    strokeWidth={chartAxisStrokeWidth}
+                  />
+                )}
+              </g>
+            ));
+            const yTickLines = yTickPositions.map((tickY, i) => (
+              <g key={`box-y-tick-line-${i}`}>
+                <line
+                  x1={left}
+                  y1={tickY}
+                  x2={left + (isInside ? effectiveTickLength : -effectiveTickLength)}
+                  y2={tickY}
+                  stroke={stroke}
+                  strokeWidth={chartAxisStrokeWidth}
+                />
+                {isFull && (
+                  <line
+                    x1={right}
+                    y1={tickY}
+                    x2={right + (isInside ? -effectiveTickLength : effectiveTickLength)}
+                    y2={tickY}
+                    stroke={stroke}
+                    strokeWidth={chartAxisStrokeWidth}
+                  />
+                )}
+              </g>
+            ));
+            return [...xTickLines, ...yTickLines];
+          })()}
+        {effectiveYTitle &&
+          (yTitleOnLeft ? (
+            <text
+              x={left - axisLabelW - 6}
+              y={top + innerH / 2}
+              textAnchor="middle"
+              style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+              transform={`rotate(-90, ${left - axisLabelW - 6}, ${top + innerH / 2})`}
+            >
+              {effectiveYTitle}
+            </text>
+          ) : (
+            <text
+              x={right + axisLabelW + 6}
+              y={top + innerH / 2}
+              textAnchor="middle"
+              style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+              transform={`rotate(90, ${right + axisLabelW + 6}, ${top + innerH / 2})`}
+            >
+              {effectiveYTitle}
+            </text>
+          ))}
+        {effectiveXTitle && (
+          <text
+            x={left + innerW / 2}
+            y={xTitleOnTop ? top - 6 : bottom + axisLabelH + axisTitleFontSize}
+            textAnchor="middle"
+            style={{ fontSize: axisTitleFontSize, ...axisTitleStyle }}
+          >
+            {effectiveXTitle}
+          </text>
+        )}
+        {chartShowLegend && (
+          <g className="chart-legend" transform={`translate(${legendX},${legendY})`}>
+            {renderLegendSymbol(
+              'boxplot',
+              effectiveLegendSymbolSize / 2,
+              0,
+              effectiveLegendSymbolSize,
+              chartBoxColor,
+              undefined,
+              boxIsPattern ? 'chartBoxFill' : undefined
+            )}
+            <text
+              x={effectiveLegendSymbolSize + 8}
+              y={0}
+              dominantBaseline="middle"
+              style={{ fontSize: legendFontSize, ...legendLabelStyle }}
+            >
+              activation
+            </text>
+          </g>
+        )}
+      </svg>
     );
   }
 
@@ -2003,46 +2544,64 @@ export const ChartView = forwardRef<
       };
 
   // 刻度线位置：相关系数图与柱/线/散点共用同一套逻辑，只差数据源（correlation 用列名/cell 中心）
+  const valueTicksX = chartSwapXY
+    ? buildAlignedTicks(
+        minY,
+        maxY,
+        chartAxisTickMatchDigitsX,
+        gridTicks.map((t) => minY + t * rangeY),
+        gridTicks.length
+      )
+    : [];
+  const valueTicksY = !chartSwapXY
+    ? buildAlignedTicks(
+        minY,
+        maxY,
+        chartAxisTickMatchDigitsY,
+        gridTicks.map((t) => minY + t * rangeY),
+        gridTicks.length
+      )
+    : [];
   const xTickPositions: number[] =
     viewMode === 'correlation' && corrLayout
       ? correlationCols.map((_, j) => plotLeft + (j + 0.5) * corrLayout.cellWidth)
       : chartSwapXY
-        ? gridTicks.map((t) => xScale(minY + t * rangeY))
+        ? valueTicksX.map((v) => xScale(v))
         : effectiveXLabels.map((_, i) => xScale(i));
   const yTickPositions: number[] =
     viewMode === 'correlation' && corrLayout
       ? correlationCols.map((_, i) => plotTop + (i + 0.5) * corrLayout.cellHeight)
       : chartSwapXY
         ? effectiveSeriesNames.map((_, i) => yScale(i))
-        : gridTicks.map((t) => plotTop + innerH * (1 - t));
+        : valueTicksY.map((v) => yScale(v));
 
   // 刻度标签文案：与刻度线一一对应，相关系数图两边用显示名（别名或列名），柱/线/散点按 swap 区分
   const xTickLabelTexts: string[] =
     viewMode === 'correlation' && corrLayout
       ? seriesDisplayNames.map(String)
       : chartSwapXY
-        ? gridTicks.map((t) => formatAxisTick(minY + t * rangeY))
+        ? valueTicksX.map((v) => formatAxisTickX(v))
         : effectiveXLabels.map((l) => String(l));
   const yTickLabelTexts: string[] =
     viewMode === 'correlation' && corrLayout
       ? seriesDisplayNames.map(String)
       : chartSwapXY
         ? effectiveSeriesNames.map((s) => String(s))
-        : gridTicks.map((t) => formatAxisTick(minY + t * rangeY));
+        : valueTicksY.map((v) => formatAxisTickY(v));
 
   // 网格线位置：与刻度线一致（grid 随 tick 走），相关系数图 = 均分的 Y 列名位置（cell 中心）
   const xGridPositions: number[] =
     viewMode === 'correlation' && corrLayout
       ? correlationCols.map((_, j) => plotLeft + (j + 0.5) * corrLayout.cellWidth)
       : chartSwapXY
-        ? gridTicks.map((t) => xScale(minY + t * rangeY))
+        ? valueTicksX.map((v) => xScale(v))
         : effectiveXLabels.map((_, i) => xScale(i));
   const yGridPositions: number[] =
     viewMode === 'correlation' && corrLayout
       ? correlationCols.map((_, i) => plotTop + (i + 0.5) * corrLayout.cellHeight)
       : chartSwapXY
         ? effectiveSeriesNames.map((_, i) => yScale(i))
-        : gridTicks.map((t) => plotTop + innerH * (1 - t));
+        : valueTicksY.map((v) => yScale(v));
 
   const availableBarH = innerH * (1 - plotPaddingTopMulti - plotPaddingBottomMulti);
   const groupHeightSwapped =
@@ -2211,11 +2770,24 @@ export const ChartView = forwardRef<
               <>
                 {correlationData!.map((row, i) =>
                   row.map((v, j) => {
-                    const fill = chartCorrelationFill
-                      ? lerpHexColor(layout.startColor, layout.endColor, correlationToT(v))
-                      : 'transparent';
+                    const fillStyle = chartCorrelationFillStyle as ChartFillStyle;
+                    const baseColor = lerpHexColor(layout.startColor, layout.endColor, correlationToT(v));
+                    const patternId = `chartCorrFill-${i}-${j}`;
+                    const usePattern =
+                      fillStyle !== 'none' && fillStyle !== 'solid' && fillStyle !== 'gradient';
+                    const fill =
+                      fillStyle === 'none'
+                        ? 'transparent'
+                        : usePattern
+                          ? `url(#${patternId})`
+                          : baseColor;
                     return (
                       <g key={`${i}-${j}`}>
+                        {usePattern && (
+                          <defs>
+                            {renderFillPattern(fillStyle as FillStyleType, baseColor, patternId)}
+                          </defs>
+                        )}
                         <rect
                           x={layout.startX + j * layout.cellWidth}
                           y={layout.startY + i * layout.cellHeight}

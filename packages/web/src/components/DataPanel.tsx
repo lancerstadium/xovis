@@ -1,9 +1,11 @@
 import { forwardRef, useMemo, useState, useRef, useEffect } from 'react';
 import { useGraphStore, useSettingsStore } from '../stores';
-import type { ChartYColumnConfig } from '../stores/settings';
+import type { ChartYColumnConfig, ViewSettings } from '../stores/settings';
 import { FILL_STYLES, EDGE_STYLES, LINE_STYLES, MARKER_STYLES } from '../stores/settings';
 import { getLocale, type Lang } from '../locale';
 import { getOperatorRows, getTableColumns } from '../utils/operatorRows';
+import { getActivationTensorRows, getTensorRows, getTensorTableColumns } from '../utils/tensorRows';
+import { computeTensorRects } from '../utils/boxplotAlgorithms';
 import { NumberInput } from './ViewMenu';
 
 /** 根据语言获取样式选项的标签 */
@@ -102,27 +104,25 @@ const getFloatPanelMaxHeight = () =>
     : 400;
 const DATA_PANEL_MAX_HEIGHT = () => Math.round(getFloatPanelMaxHeight());
 
-const VIEW_MODES = ['graph', 'bar', 'pie', 'line', 'scatter', 'correlation'] as const;
+const VIEW_MODES = ['graph', 'boxplot', 'bar', 'pie', 'line', 'scatter', 'correlation'] as const;
 type ViewModeId = (typeof VIEW_MODES)[number];
 
-const VIEW_MODES_PER_ROW = 5;
-function viewModeRows(): ViewModeId[][] {
-  const list = [...VIEW_MODES];
-  const rows: ViewModeId[][] = [];
-  for (let i = 0; i < list.length; i += VIEW_MODES_PER_ROW) {
-    rows.push(list.slice(i, i + VIEW_MODES_PER_ROW));
-  }
-  return rows;
-}
-
-/** 主键列，表格中必选、不可取消勾选 */
-const PRIMARY_KEY_COLUMNS = ['index', 'id'];
+const VIEW_MODE_ROWS: ViewModeId[][] = [
+  ['graph', 'boxplot'],
+  ['bar', 'pie', 'line', 'scatter', 'correlation'],
+];
 
 function formatCell(v: unknown): string {
   if (v === null || v === undefined) return '—';
   if (Array.isArray(v)) return v.map(String).join(', ');
   if (typeof v === 'object') return JSON.stringify(v);
   return String(v);
+}
+
+function columnDisplayName(col: string, t: ReturnType<typeof getLocale>): string {
+  if (col === 'index') return t.tableIndex;
+  if (col === 'id') return t.tableId;
+  return col;
 }
 
 /** 导出时：空值导出为空字符串（表格显示用 formatCell 显示 —） */
@@ -202,6 +202,7 @@ function MappingRow({
   onRemove,
   removeLabel,
   emptyPlaceholder = '—',
+  t,
 }: {
   roleLabel: string;
   value: string;
@@ -210,8 +211,9 @@ function MappingRow({
   onRemove?: () => void;
   removeLabel?: string;
   emptyPlaceholder?: string;
+  t: ReturnType<typeof getLocale>;
 }) {
-  const options = columns.filter((c) => c !== 'index');
+  const options = columns;
   return (
     <div className="panel-row chart-mapping-row">
       <span className="panel-row-label">{roleLabel}</span>
@@ -225,7 +227,7 @@ function MappingRow({
           <option value="">{emptyPlaceholder}</option>
           {options.map((c) => (
             <option key={c} value={c}>
-              {c}
+              {columnDisplayName(c, t)}
             </option>
           ))}
         </select>
@@ -367,7 +369,7 @@ function YColumnConfigRow({
   onToggleVisibility?: () => void;
   t: ReturnType<typeof getLocale>;
 }) {
-  const options = columns.filter((c) => c !== 'index');
+  const options = columns;
   const [expanded, setExpanded] = useState(true);
   const s = useSettingsStore();
   const styleLabels = getStyleLabels(s.lang);
@@ -402,7 +404,7 @@ function YColumnConfigRow({
             <option value="">—</option>
             {options.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {columnDisplayName(c, t)}
               </option>
             ))}
           </select>
@@ -492,7 +494,7 @@ function YColumnConfigRow({
                     <option value="">—</option>
                     {options.map((c) => (
                       <option key={c} value={c}>
-                        {c}
+                        {columnDisplayName(c, t)}
                       </option>
                     ))}
                   </select>
@@ -999,38 +1001,17 @@ function MappingEditor({
     set({ chartYKeys: ySlots.map((y, j) => (j === i ? config : y)) });
   };
   const removeYAt = (i: number) => set({ chartYKeys: ySlots.filter((_, j) => j !== i) });
-  const options = columns.filter((c) => c !== 'index');
+  const options = columns;
   return (
     <div className="chart-mapping-editor">
-      <div className="panel-row chart-mapping-row">
-        <span className="panel-row-label chart-mapping-label-with-alias">
-          <span>{t.chartXAxis}</span>
-          <input
-            type="text"
-            className="view-input chart-config-alias"
-            placeholder={t.dataPanelAlias}
-            value={chartXAlias ?? ''}
-            onChange={(e) => set({ chartXAlias: e.target.value.trim() || '' })}
-            aria-label={t.dataPanelAlias}
-            title={t.dataPanelAlias}
-          />
-        </span>
-        <div className="panel-row-value chart-mapping-value">
-          <select
-            className="view-input chart-config-select"
-            value={chartXKey}
-            onChange={(e) => set({ chartXKey: e.target.value })}
-            aria-label={t.chartXAxis}
-          >
-            <option value="">—</option>
-            {options.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      <XAxisMappingRow
+        xKey={chartXKey}
+        xAlias={chartXAlias ?? ''}
+        columns={options}
+        onChangeKey={(v) => set({ chartXKey: v })}
+        onChangeAlias={(v) => set({ chartXAlias: v })}
+        t={t}
+      />
       <div className="chart-mapping-y-block">
         <span className="chart-mapping-y-block-label">{t.chartYColumnsLabel}</span>
         <div className="chart-mapping-y-rows">
@@ -1072,6 +1053,81 @@ function MappingEditor({
   );
 }
 
+function XAxisMappingRow({
+  xKey,
+  xAlias,
+  columns,
+  onChangeKey,
+  onChangeAlias,
+  t,
+}: {
+  xKey: string;
+  xAlias: string;
+  columns: string[];
+  onChangeKey: (v: string) => void;
+  onChangeAlias: (v: string) => void;
+  t: ReturnType<typeof getLocale>;
+}) {
+  return (
+    <div className="panel-row chart-mapping-row">
+      <span className="panel-row-label chart-mapping-label-with-alias">
+        <span>{t.chartXAxis}</span>
+        <input
+          type="text"
+          className="view-input chart-config-alias"
+          placeholder={t.dataPanelAlias}
+          value={xAlias}
+          onChange={(e) => onChangeAlias(e.target.value.trim() || '')}
+          aria-label={t.dataPanelAlias}
+          title={t.dataPanelAlias}
+        />
+      </span>
+      <div className="panel-row-value chart-mapping-value">
+        <select
+          className="view-input chart-config-select"
+          value={xKey}
+          onChange={(e) => onChangeKey(e.target.value)}
+          aria-label={t.chartXAxis}
+        >
+          <option value="">—</option>
+          {columns.map((c) => (
+            <option key={c} value={c}>
+              {columnDisplayName(c, t)}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function BoxplotMappingEditor({
+  chartBoxXKey,
+  chartBoxXAlias,
+  columns,
+  set,
+  t,
+}: {
+  chartBoxXKey: string;
+  chartBoxXAlias: string;
+  columns: string[];
+  set: (v: Partial<ViewSettings>) => void;
+  t: ReturnType<typeof getLocale>;
+}) {
+  return (
+    <div className="chart-mapping-editor">
+      <XAxisMappingRow
+        xKey={chartBoxXKey}
+        xAlias={chartBoxXAlias}
+        columns={columns}
+        onChangeKey={(v) => set({ chartBoxXKey: v || 'index' })}
+        onChangeAlias={(v) => set({ chartBoxXAlias: v })}
+        t={t}
+      />
+    </div>
+  );
+}
+
 export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_, ref) {
   const { graph } = useGraphStore();
   const s = useSettingsStore();
@@ -1088,6 +1144,9 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     chartSeriesVisibility = {},
     graphHeatAnalysisEnabled,
     graphHeatTargetKey,
+    chartBoxXKey = 'index',
+    chartBoxXAlias = '',
+    chartBoxAlgorithm = 'custom',
   } = s;
   const t = getLocale(s.lang);
 
@@ -1184,12 +1243,33 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     };
   }, [resizingCorner, set]);
 
-  const { rows, columns } = useMemo(() => {
+  const { rows: operatorRows, columns: operatorColumns } = useMemo(() => {
     if (!graph) return { rows: [] as Record<string, unknown>[], columns: [] as string[] };
     const rows = getOperatorRows({ operators: graph.operators });
     const columns = getTableColumns(rows);
     return { rows, columns };
   }, [graph]);
+  const { rows: tensorRows, columns: tensorColumns } = useMemo(() => {
+    if (!graph) return { rows: [] as Record<string, unknown>[], columns: [] as string[] };
+    const baseRows = getActivationTensorRows(getTensorRows(graph));
+    const rows =
+      chartBoxAlgorithm === 'custom'
+        ? baseRows
+        : computeTensorRects(baseRows, chartBoxAlgorithm, graph).map((rect, i) => ({
+            ...rect.row,
+            index: i + 1,
+            start: rect.start,
+            end: rect.end,
+            offset: rect.y0,
+            size: rect.size,
+            algorithm: chartBoxAlgorithm,
+          }));
+    const columns = getTensorTableColumns(rows);
+    return { rows, columns };
+  }, [graph, chartBoxAlgorithm]);
+  const usingTensorSource = viewMode === 'boxplot';
+  const rows = (usingTensorSource ? tensorRows : operatorRows) as Record<string, unknown>[];
+  const columns = usingTensorSource ? tensorColumns : operatorColumns;
 
   const hiddenSet = useMemo(() => new Set(dataPanelHiddenColumns ?? []), [dataPanelHiddenColumns]);
   const selectedColumns = useMemo(
@@ -1198,7 +1278,6 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
   );
 
   const toggleColumnSelected = (col: string) => {
-    if (PRIMARY_KEY_COLUMNS.includes(col)) return;
     const hidden = dataPanelHiddenColumns ?? [];
     if (hidden.includes(col)) {
       set({ dataPanelHiddenColumns: hidden.filter((c) => c !== col) });
@@ -1209,7 +1288,13 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
 
   useEffect(() => {
     if (selectedColumns.length === 0) return;
-    const updates: { chartXKey?: string; chartYKeys?: ChartYColumnConfig[] } = {};
+    if (usingTensorSource) {
+      if (chartBoxXKey && !selectedColumns.includes(chartBoxXKey)) {
+        set({ chartBoxXKey: 'index' });
+      }
+      return;
+    }
+    const updates: Partial<typeof s> = {};
     if (chartXKey && !selectedColumns.includes(chartXKey)) {
       updates.chartXKey = '';
     }
@@ -1218,7 +1303,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
       updates.chartYKeys = validYKeys;
     }
     if (Object.keys(updates).length > 0) set(updates);
-  }, [selectedColumns, chartXKey, chartYKeys, set]);
+  }, [selectedColumns, chartXKey, chartYKeys, set, usingTensorSource, chartBoxXKey]);
 
   const sortedRows = useMemo(() => {
     if (!sortKey) return rows;
@@ -1240,6 +1325,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
     line: t.viewLine,
     scatter: t.viewScatter,
     correlation: t.viewCorrelation,
+    boxplot: t.viewBoxplot,
   };
 
   if (!dataPanelOpen) return null;
@@ -1292,7 +1378,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
               {dataTab === 'view' ? (
                 <div className="view-scroll panel-content data-view-pane">
                   <div className="view-segment-rows" role="group" aria-label={t.dataTabView}>
-                    {viewModeRows().map((row, rowIdx) => (
+                    {VIEW_MODE_ROWS.map((row, rowIdx) => (
                       <div key={rowIdx} className="view-segment-row">
                         {row.map((mode) => (
                           <button
@@ -1338,6 +1424,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                             columns={selectedColumns}
                             onChange={(v) => set({ graphHeatTargetKey: v })}
                             emptyPlaceholder="—"
+                            t={t}
                           />
                         )}
                       </section>
@@ -1347,27 +1434,37 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                     <div className="chart-panel">
                       <section className="chart-panel-section">
                         <h3 className="chart-panel-section-title">{t.chartDataMapping}</h3>
-                        <MappingEditor
-                          chartXKey={chartXKey}
-                          chartXAlias={chartXAlias ?? ''}
-                          chartYKeys={chartYKeys}
-                          columns={selectedColumns}
-                          set={set}
-                          t={t}
-                          chartType={
-                            viewMode === 'bar'
-                              ? 'bar'
-                              : viewMode === 'pie'
-                                ? 'pie'
-                                : viewMode === 'line'
-                                  ? 'line'
-                                  : viewMode === 'correlation'
-                                    ? 'correlation'
-                                    : 'scatter'
-                          }
-                          chartSeriesVisibility={chartSeriesVisibility}
-                          toggleSeriesVisibility={toggleSeriesVisibility}
-                        />
+                        {viewMode === 'boxplot' ? (
+                          <BoxplotMappingEditor
+                            chartBoxXKey={chartBoxXKey}
+                            chartBoxXAlias={chartBoxXAlias}
+                            columns={selectedColumns}
+                            set={set}
+                            t={t}
+                          />
+                        ) : (
+                          <MappingEditor
+                            chartXKey={chartXKey}
+                            chartXAlias={chartXAlias ?? ''}
+                            chartYKeys={chartYKeys}
+                            columns={selectedColumns}
+                            set={set}
+                            t={t}
+                            chartType={
+                              viewMode === 'bar'
+                                ? 'bar'
+                                : viewMode === 'pie'
+                                  ? 'pie'
+                                  : viewMode === 'line'
+                                    ? 'line'
+                                    : viewMode === 'correlation'
+                                      ? 'correlation'
+                                      : 'scatter'
+                            }
+                            chartSeriesVisibility={chartSeriesVisibility}
+                            toggleSeriesVisibility={toggleSeriesVisibility}
+                          />
+                        )}
                       </section>
                     </div>
                   )}
@@ -1398,16 +1495,8 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                         <thead>
                           <tr>
                             {columns.map((col) => {
-                              const isPrimary = PRIMARY_KEY_COLUMNS.includes(col);
                               const checked = !hiddenSet.has(col);
-                              const colLabel =
-                                col === 'index'
-                                  ? t.tableIndex
-                                  : col === 'id'
-                                    ? t.tableId
-                                    : col === 'name'
-                                      ? t.tableName
-                                      : col;
+                              const colLabel = columnDisplayName(col, t);
                               return (
                                 <th key={col} className="data-table-th" scope="col">
                                   <div className="data-table-th-inner">
@@ -1432,7 +1521,7 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                                     </span>
                                     <label
                                       className="panel-check data-table-th-check"
-                                      title={isPrimary ? t.tableColumnSelectHint : colLabel}
+                                      title={colLabel}
                                       aria-label={colLabel}
                                       onClick={(e) => e.stopPropagation()}
                                     >
@@ -1444,7 +1533,6 @@ export const DataPanel = forwardRef<HTMLDivElement, object>(function DataPanel(_
                                           type="checkbox"
                                           className="panel-check-input"
                                           checked={checked}
-                                          disabled={isPrimary}
                                           onChange={() => toggleColumnSelected(col)}
                                           aria-label={colLabel}
                                         />
