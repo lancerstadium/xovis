@@ -173,27 +173,29 @@ export function Loader() {
         </button>
         {examplesOpen && (
           <div className="loader-dropdown float-dropdown" role="menu">
-            <div className="panel-glass">
-              <div className="panel-menu">
-                <button
-                  type="button"
-                  className="panel-menu-item"
-                  role="menuitem"
-                  onClick={openFileDialog}
-                >
-                  {t.loadImportFile}
-                </button>
-                {EXAMPLES.map(({ value, path }) => (
+            <div className="panel-glass-outer loader-dropdown-shell">
+              <div className="panel-glass">
+                <div className="panel-menu">
                   <button
-                    key={path}
                     type="button"
                     className="panel-menu-item"
                     role="menuitem"
-                    onClick={() => onExample(path)}
+                    onClick={openFileDialog}
                   >
-                    {value}
+                    {t.loadImportFile}
                   </button>
-                ))}
+                  {EXAMPLES.map(({ value, path }) => (
+                    <button
+                      key={path}
+                      type="button"
+                      className="panel-menu-item"
+                      role="menuitem"
+                      onClick={() => onExample(path)}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

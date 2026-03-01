@@ -372,7 +372,7 @@ export const GraphView = forwardRef<GraphViewHandle, object>(function GraphView(
 
   const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    const el = transformWrapRef.current ?? containerRef.current;
+    const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };

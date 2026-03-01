@@ -144,14 +144,38 @@ function TensorNodeDetail({
   );
 }
 
-function EdgeDetail({ edge, typeLabel }: { edge: GraphEdge; typeLabel: string }) {
+function tensorFromEdge(edge: GraphEdge, graph?: Graph | null): Tensor | null {
+  if (!graph?.tensors?.length) return null;
+  const candidates = [edge.sourceOutput, edge.targetInput, edge.id].filter(
+    (v): v is string => typeof v === 'string' && v.length > 0
+  );
+  for (const id of candidates) {
+    const t = graph.tensors.find((x) => x.id === id);
+    if (t) return t;
+  }
+  return null;
+}
+
+function EdgeDetail({
+  edge,
+  graph,
+  typeLabel,
+}: {
+  edge: GraphEdge;
+  graph?: Graph | null;
+  typeLabel: string;
+}) {
+  const tensor = tensorFromEdge(edge, graph);
   const entries: [string, unknown][] = [
-    ['id', edge.id],
+    ['id', tensor?.id ?? edge.id],
+    ['name', tensor?.name ?? '—'],
     ['source', edge.source],
     ['target', edge.target],
   ];
-  if (edge.data?.shape?.length) entries.push(['shape', edge.data.shape]);
-  if (edge.data?.dtype) entries.push(['dtype', edge.data.dtype]);
+  const shape = tensor?.shape?.length ? tensor.shape : edge.data?.shape;
+  const dtype = tensor?.dtype ?? edge.data?.dtype;
+  if (shape?.length) entries.push(['shape', shape]);
+  if (dtype) entries.push(['dtype', dtype]);
   return <Section title={typeLabel} entries={entries} />;
 }
 
@@ -174,6 +198,16 @@ function getMatchRank(
   const name = String((obj as { name?: string }).name ?? '').toLowerCase();
   if (name.includes(lower)) return MATCH_RANK_NAME;
   if (id.includes(lower)) return MATCH_RANK_ID;
+  if ('source' in obj) {
+    const tensor = tensorFromEdge(obj as GraphEdge, graph);
+    if (tensor) {
+      const tid = String(tensor.id ?? '').toLowerCase();
+      const tname = String(tensor.name ?? '').toLowerCase();
+      if (tname.includes(lower)) return MATCH_RANK_TENSOR_NAME;
+      if (tid.includes(lower)) return MATCH_RANK_TENSOR_ID;
+    }
+    return JSON.stringify(obj).toLowerCase().includes(lower) ? MATCH_RANK_JSON : MATCH_RANK_NONE;
+  }
   if (!('metadata' in obj) || !graph?.tensors) {
     return JSON.stringify(obj).toLowerCase().includes(lower) ? MATCH_RANK_JSON : MATCH_RANK_NONE;
   }
@@ -305,17 +339,25 @@ export function Detail() {
                   </button>
                 );
               })}
-              {searchResults.edges.map((e) => (
-                <button
-                  key={`edge-${e.id}`}
-                  type="button"
-                  className="detail-search-item"
-                  onClick={() => onSelect(e)}
-                >
-                  <span className="detail-search-item-type">{t.detailEdge}</span>
-                  <span className="detail-search-item-label">{e.id ?? `${e.source}→${e.target}`}</span>
-                </button>
-              ))}
+              {searchResults.edges.map((e) => {
+                const tensor = tensorFromEdge(e, graph);
+                const displayId = tensor?.id ?? e.id;
+                const displayName = tensor?.name;
+                return (
+                  <button
+                    key={`edge-${e.id}`}
+                    type="button"
+                    className="detail-search-item"
+                    onClick={() => onSelect(e)}
+                  >
+                    <span className="detail-search-item-type">{t.detailTensor}</span>
+                    <span className="detail-search-item-label">
+                      {displayId ?? `${e.source}→${e.target}`}
+                      {displayName && displayName !== displayId ? ` · ${displayName}` : ''}
+                    </span>
+                  </button>
+                );
+              })}
             </>
           )}
         </div>
@@ -326,7 +368,7 @@ export function Detail() {
           <p className="detail-empty-hint">{t.detailEmptyHint}</p>
         )
       ) : 'source' in selected ? (
-        <EdgeDetail edge={selected} typeLabel={t.detailEdge} />
+        <EdgeDetail edge={selected} graph={graph} typeLabel={t.detailTensor} />
       ) : (() => {
         const node = selected as GraphOperator;
         const ti = node.metadata?.tensorIndex as number | undefined;
